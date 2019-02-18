@@ -1,3 +1,6 @@
 [submodule "gdb/peda"]
 	path = gdb/peda
 	url = https://github.com/longld/peda
+[submodule "scripts/Kindelabra"]
+	path = scripts/Kindelabra
+	url = https://github.com/richardpeng/Kindelabra

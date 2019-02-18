@@ -1,0 +1,32 @@
+#!/usr/bin/perl -w
+
+use File::Basename;
+
+my $homeDir = $ENV{'HOME'};
+$homeDir .= '/' unless ($homeDir =~ /\/$/);
+my $mountDir;
+if (-d $homeDir.'mnt') {
+  $mountDir = $homeDir.'mnt/';
+} elsif (-d $homeDir.'mount') {
+  $mountDir = $homeDir.'mount/';
+} elsif (-d $homeDir.'media') {
+  $mountDir = $homeDir.'media/';
+} else {
+  $mountDir = $homeDir;
+}
+
+my @files = @ARGV;
+foreach my $isoFile (@files) {
+  if (-f $isoFile) {
+    # if they called with the .iso file
+    my($filename, $directories, $suffix) = fileparse($isoFile);
+    my $mountSubDir = $filename;
+    $mountSubDir =~ s/[^a-zA-Z0-9_]/_/g;
+    $mountSubDir = $mountDir.$mountSubDir;
+    system('fusermount', '-u', $mountSubDir);
+  } elsif (-d $isoFile) {
+    # if they called with the mountpoint
+    system('fusermount', '-u', $isoFile);
+  }
+}
+

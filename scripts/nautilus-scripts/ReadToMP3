@@ -1,0 +1,35 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+my $paths = $ENV{NAUTILUS_SCRIPT_SELECTED_FILE_PATHS};
+if ((!$paths) || ($paths eq "")) {
+  $paths = $ENV{NEMO_SCRIPT_SELECTED_FILE_PATHS};
+}
+
+my @files = split("\n", $paths);
+foreach my $file (@files)
+{
+  if ( -e $file )
+  {
+    my $wavName = $file.".tmp.wav";
+    my $mp3Name = $file.".mp3";
+
+    `cat '$file' | text2wave -o '$wavName'`;
+
+    if ( -e $wavName) {
+      `lame '$wavName' '$mp3Name'`;
+      unlink($wavName);
+      if (-e $mp3Name) {
+        `zenity --info --text="Converted $file to $mp3Name"`;
+      } else {
+        `zenity --info --text="Failed to convert $file to $mp3Name"`;
+      }
+    } else {
+      `zenity --info --text="Failed to convert $file to $wavName"`;
+    }
+  } else {
+      `zenity --info --text="$file could not be opened"`;
+  }
+}
+

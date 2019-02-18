@@ -1,0 +1,12 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+my $paths = $ENV{NAUTILUS_SCRIPT_SELECTED_FILE_PATHS};
+if ((!$paths) || ($paths eq "")) {
+  $paths = $ENV{NEMO_SCRIPT_SELECTED_FILE_PATHS};
+}
+
+my @files = split("\n", $paths);
+my $fileString =  join(', ', @files);
+`vlc '$fileString' --sout='#transcode{vcodec=mp2v,vb=2000,width=720,acodec=mpga,ab=128,channels=2,samplerate=44100}:http{mux=ts,dst=:8080/' --sout-keep`;
