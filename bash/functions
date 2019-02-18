@@ -1,0 +1,845 @@
+########################################################################
+# text processing
+########################################################################
+function cols () {
+    first="awk '{print "
+    last="}'"
+    cmd="${first}"
+    commatime=""
+    for var in "$@"
+    do
+      if [ -z $commatime ]
+      then
+        commatime="no"
+        cmd=${cmd}\$${var}
+      else
+        cmd=${cmd}\,\$${var}
+      fi
+    done
+    cmd="${cmd}${last}"
+    eval $cmd
+}
+
+function headtail () {
+  awk -v offset="$1" '{ if (NR <= offset) print; else { a[NR] = $0; delete a[NR-offset] } } END { { print "--------------------------------" } for (i=NR-offset+1; i<=NR; i++) print a[i] }' ;
+}
+
+function wait_file() {
+  local file="$1"; shift
+  local wait_seconds="${1:-10}"; shift # 10 seconds as default timeout
+
+  until test $((wait_seconds--)) -eq 0 -o -f "$file" ; do sleep 1; done
+
+  ((++wait_seconds))
+}
+
+function taildiff () {
+  LEFT_FILE=$1
+  RIGHT_FILE=$2
+  RIGHT_LINES=$(wc -l "$RIGHT_FILE" | cut -d ' ' -f1)
+  diff -bwBy --suppress-common-lines <(head -n $RIGHT_LINES "$LEFT_FILE") <(head -n $RIGHT_LINES "$RIGHT_FILE")
+}
+
+function fs() {
+  if du -b /dev/null > /dev/null 2>&1; then
+    local arg=-sbh;
+  else
+    local arg=-sh;
+  fi
+  if [[ -n "$@" ]]; then
+    du $arg -- "$@";
+  else
+    du $arg .[^.]* ./*;
+  fi;
+}
+
+function lin () {
+  sed -n $1p
+}
+
+function fsize () {
+  echo "$1" | awk 'function human(x) {
+     s=" B   KiB MiB GiB TiB EiB PiB YiB ZiB"
+     while (x>=1024 && length(s)>1)
+           {x/=1024; s=substr(s,5)}
+     s=substr(s,1,4)
+     xf=(s==" B  ")?"%5d   ":"%0.2f"
+     return sprintf( xf"%s", x, s)
+  }
+  {gsub(/^[0-9]+/, human($1)); print}'
+}
+
+function multigrep() { local IFS='|'; grep -rinE "$*" . ; }
+
+function ord() { printf "%d\n" "'$1"; }
+
+function chr() { printf \\$(($1/64*100+$1%64/8*10+$1%8))\\n; }
+
+# Create a data URL from a file
+function dataurl() {
+  local mimeType=$(file -b --mime-type "$1");
+  if [[ $mimeType == text/* ]]; then
+    mimeType="${mimeType};charset=utf-8";
+  fi
+  echo "data:${mimeType};base64,$(openssl base64 -in "$1" | tr -d '\n')";
+}
+
+function colors () {
+  for i in {0..255}; do echo -e "\e[38;05;${i}m${i}"; done | column -c 80 -s '  '; echo -e "\e[m"
+}
+
+########################################################################
+# media
+########################################################################
+function yt () {
+  youtube-dl -o - "$1" | mpv -
+}
+
+function ytsel () {
+  youtube-dl -o - "$(xsel)" | mpv -
+}
+
+function pyt() {
+  youtube-dl -f bestaudio -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -vo null /dev/fd/3 3<&0 </dev/tty
+}
+
+function ytmp3() {
+  # old way
+  #youtube-dl -f bestaudio -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -vo null -ao pcm:fast:file="$1.wav" /dev/fd/3 3<&0 </dev/tty
+  #ffmpeg -i "$1.wav" -codec:a libmp3lame -qscale:a 2 "$1.mp3"
+  #rm "$1.wav"
+
+  # automatic way
+  search="$1"
+  if [[ "$search" =~ ^http ]]
+  then
+    youtube-dl -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 "$search"
+  else
+    youtube-dl -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
+  fi
+}
+
+function pytv() {
+  youtube-dl -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -
+}
+
+function ytsearch() {
+  youtube-dl -F --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1"
+}
+
+function conv2mp4() {
+  FINDARG="$1"
+  find . -mindepth 1 -maxdepth 1 -type f -name "*$FINDARG" -print0 | xargs -0 -n 1 -P 4 -I XXX -r /bin/bash -c "ffmpeg -nostdin -y -i \"XXX\" -c:a aac -strict experimental -ac 2 -ab 192K -filter_complex \"scale=iw*min(1\,min(1280/iw\,720/ih)):-1\" -c:v libx264 -preset medium -tune film -crf 24 -movflags +faststart -threads 4 -loglevel 0 \"XXX.mp4\""
+}
+
+function conv2nook() {
+  FINDARG="$1"
+  find . -mindepth 1 -maxdepth 1 -type f -name "*$FINDARG" -print0 | xargs -0 -n 1 -P 4 -I XXX -r /bin/bash -c "handbrake-cli -i \"XXX\" -e x264 -q 26.0 -r 30 --pfr -a 1 -E ffaac -B 192 -6 dpl2 -R Auto -D 0.0 --audio-copy-mask aac,ac3,dtshd,dts,mp3 --audio-fallback ffac3 -f mp4 -X 480 -Y 360 --loose-anamorphic --modulus 2 -m --x264-preset medium --h264-profile baseline --encoder-tune fastdecode --h264-level 3.0 -o \"XXX_nook.mp4\""
+}
+
+function brownnoise() {
+  play -c2 -n synth pinknoise band -n 280 80 band -n 60 25 gain +20 treble +40 500 bass -3 20 flanger 4 2 95 50 .3 sine 50 lin
+}
+
+function noise() {
+  brownnoise
+}
+
+########################################################################
+# reference
+########################################################################
+
+
+########################################################################
+# math
+########################################################################
+function calc () { python -c "from math import *; n = $1; print n; print '$'+hex(trunc(n))[2:]; print '&'+oct(trunc(n))[1:]; print '%'+bin(trunc(n))[2:];"; }
+
+function add () {
+  awk '{s+=$1} END {print s}'
+  # alternately: paste -sd+ - | bc
+}
+
+########################################################################
+# directory navigation/file manipulation
+########################################################################
+function cd() { if [[ "$1" =~ ^\.\.+$ ]];then local a dir;a=${#1};while [ $a -ne 1 ];do dir=${dir}"../";((a--));done;builtin cd $dir;else builtin cd "$@";fi ;}
+
+function fcd() { [ -f $1  ] && { cd $(dirname $1);  } || { cd $1 ; } }
+
+function up { cd $(eval printf '../'%.0s {1..$1}) && pwd; }
+
+function realpath {
+  if [ $MACOS ]; then
+    /usr/local/bin/realpath "$@"
+  else
+    readlink -f "$@"
+  fi
+}
+
+function realgo() { fcd $(realpath $(which $1)) && pwd ; }
+
+function realwhich() { realpath $(which $1) ; }
+
+function renmod() {
+  FILENAME="$@";
+  TIMESTAMP=$(date -d @$(stat -c%Y "$FILENAME") +"%Y%m%d%H%M%S")
+  mv -iv "$FILENAME" "$FILENAME.$TIMESTAMP"
+}
+
+function unp() {
+  for ARCHIVE_FILENAME in "$@"
+  do
+    TIMESTAMP=$(date -d @$(stat -c%Y "$ARCHIVE_FILENAME") +"%Y%m%d%H%M%S")
+    DEST_DIR="$(basename "$ARCHIVE_FILENAME")_$TIMESTAMP"
+    mkdir "$DEST_DIR" 2>/dev/null || {
+      DEST_DIR="$(mktemp -d -p . -t $(basename "$ARCHIVE_FILENAME")_XXXXXX)"
+    }
+    python -m pyunpack.cli -a "$ARCHIVE_FILENAME" "$DEST_DIR/"
+    DEST_DIR_CONTENTS=()
+    while IFS=  read -r -d $'\0'; do
+        DEST_DIR_CONTENTS+=("$REPLY")
+    done < <(find "$DEST_DIR" -mindepth 1 -maxdepth 1 -print0)
+    if [[ ${#DEST_DIR_CONTENTS[@]} -eq 1 ]]; then
+      (mv -n "$DEST_DIR"/* "$DEST_DIR"/.. >/dev/null 2>&1 && \
+         rmdir "$DEST_DIR" >/dev/null 2>&1 && \
+         echo "\"$ARCHIVE_FILENAME\" -> \"$(basename "${DEST_DIR_CONTENTS[0]}")\"" ) || \
+      echo "\"$ARCHIVE_FILENAME\" -> \"$DEST_DIR/\""
+    else
+      echo "\"$ARCHIVE_FILENAME\" -> \"$DEST_DIR/\""
+    fi
+  done
+}
+
+function upto() {
+  local EXPRESSION="$1"
+  if [ -z "$EXPRESSION" ]; then
+    echo "A folder expression must be provided." >&2
+    return 1
+  fi
+  if [ "$EXPRESSION" = "/" ]; then
+    cd "/"
+    return 0
+  fi
+  local CURRENT_FOLDER="$(pwd)"
+  local MATCHED_DIR=""
+  local MATCHING=true
+
+  while [ "$MATCHING" = true ]; do
+    if [[ "$CURRENT_FOLDER" =~ "$EXPRESSION" ]]; then
+      MATCHED_DIR="$CURRENT_FOLDER"
+      CURRENT_FOLDER=$(dirname "$CURRENT_FOLDER")
+    else
+      MATCHING=false
+    fi
+  done
+  if [ -n "$MATCHED_DIR" ]; then
+    cd "$MATCHED_DIR"
+    return 0
+  else
+    echo "No Match." >&2
+    return 1
+  fi
+}
+
+# complete upto
+_upto () {
+  # necessary locals for _init_completion
+  local cur prev words cword
+  _init_completion || return
+
+  COMPREPLY+=( $( compgen -W "$( echo ${PWD//\// } )" -- $cur ) )
+}
+complete -F _upto upto
+
+########################################################################
+# history
+########################################################################
+function h() { if [ -z "$1" ]; then history; else history | grep -i "$@"; fi; }
+
+########################################################################
+# searching
+########################################################################
+function fname() { find . -iname "*$@*"; }
+
+########################################################################
+# examine running processes
+########################################################################
+function auxer() {
+  ps aux | grep -i "$(echo "$1" | sed "s/^\(.\)\(.*$\)/\[\1\]\2/")"
+}
+
+function psgrep() {
+  if [ ! $MACOS ]; then
+    ps axuf | grep -v grep | grep "$@" -i --color=auto;
+  else
+    /usr/local/bin/psgrep "$@"
+  fi
+}
+
+function killtree() {
+  if [ "$1" ]
+  then
+    kill $(pstree -p $1 | sed 's/(/\n(/g' | grep '(' | sed 's/(\(.*\)).*/\1/' | tr "\n" " ")
+  else
+    echo "No PID specified">&2
+  fi
+}
+
+function howmuchmem () {
+  PROCNAME="$@";
+  RAMKILOBYTES=($(ps axo rss,comm|grep $PROCNAME| awk '{ TOTAL += $1 } END { print TOTAL }'));
+  RAMBYTES=$(echo "$RAMKILOBYTES*1024" | bc);
+  RAM=$(fsize $RAMBYTES);
+  echo "$RAM";
+}
+
+function mempercent () {
+  PROCNAME="$@";
+  ps -eo pmem,comm | grep "$PROCNAME" | awk '{sum+=$1} END {print sum " % of RAM"}'
+}
+
+function htopid () {
+  PROCPID="$1"
+  htop -p $(pstree -p $PROCPID | perl -ne 'push @t, /\((\d+)\)/g; END { print join ",", @t }')
+}
+
+function lport () {
+  if [ "$1" ]
+  then
+    netstat -anp 2>/dev/null|grep "$1"|grep LISTEN|awk '{print $4}'|grep -P -o "\d+"|grep -v "^0$"
+  else
+    echo "No process specified">&2
+  fi
+}
+
+########################################################################
+# language
+########################################################################
+function say() { echo "$1" | festival --tts >/dev/null 2>&1; }
+
+function saygoog() { if [[ "${1}" =~ -[a-z]{2} ]]; then local lang=${1#-}; local text="${*#$1}"; else local lang=${LANG%_*}; local text="$*";fi; mpv "http://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&q=${text}" &> /dev/null ; }
+
+########################################################################
+# news/weather
+########################################################################
+function weather() {
+  if [ "$1" ]
+  then
+    CITY="$1"
+  else
+    CITY="83401"
+  fi
+  curl "wttr.in/$CITY"
+}
+
+########################################################################
+# APT package management
+########################################################################
+function aptsearch() { apt-cache search "$1"; }
+
+function aptsize() {
+  dpkg-query --show --showformat='${Package;-50}\t${Installed-Size} ${Status}\n' | sort -k 2 -n | grep -v deinstall
+}
+
+########################################################################
+# python package management
+########################################################################
+function pipup() {
+  pip2 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip2 install -U
+  pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip3 install -U
+}
+
+########################################################################
+# network
+########################################################################
+function sshscr()
+{
+  if [ "$1" ]
+  then
+    PNGNAME="sshscreencap_$(date +"%Y%m%d_%H%M%S").png"
+    ssh "$@" 'DISPLAY=":0.0" import -window root png:-' > "$PNGNAME" && \
+      echo "captured screenshot to \"$PNGNAME\"" || \
+      rm -f "$PNGNAME" >/dev/null 2>&1
+  else
+    echo "No ssh parameters specified">&2
+  fi
+}
+
+function pihole()
+{
+  ssh "$1" "pihole -c -e" 2>/dev/null && echo
+}
+
+function server()
+{
+    local port="${1:-8000}"
+    sleep 1 && open "http://localhost:${port}/" &
+    # Set the default Content-Type to `text/plain` instead of `application/octet-stream`
+    # And serve everything as UTF-8 (although not technically correct, this doesn’t break anything for binary files)
+    python2 -c $'import SimpleHTTPServer;\nmap = SimpleHTTPServer.SimpleHTTPRequestHandler.extensions_map;\nmap[""] = "text/plain";\nfor key, value in map.items():\n\tmap[key] = value + ";charset=UTF-8";\nSimpleHTTPServer.test();' "$port"
+}
+
+########################################################################
+# date/time
+########################################################################
+function dateu()
+{
+  if [ "$1" ]
+  then
+    echo $(date -u -d @$1);
+  else
+    echo "No UNIX time specified">&2
+  fi
+}
+
+function udate()
+{
+  if [ "$1" ]
+  then
+    date -u +%s -d "$1"
+  else
+    date -u +%s
+  fi
+}
+
+function sec2dhms() {
+  declare -i SS="$1" D=$(( SS / 86400 )) H=$(( SS % 86400 / 3600 )) M=$(( SS % 3600 / 60 )) S=$(( SS % 60 )) [ "$D" -gt 0 ] && echo -n "${D}:" [ "$H" -gt 0 ] && printf "%02g:" "$H" printf "%02g:%02g\n" "$M" "$S"
+}
+
+########################################################################
+# GIT
+########################################################################
+function current_git_branch ()
+{
+  (git symbolic-ref --short HEAD 2>/dev/null) | sed 's/development/dvl/' | sed 's/origin/org/' | sed 's/patch/pat/' | sed 's/tpc/tpc/' | sed 's/master/mas/'
+}
+
+function parse_git_remote_info ()
+{
+  (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null) | sed 's/development/dvl/' | sed 's/origin/org/' | sed 's/patch/pat/' | sed 's/topic/tpc/' | sed 's/master/mas/'
+}
+
+function parse_git_branch ()
+{
+  GIT_BRANCH=$(current_git_branch)
+  if [ ! -z "$GIT_BRANCH" ]; then
+    GIT_REMOTE=$(parse_git_remote_info)
+    if [ ! -z "$GIT_REMOTE" ]; then
+      echo "[$GIT_BRANCH -> $GIT_REMOTE]"
+    else
+      echo "($GIT_BRANCH)"
+    fi
+  fi
+}
+
+function lfsfix ()
+{
+  if [ "$1" ]
+  then
+    LFS_FILE="$1"
+  elif [ -f ".lfs" ]
+  then
+    LFS_FILE=".lfs"
+  fi
+
+  if [ -f "$LFS_FILE" ]
+  then
+    echo "Fixing \"$LFS_FILE\""
+    perl -p -i -e "s/'(\w\w+)'/\$1/g" $LFS_FILE
+  fi
+}
+
+########################################################################
+# development
+########################################################################
+function errno () {
+  perl -MErrno -e 'my %e= map { Errno->$_()=>$_ } keys(%!); print grep !+/unknown error/i, map sprintf("%4d %-15s %s".$/,$_,$e{$_},$!=$_), 0..+127'
+}
+
+function cmdfu () {
+  curl "https://www.commandlinefu.com/commands/matching/$@/$(echo -n $@ | openssl base64)/plaintext";
+}
+
+function goog() {
+  search=""
+  for term in $*; do
+    search="$search%20$term"
+  done
+  open "https://www.google.com/search?ie=utf-8&oe=utf-8&q=$search"
+}
+
+function googcli {
+  Q="$@";
+  GOOG_URL='https://www.google.com/search?tbs=li:1&q=';
+  AGENT="Mozilla/4.0";
+  stream=$(curl -A "$AGENT" -skLm 20 "${GOOG_URL}${Q//\ /+}" | grep -oP '\/url\?q=.+?&amp' | sed 's|/url?q=||; s|&amp||');
+  echo -e "${stream//\%/\x}";
+}
+
+function wiki() {
+  search=""
+  for term in $*; do
+    search="$search%20$term"
+  done
+  open "http://en.wikipedia.org/w/index.php?search=$search"
+}
+
+function stackoverflow() {
+  search=""
+  for term in $*; do
+    search="$search%20$term"
+  done
+  open "http://stackoverflow.com/search?q=$search"
+}
+
+function urlencode() {
+    # urlencode <string>
+    local length="${#1}"
+    for (( i = 0; i < length; i++ )); do
+        local c="${1:i:1}"
+        case $c in
+            [a-zA-Z0-9.~_-]) printf "$c" ;;
+            *) printf '%%%02X' "'$c"
+        esac
+    done
+}
+
+function urldecode() {
+    # urldecode <string>
+
+    local url_encoded="${1//+/ }"
+    printf '%b' "${url_encoded//%/\\x}"
+}
+
+########################################################################
+# system
+########################################################################
+function find_linux_root_device() {
+  local PDEVICE=`stat -c %04D /`
+  for file in $(find /dev -type b 2>/dev/null) ; do
+    local CURRENT_DEVICE=$(stat -c "%02t%02T" $file)
+    if [ $CURRENT_DEVICE = $PDEVICE ]; then
+      ROOTDEVICE="$file"
+      break;
+    fi
+  done
+  echo "$ROOTDEVICE"
+}
+
+function rotationals() {
+  for f in /sys/block/sd?/queue/rotational; do printf "$f is "; cat $f; done
+}
+
+function schedulers() {
+  for f in /sys/block/sd?/queue/scheduler; do printf "$f is "; cat $f; done
+}
+
+function watch_file_size() {
+  perl -e '
+  $file = shift; die "no file [$file]" unless ((-f $file) || (-d $file));
+  $isDir = (-d $file);
+  $sleep = shift; $sleep = 1 unless $sleep =~ /^[0-9]+$/;
+  $format = "%0.2f %0.2f\n";
+  while(1){
+    if ($isDir) {
+      $size = `du -0scb $file`;
+      $size =~ s/\s+.*//;
+    } else {
+      $size = ((stat($file))[7]);
+    }
+    $change = $size - $lastsize;
+    printf $format, $size/1024/1024, $change/1024/1024/$sleep;
+    sleep $sleep;
+    $lastsize = $size;
+  }' "$1" "$2"
+}
+
+function dux() {
+  du -x --max-depth=1|sort -rn|awk -F / -v c=$COLUMNS 'NR==1{t=$1} NR>1{r=int($1/t*c+.5); b="\033[1;31m"; for (i=0; i<r; i++) b=b"#"; printf " %5.2f%% %s\033[0m %s\n", $1/t*100, b, $2}'|tac
+}
+
+function tre() {
+  tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
+}
+
+function mountcrypt() {
+  if [ "$1" ]
+  then
+    if [ "$2" ]
+    then
+      sudo /sbin/cryptsetup luksOpen "$1" "$2"
+      pmount -A -e "/dev/mapper/$2"
+    else
+      echo "No map name specified">&2
+    fi
+  else
+    echo "No file specified">&2
+  fi
+}
+
+function umountcrypt() {
+  if [ "$1" ]
+  then
+    pumount "/media/mapper_$1"
+  else
+    echo "No map name specified">&2
+  fi
+}
+
+function dirtydev() {
+  while true; do cat /sys/block/$1/stat|cols 9; grep -P "(Dirty)\b" /proc/meminfo; sleep 1; done
+}
+
+function cpuuse() {
+  if [ "$1" ]
+  then
+    SLEEPSEC="$1"
+  else
+    SLEEPSEC=1
+  fi
+   { cat /proc/stat; sleep "$SLEEPSEC"; cat /proc/stat; } | \
+      awk '/^cpu / {usr=$2-usr; sys=$4-sys; idle=$5-idle; iow=$6-iow} \
+      END {total=usr+sys+idle+iow; printf "%.2f\n", (total-idle)*100/total}'
+}
+
+########################################################################
+# helper functions for docker
+########################################################################
+
+# run a new container and remove it when done
+function drun() {
+  docker run -t -i -P --rm \
+    -e HISTFILE=/tmp/.bash_history \
+    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
+    "$@"
+}
+
+# run a new container (with X11/pulse) and remove it when done
+function drunx() {
+  XSOCK=/tmp/.X11-unix
+  XAUTH=/tmp/.docker.xauth
+  touch $XAUTH
+  xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+  docker run -t -i -P --rm \
+    -v $XSOCK:$XSOCK:rw,Z \
+    -v $XAUTH:$XAUTH:rw,Z \
+    -e HISTFILE=/tmp/.bash_history \
+    -e DISPLAY=$DISPLAY \
+    -e XAUTHORITY=$XAUTH \
+    -e PULSE_SERVER=tcp:$(/sbin/ifconfig docker0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}'):4713 \
+    -e PULSE_COOKIE=/run/pulse/cookie \
+    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
+    -v $DOCKER_SHARE_HOME/.config/pulse/cookie:/run/pulse/cookie:rw,Z \
+    "$@"
+}
+
+# run a new container (with X11/pulse/nvidia dri) and remove it when done
+function drunvidia() {
+  XSOCK=/tmp/.X11-unix
+  XAUTH=/tmp/.docker.xauth
+  touch $XAUTH
+  xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+  docker run -t -i -P --privileged --rm \
+    -v $XSOCK:$XSOCK:rw,Z \
+    -v $XAUTH:$XAUTH:rw,Z \
+    --device=/dev/dri/card0:/dev/dri/card0 \
+    -e DISPLAY=$DISPLAY \
+    -e HISTFILE=/tmp/.bash_history \
+    -e XAUTHORITY=$XAUTH \
+    -e PULSE_SERVER=tcp:$(/sbin/ifconfig docker0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}'):4713 \
+    -e PULSE_COOKIE=/run/pulse/cookie \
+    -v $DOCKER_SHARE_HOME/.config/pulse/cookie:/run/pulse/cookie:rw,Z \
+    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
+    "$@"
+}
+
+# Get latest container ID
+alias dl="docker ps -l -q"
+
+# Get container process
+alias dps="docker ps"
+
+# Get process included stop container
+alias dpa="docker ps -a"
+
+# Get images
+alias di="docker images | tail -n +2"
+alias dis="docker images | tail -n +2 | cols 1 2 | sed \"s/ /:/\""
+
+# Get container IP
+alias dip="docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
+
+# Run deamonized container, e.g., $dkd base /bin/echo hello
+alias dkd="docker run -d -P"
+
+# Run new interactive container, e.g., $dki base /bin/bash
+alias dki="docker run -i -t -P"
+
+# Execute in existing interactive container, e.g., $dex base /bin/bash
+alias dex="docker exec -i -t"
+
+# backup *all* docker images!
+function docker_backup() {
+  for IMAGE in `dis`; do export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g') ; docker save "$IMAGE" | pv | pigz > "$FN.tgz"  ; done
+}
+
+function dxl() {
+  CONTAINER=$(docker ps -l -q)
+  docker exec -i -t $CONTAINER "$@"
+}
+
+function dxq() {
+  dxl nquery_ssl.sh -q "$@"
+}
+
+# list virtual networks
+alias dnl="docker network ls"
+
+# inspect virtual networks
+alias dnins="docker network inspect $@"
+
+# Stop all containers
+function dstop() { docker stop $(docker ps -a -q); }
+
+# Dockerfile build, e.g., $dbu tcnksm/test
+function dbuild() { docker build -t=$1 .; }
+
+function dock2go() {
+  DOCKPORT=$(shuf -i25000-59000 -n1)
+  EXTRA_OPS="-v $DOCKER_SHARE_HOME/tmp:/host:rw,Z -v $DOCKER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z -v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z -v $DOCKER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z -v $DOCKER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z -v $DOCKER_SHARE_HOME/.gitconfig:/etc/gitconfig:ro,Z -v $DOCKER_SHARE_HOME/.ssh/id_rsa:/etc/ssh/id_rsa:ro,Z -v $DOCKER_SHARE_HOME/.ssh/id_rsa.pub:/etc/ssh/id_rsa.pub:ro,Z"
+  CID=$(docker run --name x2go -p $DOCKPORT:22 -t -d -e HISTFILE=/tmp/.bash_history $EXTRA_OPS x2go)
+  IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CID)
+  echo "Waiting a few moment for $CID to come up..."
+  while ! nc -z $IP 22; do
+    sleep 1
+  done
+  sleep 1
+  docker logs $CID
+  echo "Container $CID at $IP"
+  docker exec -i -t -u root $CID bash -c 'echo "Set root password..." && passwd && echo "Set dockerx password..." && passwd dockerx'
+  ssh-copy-id -i $HOME/.ssh/id_rsa.pub -p 22 dockerx@$IP
+}
+
+function ffmdock() {
+  if [ "$1" ]
+  then
+    MEDIADIR=$(dirname "$1")
+  else
+    MEDIADIR=$(pwd)
+  fi
+  docker run -t -i -P --rm --entrypoint='bash' \
+    -e HISTFILE=/tmp/.bash_history \
+    -v $DOCKER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z \
+    -v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z \
+    -v $DOCKER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z \
+    -v $DOCKER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z \
+    -v $MEDIADIR:/host:rw,Z \
+    jrottenberg/ffmpeg:latest
+}
+
+function dregls () {
+  curl -k -X GET "https://"$1"/v2/_catalog"
+}
+
+########################################################################
+# x2go
+########################################################################
+function x2go-ls () {
+  grep "^name =" $HOME/.x2goclient/sessions | sed "s/^name = //"
+}
+
+function x2go () {
+  nohup pyhoca-cli -k $HOME/.ssh/id_rsa --session-profile "$@" </dev/null >/dev/null 2>&1 &
+}
+
+function x2go-resume () {
+  nohup pyhoca-cli -k $HOME/.ssh/id_rsa --session-profile "$@" -R NEWEST </dev/null >/dev/null 2>&1 &
+}
+
+function x2go-session-ls () {
+  pyhoca-cli -k $HOME/.ssh/id_rsa --session-profile "$@" -L
+}
+
+########################################################################
+# development stuff
+########################################################################
+function lpibuild() {
+  lpibuild.pl "$@" 2>&1 | sed '/^$/N;/^\n$/D'
+}
+
+########################################################################
+# things I want to nohup
+########################################################################
+function sublime() {
+  nohup "/opt/sublime_text/sublime_text" $@ </dev/null >/dev/null 2>&1 &
+}
+
+function subl() {
+  sublime "$@"
+}
+
+function kate() {
+  sublime "$@"
+}
+
+function edit() {
+  sublime "$@"
+}
+
+function gedit() {
+  sublime "$@"
+}
+
+function rdp() {
+  nohup /usr/bin/rdesktop -g 1600x1024 -z -x m -P -r sound:off -0 $@ </dev/null >/dev/null 2>&1 &
+}
+
+function xrdp() {
+  if [ "$1" ]
+  then
+    USER="$1"
+  fi
+  if [ "$2" ]
+  then
+    SERVER="$2"
+  else
+    SERVER="alien.local.lan"
+  fi
+  if [ "$3" ]
+  then
+    PORT="$3"
+  else
+    PORT="3389"
+  fi
+  xfreerdp /v:$SERVER:$PORT /u:"$USER" /cert-ignore /w:1300 /h:1024 +clipboard -wallpaper -themes 2>/dev/null
+}
+
+function regexxer() {
+  nohup /usr/bin/regexxer $@ </dev/null >/dev/null 2>&1 &
+}
+
+function laz() {
+  nohup /usr/bin/startlazarus $@ </dev/null >/dev/null 2>&1 &
+}
+
+function spice() {
+  nohup /usr/bin/remote-viewer $(virsh -c qemu:///system domdisplay $1) </dev/null >/dev/null 2>&1 &
+}
+
+function spiceport() {
+  nohup /usr/bin/remote-viewer "spice://127.0.0.1?port=$1" </dev/null >/dev/null 2>&1 &
+}
+
+function wireshark() {
+  nohup /usr/bin/wireshark "$@" </dev/null >/dev/null 2>&1 &
+}
+
+function pithos() {
+  nohup /usr/bin/pithos "$@" </dev/null >/dev/null 2>&1 &
+}
+
+####
+# work in progress
+###
+# find . -type f -exec bash -c "fuser -s '{}' || rm -vf '{}'" \;
