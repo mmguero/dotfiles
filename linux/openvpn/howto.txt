@@ -1,0 +1,12 @@
+1. install openresolv
+
+2. place update-resolve-conf.sh in /usr/local/bin
+
+3. add this to ovpn file
+
+verb 3
+script-security 2
+up /usr/local/bin/update-resolv-conf.sh
+down /usr/local/bin/update-resolv-conf.sh
+down-pre
+

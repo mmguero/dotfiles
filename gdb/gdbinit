@@ -1,0 +1,20 @@
+set auto-load safe-path /
+set print frame-arguments no
+set print pretty on
+set print null-stop
+set print elements 1000
+set print thread-events off
+set history remove-duplicates unlimited
+
+python
+sys.path.insert(0, '/home/tlacuache/bin/devel/gdb')
+import hexdump
+end
+alias -a hd = hex-dump
+
+# core debugging examples:
+# set auto-load safe-path /
+# set libthread-db-search-path ./lib64/
+# set solib-absolute-prefix .
+# file usr/local/ess/cpserviced
+# core tmp/whatever.core

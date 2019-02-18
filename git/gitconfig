@@ -1,0 +1,124 @@
+[user]
+	useconfigonly = true
+[pull]
+  rebase = true
+  prune = true
+  recurse-submodules = true
+  autoStash = true
+[push]
+	default = simple
+[diff]
+  tool = xxdiff
+  # tool = icdiff
+[merge]
+	tool = kdiff3
+[difftool]
+	prompt = false
+[difftool "icdiff"]
+  cmd = /usr/bin/icdiff --line-numbers $LOCAL $REMOTE
+[pager]
+  difftool = true
+[core]
+	editor = vi
+	excludesfile = /home/tlacuache/.gitignore_global
+[color]
+	ui = true
+	status = auto
+	branch = auto
+[gui]
+  displayuntracked = false
+[alias]
+  # check out prior to a particular date on the current branch
+  before = "!f() { BRNCH=$(git rev-parse --abbrev-ref HEAD) && REV=$(git rev-list -n 1 --before=\"$1\" $BRNCH) && echo "checking out $REV on $BRNCH before \"$1\"" && git co $REV; }; f"
+  br = branch
+  ci = commit
+  cl = clone
+  co = checkout
+  ours = checkout --ours
+  # branch then checkout
+  cob = checkout -b
+  cp = cherry-pick
+  # new branch
+  nb = !sh -c 'git checkout -b $1 && git push -u origin $1' -
+  # run gitcheck script
+  check = !gitcheck -a -v -r -l '^(database|docs|pkgs)$'
+  # show modified files in last commit
+  last = !git ll -1
+  # list commits not yet pushed
+  np = cherry -v
+  # shows commits from all branches which are not merged upstream, plus the last commit in upstream
+  noup = log --graph --decorate --pretty=oneline --abbrev-commit --all @{upstream}^..
+  # show local diffs with tool
+  xdiff = difftool
+  # show cleaner in-line textual diff
+  dif = diff --color-words='[^[:space:]]|([[:alnum:]]|UTF_8_GUARD)+' --word-diff=plain
+  # show visual diff for specified revision
+  diffrev = "!f() { git difftool \"$1\"^..\"$1\"; }; f"
+  # show visual diff for last commit
+  difflast = difftool --cached HEAD^
+  # show commits in one branch that aren\'t in another
+  diffbranch = "!f() { git difftool \"$2\" ^\"$1\" --no-merges; }; f"
+  diffbranchlog = "!f() { git log --left-right --graph --cherry-mark --oneline --no-merges \"$1\"^..\"$2\"; }; f"
+  fdiffbranch = "!f() { git difftool \"$2\" ^\"$1\" --no-merges \"$3\"; }; f"
+  branchlog = "!f() { git log \"$2\" ^\"$1\" --no-merges; }; f"
+  # all subdirectories in current directory and their most recent commits/authors
+  dirlog = "!find -maxdepth 1 -type d -not -iwholename '*.git*' | xargs -I {} bash -c 'printf \"%-20s %s \n\" \"{}\" \"$(git --no-pager log -1 --date=local --pretty='\"'%cd %h %cn'\"' -- {};)\"'"
+  # show log for specified file
+  filelog = log -u
+  # find files with names matching pattern
+  find = !git ls-files | grep -i
+  # grep
+  gr = grep -n -P -I -i
+  # grep from root of working copy
+  grtop = "!f() { A=$(pwd) && TOPLEVEL=$(git rev-parse --show-toplevel) && cd $TOPLEVEL && git grep --full-name -I -i -P -n $1 | xargs -I{} echo $TOPLEVEL/{} && cd $A; }; f"
+  # list aliases
+  la = !git config -l | grep alias | cut -c 7-
+  # last stash
+  laststash = difftool stash@{0}^!
+  # list files changed in a given revision
+  lrev = "!f() { git ll \"$1\"^..\"$1\"; }; f"
+  # list oneline commits showing relative dates
+  ld = log --pretty=format:\"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]\" --decorate --date=relative
+  # list oneline commits showing short dates
+  lds = log --pretty=format:\"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]\" --decorate --date=short
+  # list oneline commits showing no dates
+  le = log --oneline --decorate
+  ls = log --pretty=format:\"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]\" --decorate
+  # list commits and files changed
+  ll = log --pretty=format:\"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]\" --decorate --numstat
+  # list/count extensions of tracked files
+  ext = !git ls-tree -r master --name-only | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n
+  # list/count extensions of untracked files (excluding ignored files)
+  extun = !git ls-files --others --exclude-standard | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n
+  # list/count extensions of untracked files (including ignored files)
+  extuna = !git ls-files --others | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n
+  # merge, no commit, no ff
+  mrg = merge --no-commit --no-ff
+  # commit adding all changes (but not to untracked files) with the message following this command
+  save = commit -am
+  # short status without untracked files
+  st = !git status -s | grep -v ??
+  # status without untracked files
+  stat = status -uno
+  # update submodules recursively
+  sub = submodule update --recursive
+  # reset the previous commit, but keeps all the changes from that commit in the working directory
+  undo = reset HEAD~1 --mixed
+  up = "!bash -c '((git pull --rebase --autostash --recurse-submodules=yes --all) 3>&1 1>&2 2>&3 | grep -v \"to the list of known hosts\") 3>&1 1>&2 2>&3'"
+  u = "!bash -c 'echo; gitcheck -v -r; echo; git up; echo; git status -u no; echo; gitcheck -v -r; echo'"
+  ch = "!bash -c 'echo; gitcheck -v -r; echo'"
+  # unstage
+  unstage = reset HEAD --
+  # upstream integrate (from siem/siem) (no longer used since we\'re branching and not forking)
+  upstreamintegrate = "!f() { BRNCH=$(git rev-parse --abbrev-ref HEAD) && echo && gitcheck -v -r && echo && echo "git pull --no-rebase upstream $BRNCH" && git pull --no-rebase upstream $BRNCH && echo "git push origin $BRNCH" && git push origin $BRNCH && echo && gitcheck -v -r; }; f"
+  # merge base/* into th_/*
+  basemerge = "!f() { PREV_BRANCH=$(git rev-parse --abbrev-ref HEAD) && SIEM_BRANCH=\"$1\" && git stash && git co th_/"$SIEM_BRANCH" && git submodule update && git merge base/"$SIEM_BRANCH" && git submodule update && git check && git branchlog base/"$SIEM_BRANCH" th_/"$SIEM_BRANCH" && git co "$PREV_BRANCH" && git submodule update && git stash pop; }; f"
+  # change commit owner info
+  change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge --skip -- %f
+	process = git-lfs filter-process --skip
+	required = true
+  batch = false

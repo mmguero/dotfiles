@@ -1,0 +1,12 @@
+:set autosourcereload
+:set arrowstyle=long
+:set ignorecase on
+:set tabstop=2
+map <F2> i<Space>set<Space>scheduler-locking<Space>step<CR><Space>set<Space>print<Space>pretty<Space>on<CR><Space>set<Space>print<Space>thread-events<Space>off<CR><Space>set<Space>print<Space>null-stop<Space>on<CR><Space>set<Space>print<Space>frame-arguments<Space>no<CR><Esc>
+map r i<Space>run<CR><Esc>
+map c i<Space>continue<CR><Esc>
+map f i<Space>finish<CR><Esc>
+map n i<Space>next<CR><Esc>
+map s i<Space>step<CR><Esc>
+map u :up<CR>
+map d :down<CR>

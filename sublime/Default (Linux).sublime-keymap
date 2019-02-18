@@ -1,0 +1,4 @@
+[
+  { "keys": ["ctrl+shift+v"], "command": "paste" },
+  { "keys": ["ctrl+v"], "command": "paste_and_indent" },
+]

@@ -1,0 +1,12 @@
+FontText: "DejaVu Sans Mono,9,-1,5,50,0,0,0,0,0"
+FormatClipboardText: False
+HideCarriageReturns: True
+IgnoreHorizontalWhitespace: True
+IgnorePerHunkWhitespace: True
+Show.LineNumbers: True
+TabWidth: 2
+Command.DiffDirectories: "diff -q -s -w"
+Command.DiffDirectoriesRec: "diff -q -s -r -w"
+Command.DiffFiles2: "diff -w -b -B -i"
+Command.DiffFiles3: "diff3 -w"
+
