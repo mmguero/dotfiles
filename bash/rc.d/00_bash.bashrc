@@ -36,19 +36,48 @@ xterm*|rxvt*)
     ;;
 esac
 
-# enable programmable completion features
-if [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
+###############################################################################
+# mappings/environment variables cross-platform use
+###############################################################################
+
+# determine OS
+unset MACOS
+unset LINUX
+unset WINDOWS10
+unset LC_WINDOWS10
+
+if [ $(uname -s) = 'Darwin' ]; then
+  export MACOS=0
+elif grep -q Microsoft /proc/version; then
+  export WINDOWS10=0
+  export LC_WINDOWS10=$WINDOWS10
+  alias open='explorer.exe'
+else
+  export LINUX=0
+  alias open='xdg-open'
 fi
 
-if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
-  source /etc/profile.d/vte.sh
+function o() {
+  if [ $# -eq 0 ]; then
+    open .;
+  else
+    open "$@";
+  fi;
+}
+
+###############################################################################
+
+if [ $LINUX ]; then
+
+  [[ -r "/etc/bash_completion" ]] && . "/etc/bash_completion"
+
+  if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
+    [[ -r "/etc/profile.d/vte.sh" ]] && . "/etc/profile.d/vte.sh" || . /etc/profile.d/vte-*.sh
+  fi
+
 fi
 
-if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] ; then
-  if [ -f /usr/bin/screenfetch ]; then screenfetch; fi
-fi
-
-if [ $ITERM_SESSION_ID ]; then
-  if [ -f ~/.iterm2_shell_integration.bash ]; then source ~/.iterm2_shell_integration.bash; fi
+if [ $MACOS ]; then
+  [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+  [[ -r "$HOME/.iterm2_shell_integration.bash" ]] && . "$HOME/.iterm2_shell_integration.bash"
 fi

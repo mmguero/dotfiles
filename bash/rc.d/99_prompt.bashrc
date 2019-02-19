@@ -1,6 +1,11 @@
 ###############################################################################
 # BASH PROMPT
 ###############################################################################
+
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] ; then
+  [[ -r "/usr/bin/neofetch" ]] && neofetch || ( [[ -r "/usr/bin/screenfetch" ]] && screenfetch )
+fi
+
 PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
 if [ $WINDOWS10 ]; then
@@ -48,3 +53,4 @@ else
   # Linux/Mac
   PS1="${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u\[\033[0$PROMPT_COLOR\]@\h\[\033[1;30m\]:\[\033[01;34m\]\W\[\033[00m\]\[\033[01;30m\]\$(parse_git_branch)\[\033[01;37m\]\$ \[\033[00;37m\]"
 fi
+
