@@ -1,37 +1,32 @@
 #!/bin/bash
 
-PYTHON_VERSIONS=( 3.7.1 2.7.15 )
-RUBY_VERSIONS=( 2.6.0 )
-GOLANG_VERSIONS=( 1.11.4 )
-NODEJS_VERSIONS=( 10.15.0 )
-PERL_VERSIONS=( 5.28.0 )
+PYTHON_VERSIONS=( 3.7.2 2.7.15 )
+RUBY_VERSIONS=( 2.6.1 )
+GOLANG_VERSIONS=( 1.11.5 )
+NODEJS_VERSIONS=( 10.15.1 )
+PERL_VERSIONS=( 5.28.1 )
 DOCKER_COMPOSE_INSTALL_VERSION=( 1.23.2 )
 
 # add to .bashrc after running this script:
+
 # if [ -d ~/.anyenv ]; then
 #   export ANYENV_ROOT="$HOME/.anyenv"
-#   if [ -d $ANYENV_ROOT/bin ]; then
-#     PATH="$ANYENV_ROOT/bin:$PATH"
-#   fi
+#   [[ -d $ANYENV_ROOT/bin ]] && PATH="$ANYENV_ROOT/bin:$PATH"
 #   eval "$(anyenv init -)"
 # fi
 
 # if [ $GOENV_ROOT ]; then
 #   export GOROOT="$(goenv prefix)"
 # fi
-# export GOPATH=$HOME/gopath # adjust to taste
-# if [ -d $GOPATH/bin ]; then
-#   PATH=$GOPATH/bin:$PATH
-# fi
+
+# export GOPATH=$DEVEL_ROOT/gopath
+# [[ -d $GOPATH/bin ]] && PATH="$GOPATH/bin:$PATH"
 
 # if [ $PYENV_ROOT ]; then
-#   if [ -f $PYENV_ROOT/completions/pyenv.bash ]; then
-#     . $PYENV_ROOT/completions/pyenv.bash
-#   fi
-#   if [ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]; then
-#     eval "$(pyenv virtualenv-init -)"
-#   fi
+#   [[ -r $PYENV_ROOT/completions/pyenv.bash ]] && . $PYENV_ROOT/completions/pyenv.bash
+#   [[ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]] && eval "$(pyenv virtualenv-init -)"
 # fi
+
 
 # determine OS
 unset MACOS
@@ -67,15 +62,14 @@ else
   fi
 fi
 
-# convenience function for installing curl and git for cloning/downloading
+# convenience function for installing git for cloning/downloading
 function InstallCurlAndGit {
   if curl -V >/dev/null 2>&1 && git --version >/dev/null 2>&1 ; then
     echo "\"curl\" and \"git\" are already installed!"
   else
     echo "Installing curl and git..."
     if [ $MACOS ]; then
-      brew install curl
-      brew install git
+      brew install git # since Jaguar curl is already installed in MacOS
     elif [ $LINUX ]; then
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
         $SUDO_CMD apt-get install -y curl git
@@ -87,27 +81,20 @@ function InstallCurlAndGit {
 function EnvSetup {
   if [ -d ~/.anyenv ]; then
     export ANYENV_ROOT="$HOME/.anyenv"
-    if [ -d $ANYENV_ROOT/bin ]; then
-      PATH="$ANYENV_ROOT/bin:$PATH"
-    fi
+    [[ -d $ANYENV_ROOT/bin ]] && PATH="$ANYENV_ROOT/bin:$PATH"
     eval "$(anyenv init -)"
   fi
 
   if [ $GOENV_ROOT ]; then
     export GOROOT="$(goenv prefix)"
   fi
+
   export GOPATH=$DEVEL_ROOT/gopath
-  if [ -d $GOPATH/bin ]; then
-    PATH=$GOPATH/bin:$PATH
-  fi
+  [[ -d $GOPATH/bin ]] && PATH="$GOPATH/bin:$PATH"
 
   if [ $PYENV_ROOT ]; then
-    if [ -f $PYENV_ROOT/completions/pyenv.bash ]; then
-      . $PYENV_ROOT/completions/pyenv.bash
-    fi
-    if [ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]; then
-      eval "$(pyenv virtualenv-init -)"
-    fi
+    [[ -r $PYENV_ROOT/completions/pyenv.bash ]] && . $PYENV_ROOT/completions/pyenv.bash
+    [[ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]] && eval "$(pyenv virtualenv-init -)"
   fi
 }
 
@@ -125,17 +112,10 @@ if [ $MACOS ]; then
       echo "Installing brew..."
       # kind of a chicken-egg situation here with curl/brew, but I think macOS has it installed already
       /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-      brew install coreutils
     fi
   else
     echo "\"brew\" is already installed!"
   fi # brew install check
-
-  # install brew gnu-sed, if needed
-  if ! brew info gnu-sed >/dev/null 2>&1 ; then
-    echo "Installing gnu-sed..."
-    brew install gnu-sed
-  fi # brew gnu-sed install check
 
   # install brew cask, if needed
   if ! brew info cask >/dev/null 2>&1 ; then
@@ -189,13 +169,20 @@ if [ -n $ANYENV_ROOT ]; then
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       anyenv install pyenv
       EnvSetup
-      if [ $LINUX ]; then
+      if [ $MACOS ]; then
+        brew install readline xz openssl
+      elif [ $LINUX ]; then
         $SUDO_CMD apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
                                      wget llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev
       fi
-      for ver in "${PYTHON_VERSIONS[@]}"
-      do
-        pyenv install "$ver"
+      for ver in "${PYTHON_VERSIONS[@]}"; do
+        if [ $MACOS ]; then
+          CFLAGS="-I$(brew --prefix openssl)/include" \
+          LDFLAGS="-L$(brew --prefix openssl)/lib" \
+            pyenv install "$ver"
+        else
+          pyenv install "$ver"
+        fi
       done
       pyenv global "${PYTHON_VERSIONS[@]}"
       mkdir -p "$(pyenv root)"/plugins/
@@ -212,8 +199,7 @@ if [ -n $ANYENV_ROOT ]; then
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       anyenv install rbenv
       EnvSetup
-      for ver in "${RUBY_VERSIONS[@]}"
-      do
+      for ver in "${RUBY_VERSIONS[@]}"; do
         rbenv install "$ver"
       done
       rbenv global "${RUBY_VERSIONS[@]}"
@@ -231,8 +217,7 @@ if [ -n $ANYENV_ROOT ]; then
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       anyenv install goenv
       EnvSetup
-      for ver in "${GOLANG_VERSIONS[@]}"
-      do
+      for ver in "${GOLANG_VERSIONS[@]}"; do
         goenv install "$ver"
       done
       goenv global "${GOLANG_VERSIONS[@]}"
@@ -249,8 +234,7 @@ if [ -n $ANYENV_ROOT ]; then
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       anyenv install nodenv
       EnvSetup
-      for ver in "${NODEJS_VERSIONS[@]}"
-      do
+      for ver in "${NODEJS_VERSIONS[@]}"; do
         nodenv install "$ver"
       done
       nodenv global "${NODEJS_VERSIONS[@]}"
@@ -268,8 +252,7 @@ if [ -n $ANYENV_ROOT ]; then
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       anyenv install plenv
       EnvSetup
-      for ver in "${PERL_VERSIONS[@]}"
-      do
+      for ver in "${PERL_VERSIONS[@]}"; do
         plenv install "$ver"
       done
       plenv global "${PERL_VERSIONS[@]}"
@@ -286,6 +269,44 @@ fi
 EnvSetup
 
 ################################################################################
+# env packages
+################################################################################
+unset CONFIRMATION
+read -p "Install common pip/go/etc. packages [Y/n]? " CONFIRMATION
+CONFIRMATION=${CONFIRMATION:-Y}
+if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+  if pip -V >/dev/null 2>&1 ; then
+    pip install -U \
+      bat \
+      beautifulsoup4 \
+      colored \
+      cryptography \
+      Cython \
+      entrypoint2 \
+      git+git://github.com/badele/gitcheck.git \
+      git-up \
+      numpy \
+      ordered-set \
+      pandas \
+      patool \
+      Pillow \
+      psutil \
+      pyunpack \
+      scapy \
+      scipy \
+      urllib3
+  fi
+
+  if go version >/dev/null 2>&1 ; then
+    go get -u -v github.com/rogpeppe/godef
+    go get -u -v golang.org/x/tools/cmd/goimports
+    go get -u -v golang.org/x/tools/cmd/gorename
+    go get -u -v github.com/nsf/gocode
+  fi
+fi
+
+################################################################################
 # docker
 ################################################################################
 if [ $MACOS ]; then
@@ -297,7 +318,6 @@ if [ $MACOS ]; then
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       echo "Installing Docker Edge..."
-      brew tap caskroom/versions
       brew cask install docker-edge
       echo "Installed Docker Edge."
       echo "Please modify performance settings as needed"
@@ -382,182 +402,267 @@ elif [ $LINUX ]; then
     echo "\"docker-compose\" is already installed!"
   fi # docker-compose install check
 
-fi # MacOS vs. Linux
+fi # MacOS vs. Linux for docker
 
-if [ $LINUX ]; then
+################################################################################
+# other packages
+################################################################################
+if [ $MACOS ]; then
+
   unset CONFIRMATION
   read -p "Install common packages [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
-      $SUDO_CMD apt-get install -y \
-        apache2-utils \
-        apt-file \
-        apt-listchanges \
-        apt-show-versions \
-        apt-transport-https \
-        apt-utils \
-        autoconf \
-        automake \
-        autossh \
-        bash \
-        binutils \
-        bison \
-        bridge-utils \
-        bro \
-        btrfs-progs \
-        build-essential \
-        bzip2 \
-        ca-certificates \
-        cgdb \
-        checkinstall \
-        cifs-utils \
-        cloc \
-        coreutils \
-        cmake \
-        cpio \
-        cryptmount \
-        cryptsetup \
-        curl \
-        dialog \
-        diffutils \
-        eject \
-        ethtool \
-        exfat-fuse \
-        exfat-utils \
-        fdisk \
-        file \
-        findutils \
-        flex \
-        fonts-hack \
-        fuseiso \
-        gdb \
-        git \
-        git-lfs \
-        gnupg2 \
-        google-perftools \
-        grep \
-        gzip \
-        haveged \
-        htop \
-        iproute2 \
-        less \
-        localepurge \
-        lshw \
-        lsof \
-        make \
-        moreutils \
-        mosh \
-        netsniff-ng \
-        netcat-traditional \
-        ngrep \
-        ntfs-3g \
-        openssh-client \
-        openresolv \
-        openvpn \
-        p7zip \
-        p7zip-full \
-        parted \
-        patch \
-        patchutils \
-        pigz \
-        pmount \
-        procps \
-        psmisc \
-        pv \
-        qemu-utils \
-        rar \
-        rename \
-        rsync \
-        screen \
-        sed \
-        socat \
-        sshfs \
-        strace \
-        subversion \
-        sudo \
-        sysstat \
-        tcpdump \
-        testdisk \
-        time \
-        tofrodos \
-        traceroute \
-        tshark \
-        tzdata \
-        ufw \
-        unrar \
-        unzip \
-        vim-tiny \
-        wget \
-        zlib1g
+
+    brew install bash
+    grep /usr/local/bin/bash /etc/shells || (echo '/usr/local/bin/bash' | sudo tee -a /etc/shells)
+
+    # Add the following line to your ~/.bash_profile:
+    #  [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+    brew install bash-completion
+
+    # Commands also provided by macOS have been installed with the prefix "g".
+    # If you need to use these commands with their normal names, you
+    # can add a "gnubin" directory to your PATH from your bashrc like:
+    #   PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+    brew install coreutils
+
+    brew install diffutils
+    brew install dos2unix
+
+    # All commands have been installed with the prefix "g".
+    # If you need to use these commands with their normal names, you
+    # can add a "gnubin" directory to your PATH from your bashrc like:
+    #   PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
+    brew install findutils
+
+    brew install gawk
+    brew install git
+
+    # GNU "indent" has been installed as "gindent".
+    # If you need to use it as "indent", you can add a "gnubin" directory
+    # to your PATH from your bashrc like:
+    #     PATH="/usr/local/opt/gnu-indent/libexec/gnubin:$PATH"
+    brew install gnu-indent
+
+    # GNU "sed" has been installed as "gsed".
+    # If you need to use it as "sed", you can add a "gnubin" directory
+    # to your PATH from your bashrc like:
+    #     PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+    brew install gnu-sed
+
+    # GNU "tar" has been installed as "gtar".
+    # If you need to use it as "tar", you can add a "gnubin" directory
+    # to your PATH from your bashrc like:
+    #     PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
+    brew install gnu-tar
+
+    # GNU "which" has been installed as "gwhich".
+    # If you need to use it as "which", you can add a "gnubin" directory
+    # to your PATH from your bashrc like:
+    #     PATH="/usr/local/opt/gnu-which/libexec/gnubin:$PATH"
+    brew install gnu-which
+
+    brew install gnutls
+
+    # All commands have been installed with the prefix "g".
+    # If you need to use these commands with their normal names, you
+    # can add a "gnubin" directory to your PATH from your bashrc like:
+    #   PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
+    brew install grep
+
+    brew install gzip
+    brew install htop
+    brew install iproute2mac
+    brew install less
+    brew install openssh
+    brew install moreutils
+    brew install p7zip
+    brew install pigz
+    brew install psgrep
+    brew install psutils
+    brew install screen
+    brew install tree
+    brew install unrar
+    brew install vim
+    brew install watch
+    brew install wdiff
+    brew install wget
+  fi
+
+  unset CONFIRMATION
+  read -p "Install common casks [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    brew cask install diskwave
+    brew cask install firefox
+    brew cask install homebrew/cask-fonts/font-hack
+    brew cask install iterm2
+    brew cask install keepassxc
+    brew cask install osxfuse
+    brew cask install sublime-text
+    brew cask install wireshark
+  fi
+
+elif [ $LINUX ]; then
+  unset CONFIRMATION
+  read -p "Install common packages [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    DEBIAN_PACKAGE_LIST=(
+      apache2-utils
+      apt-file
+      apt-listchanges
+      apt-show-versions
+      apt-transport-https
+      apt-utils
+      autoconf
+      automake
+      autossh
+      bash
+      binutils
+      bison
+      bridge-utils
+      btrfs-progs
+      build-essential
+      bzip2
+      ca-certificates
+      cgdb
+      checkinstall
+      cifs-utils
+      cloc
+      coreutils
+      cmake
+      cpio
+      cryptmount
+      cryptsetup
+      curl
+      dialog
+      diffutils
+      eject
+      ethtool
+      exfat-fuse
+      exfat-utils
+      fdisk
+      file
+      findutils
+      flex
+      fonts-hack
+      fonts-hack-ttf
+      fuseiso
+      gdb
+      git
+      git-lfs
+      gnupg2
+      google-perftools
+      grep
+      gzip
+      haveged
+      htop
+      iproute2
+      less
+      localepurge
+      lshw
+      lsof
+      make
+      moreutils
+      mosh
+      netsniff-ng
+      netcat-traditional
+      ngrep
+      ntfs-3g
+      openssh-client
+      openresolv
+      openvpn
+      p7zip
+      p7zip-full
+      parted
+      patch
+      patchutils
+      pigz
+      pmount
+      procps
+      psmisc
+      pv
+      qemu-utils
+      rar
+      rename
+      rsync
+      screen
+      sed
+      socat
+      sshfs
+      strace
+      subversion
+      sudo
+      sysstat
+      tcpdump
+      testdisk
+      time
+      tofrodos
+      traceroute
+      tshark
+      tzdata
+      ufw
+      unrar
+      unzip
+      vim-tiny
+      wget
+      zlib1g
+    )
+    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+      sudo apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+    done
   fi
 
   unset CONFIRMATION
   read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
-      $SUDO_CMD apt-get install -y \
-        dconf-cli \
-        fonts-hack \
-        ghex \
-        gparted \
-        keepassxc \
-        meld \
-        numix-gtk-theme \
-        numix-icon-theme \
-        regexxer \
-        sublime-text \
-        tilix \
-        wireshark \
-        xxdiff \
-        xxdiff-scripts \
-        xdiskusage
+    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    DEBIAN_PACKAGE_LIST=(
+      dconf-cli
+      fonts-hack
+      ghex
+      gparted
+      keepassxc
+      meld
+      numix-gtk-theme
+      numix-icon-theme
+      regexxer
+      sublime-text
+      tilix
+      wireshark
+      xxdiff
+      xxdiff-scripts
+      xdiskusage
+    )
+    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+      sudo apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+    done
   fi
 
   unset CONFIRMATION
   read -p "Install common packages (media) [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
-      $SUDO_CMD apt-get install -y \
-        audacity \
-        audacious \
-        gimp \
-        gimp-plugin-registry \
-        gimp-texturize \
-        recordmydesktop \
-        gtk-recordmydesktop \
-        ffmpeg \
-        mpv \
-        pithos
-  fi
-
-  unset CONFIRMATION
-  read -p "Install common pip/go/etc. packages [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    pip install -U \
-      bat \
-      beautifulsoup4 \
-      colored \
-      cryptography \
-      Cython \
-      entrypoint2 \
-      git+git://github.com/badele/gitcheck.git \
-      git-up \
-      numpy \
-      pandas \
-      patool \
-      Pillow \
-      pyunpack \
-      scapy \
-      scipy \
-      urllib3
-    go get -u -v github.com/rogpeppe/godef
-    go get -u -v golang.org/x/tools/cmd/goimports
-    go get -u -v golang.org/x/tools/cmd/gorename
-    go get -u -v github.com/nsf/gocode
+    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    DEBIAN_PACKAGE_LIST=(
+      audacity
+      audacious
+      gimp
+      gimp-plugin-registry
+      gimp-texturize
+      recordmydesktop
+      gtk-recordmydesktop
+      ffmpeg
+      mpv
+      pithos
+    )
+    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+      sudo apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+    done
   fi
 
   unset CONFIRMATION
