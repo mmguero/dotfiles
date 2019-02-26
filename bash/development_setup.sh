@@ -1,5 +1,13 @@
 #!/bin/bash
 
+ENV_LIST=(
+  pyenv
+  rbenv
+  goenv
+  nodenv
+  plenv
+)
+
 PYTHON_VERSIONS=( 3.7.2 2.7.15 )
 RUBY_VERSIONS=( 2.6.1 )
 GOLANG_VERSIONS=( 1.11.5 )
@@ -85,17 +93,50 @@ function EnvSetup {
     eval "$(anyenv init -)"
   fi
 
-  if [ $GOENV_ROOT ]; then
-    export GOROOT="$(goenv prefix)"
+  # alternately they may be set up individually
+
+  if [ -z "$PYENV_ROOT" ] && [ -d ~/.pyenv ]; then
+    export PYENV_ROOT="$HOME/.pyenv"
+    [[ -d $PYENV_ROOT/bin ]] && PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init -)"
   fi
 
-  export GOPATH=$DEVEL_ROOT/gopath
-  [[ -d $GOPATH/bin ]] && PATH="$GOPATH/bin:$PATH"
+  if [ -z "$RBENV_ROOT" ] && [ -d ~/.rbenv ]; then
+    export RBENV_ROOT="$HOME/.rbenv"
+    [[ -d $RBENV_ROOT/bin ]] && PATH="$RBENV_ROOT/bin:$PATH"
+    eval "$(rbenv init -)"
+  fi
+
+  if [ -z "$GOENV_ROOT" ] && [ -d ~/.goenv ]; then
+    export GOENV_ROOT="$HOME/.goenv"
+    [[ -d $GOENV_ROOT/bin ]] && PATH="$GOENV_ROOT/bin:$PATH"
+    eval "$(goenv init -)"
+  fi
+
+  if [ -z "$NODENV_ROOT" ] && [ -d ~/.nodenv ]; then
+    export NODENV_ROOT="$HOME/.nodenv"
+    [[ -d $NODENV_ROOT/bin ]] && PATH="$NODENV_ROOT/bin:$PATH"
+    eval "$(nodenv init -)"
+  fi
+
+  if [ -z "$PLENV_ROOT" ] && [ -d ~/.plenv ]; then
+    export PLENV_ROOT="$HOME/.plenv"
+    [[ -d $PLENV_ROOT/bin ]] && PATH="$PLENV_ROOT/bin:$PATH"
+    eval "$(plenv init -)"
+  fi
+
+  # once we've sourced things for paths, set up any other custom stuf the envs need
 
   if [ $PYENV_ROOT ]; then
     [[ -r $PYENV_ROOT/completions/pyenv.bash ]] && . $PYENV_ROOT/completions/pyenv.bash
     [[ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]] && eval "$(pyenv virtualenv-init -)"
   fi
+
+  if [ $GOENV_ROOT ]; then
+    export GOROOT="$(goenv prefix)"
+  fi
+  export GOPATH=$DEVEL_ROOT/gopath
+  [[ -d $GOPATH/bin ]] && PATH="$GOPATH/bin:$PATH"
 }
 
 ################################################################################
@@ -117,160 +158,138 @@ if [ $MACOS ]; then
     echo "\"brew\" is already installed!"
   fi # brew install check
 
-  # install brew cask, if needed
-  if ! brew info cask >/dev/null 2>&1 ; then
-    unset CONFIRMATION
-    read -p "\"brew cask\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      echo "Installing brew cask..."
-      brew install cask
-      brew tap caskroom/versions
-    fi
-  else
-    echo "\"brew cask\" is already installed!"
-  fi # brew cask install check
+  brew cask list >/dev/null 2>&1
+  brew tap caskroom/versions
+
 fi # MacOS check
 
 InstallCurlAndGit
 
 ################################################################################
-# anyenv
+# envs (mac via brew, linux via anyenv)
 ################################################################################
-if [ -z $ANYENV_ROOT ]; then
+declare -A ENVS_INSTALLED
+for i in ${ENV_LIST[@]}; do
+  ENVS_INSTALLED[$i]=false
+done
 
-  unset CONFIRMATION
-  read -p "\"anyenv\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+# install env manager(s)
+if [ $MACOS ]; then
 
-    InstallCurlAndGit
-    pushd $HOME
-    git clone https://github.com/riywo/anyenv ~/.anyenv
-    EnvSetup
-    if [ ! -d $HOME/.config/anyenv/anyenv-install ]; then
-      anyenv install --init
+  for i in ${ENV_LIST[@]}; do
+    if ! brew ls --versions "$i" >/dev/null 2>&1 ; then
+      unset CONFIRMATION
+      read -p "\"$i\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        brew install $i && ENVS_INSTALLED[$i]=true
+      fi
     fi
-    mkdir -p $(anyenv root)/plugins
-    git clone https://github.com/znz/anyenv-update.git "$(anyenv root)"/plugins/anyenv-update
+  done
 
-  fi # install anyenv confirmation
-fi # .anyenv check
+elif [ $LINUX ]; then
 
+  if [ -z $ANYENV_ROOT ]; then
+    unset CONFIRMATION
+    read -p "\"anyenv\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+      InstallCurlAndGit
+      pushd $HOME
+      git clone https://github.com/riywo/anyenv ~/.anyenv
+      EnvSetup
+      if [ ! -d $HOME/.config/anyenv/anyenv-install ]; then
+        anyenv install --init
+      fi
+      mkdir -p $(anyenv root)/plugins
+      git clone https://github.com/znz/anyenv-update.git "$(anyenv root)"/plugins/anyenv-update
+
+    fi # install anyenv confirmation
+  fi # .anyenv check
+
+  EnvSetup
+  if [ -n $ANYENV_ROOT ]; then
+    for i in ${ENV_LIST[@]}; do
+      if ! ( anyenv envs | grep -q "$i" ) >/dev/null 2>&1 ; then
+        unset CONFIRMATION
+        read -p "\"$i\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          anyenv install "$i" && ENVS_INSTALLED[$i]=true
+        fi
+      fi
+    done
+  fi
+fi
 EnvSetup
 
-if [ -n $ANYENV_ROOT ]; then
+# install versions of the tools and plugins
 
-  # python
-  if [ -z $PYENV_ROOT ]; then
-    unset CONFIRMATION
-    read -p "\"pyenv\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      anyenv install pyenv
-      EnvSetup
-      if [ $MACOS ]; then
-        brew install readline xz openssl
-      elif [ $LINUX ]; then
-        $SUDO_CMD apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
-                                     wget llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev
-      fi
-      for ver in "${PYTHON_VERSIONS[@]}"; do
-        if [ $MACOS ]; then
-          CFLAGS="-I$(brew --prefix openssl)/include" \
-          LDFLAGS="-L$(brew --prefix openssl)/lib" \
-            pyenv install "$ver"
-        else
-          pyenv install "$ver"
-        fi
-      done
-      pyenv global "${PYTHON_VERSIONS[@]}"
-      mkdir -p "$(pyenv root)"/plugins/
-      git clone https://github.com/pyenv/pyenv-update.git "$(pyenv root)"/plugins/pyenv-update
-      git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
-    fi
+# python
+if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
+  if [ $LINUX ]; then
+    $SUDO_CMD apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+                                 wget llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev
   fi
-
-  # ruby
-  if [ -z $RBENV_ROOT ]; then
-    unset CONFIRMATION
-    read -p "\"rbenv\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      anyenv install rbenv
-      EnvSetup
-      for ver in "${RUBY_VERSIONS[@]}"; do
-        rbenv install "$ver"
-      done
-      rbenv global "${RUBY_VERSIONS[@]}"
-      mkdir -p "$(rbenv root)"/plugins/
-      git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
-      git clone https://github.com/rkh/rbenv-update.git "$(rbenv root)"/plugins/rbenv-update
-    fi
-  fi
-
-  # golang
-  if [ -z $GOENV_ROOT ]; then
-    unset CONFIRMATION
-    read -p "\"goenv\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      anyenv install goenv
-      EnvSetup
-      for ver in "${GOLANG_VERSIONS[@]}"; do
-        goenv install "$ver"
-      done
-      goenv global "${GOLANG_VERSIONS[@]}"
-      mkdir -p "$(goenv root)"/plugins/
-      git clone https://github.com/trafficgate/goenv-install-glide.git "$(goenv root)"/plugins/goenv-install-glide
-    fi
-  fi
-
-  # nodejs
-  if [ -z $NODENV_ROOT ]; then
-    unset CONFIRMATION
-    read -p "\"nodenv\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      anyenv install nodenv
-      EnvSetup
-      for ver in "${NODEJS_VERSIONS[@]}"; do
-        nodenv install "$ver"
-      done
-      nodenv global "${NODEJS_VERSIONS[@]}"
-      mkdir -p "$(nodenv root)"/plugins/
-      git clone https://github.com/nodenv/node-build.git "$(nodenv root)"/plugins/node-build
-      git clone https://github.com/nodenv/nodenv-update.git "$(nodenv root)"/plugins/nodenv-update
-    fi
-  fi
-
-  # perl
-  if [ -z $PLENV_ROOT ]; then
-    unset CONFIRMATION
-    read -p "\"plenv\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      anyenv install plenv
-      EnvSetup
-      for ver in "${PERL_VERSIONS[@]}"; do
-        plenv install "$ver"
-      done
-      plenv global "${PERL_VERSIONS[@]}"
-      mkdir -p "$(plenv root)"/plugins/
-    fi
-  fi
-
-else
-  echo "anyenv is not configured!"
-  exit 1
+  for ver in "${PYTHON_VERSIONS[@]}"; do
+    pyenv install "$ver"
+  done
+  pyenv global "${PYTHON_VERSIONS[@]}"
+  mkdir -p "$(pyenv root)"/plugins/
+  git clone https://github.com/pyenv/pyenv-update.git "$(pyenv root)"/plugins/pyenv-update
+  git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
 fi
 
-################################################################################
+# ruby
+if [ -n $RBENV_ROOT ] && [ ${ENVS_INSTALLED[rbenv]} = 'true' ]; then
+  for ver in "${RUBY_VERSIONS[@]}"; do
+    rbenv install "$ver"
+  done
+  rbenv global "${RUBY_VERSIONS[@]}"
+  mkdir -p "$(rbenv root)"/plugins/
+  git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
+  git clone https://github.com/rkh/rbenv-update.git "$(rbenv root)"/plugins/rbenv-update
+fi
+
+# golang
+if [ -n $GOENV_ROOT ] && [ ${ENVS_INSTALLED[goenv]} = 'true' ]; then
+  for ver in "${GOLANG_VERSIONS[@]}"; do
+    goenv install "$ver"
+  done
+  goenv global "${GOLANG_VERSIONS[@]}"
+  mkdir -p "$(goenv root)"/plugins/
+  git clone https://github.com/trafficgate/goenv-install-glide.git "$(goenv root)"/plugins/goenv-install-glide
+fi
+
+# nodejs
+if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
+  for ver in "${NODEJS_VERSIONS[@]}"; do
+    nodenv install "$ver"
+  done
+  nodenv global "${NODEJS_VERSIONS[@]}"
+  mkdir -p "$(nodenv root)"/plugins/
+  git clone https://github.com/nodenv/node-build.git "$(nodenv root)"/plugins/node-build
+  git clone https://github.com/nodenv/nodenv-update.git "$(nodenv root)"/plugins/nodenv-update
+fi
+
+# perl
+if [ -n $PLENV_ROOT ] && [ ${ENVS_INSTALLED[plenv]} = 'true' ]; then
+  for ver in "${PERL_VERSIONS[@]}"; do
+    plenv install "$ver"
+  done
+  plenv global "${PERL_VERSIONS[@]}"
+  mkdir -p "$(plenv root)"/plugins/
+fi
+
 EnvSetup
+
+read -p "here we go 2 " CONFIRMATION
 
 ################################################################################
 # env packages
 ################################################################################
+
 unset CONFIRMATION
 read -p "Install common pip/go/etc. packages [Y/n]? " CONFIRMATION
 CONFIRMATION=${CONFIRMATION:-Y}
@@ -312,7 +331,7 @@ fi
 if [ $MACOS ]; then
 
   # install docker-edge, if needed
-  if ! brew cask info docker-edge >/dev/null 2>&1 ; then
+  if ! brew cask ls --versions docker-edge >/dev/null 2>&1 ; then
     unset CONFIRMATION
     read -p "\"docker-edge\" cask is not installed, attempt to install docker-edge via brew [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
