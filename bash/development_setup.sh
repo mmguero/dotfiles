@@ -10,7 +10,7 @@ ENV_LIST=(
 
 PYTHON_VERSIONS=( 3.7.2 2.7.15 )
 RUBY_VERSIONS=( 2.6.1 )
-GOLANG_VERSIONS=( 1.11.5 )
+GOLANG_VERSIONS=( 1.12.0 )
 NODEJS_VERSIONS=( 10.15.1 )
 PERL_VERSIONS=( 5.28.1 )
 DOCKER_COMPOSE_INSTALL_VERSION=( 1.23.2 )
@@ -283,8 +283,6 @@ if [ -n $PLENV_ROOT ] && [ ${ENVS_INSTALLED[plenv]} = 'true' ]; then
 fi
 
 EnvSetup
-
-read -p "here we go 2 " CONFIRMATION
 
 ################################################################################
 # env packages
