@@ -238,7 +238,12 @@ if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
   pyenv global "${PYTHON_VERSIONS[@]}"
   mkdir -p "$(pyenv root)"/plugins/
   git clone https://github.com/pyenv/pyenv-update.git "$(pyenv root)"/plugins/pyenv-update
-  git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
+  git clone https://github.com/pyenv/pyenv-virtualenv.git "$(pyenv root)"/plugins/pyenv-virtualenv
+  if [ ! -d "$(pyenv root)"/bin ] && [ -d "$(pyenv root)"/shims ]; then
+    pushd "$(pyenv root)"
+    ln -s ./shims ./bin
+    popd
+  fi
 fi
 
 # ruby
@@ -250,6 +255,11 @@ if [ -n $RBENV_ROOT ] && [ ${ENVS_INSTALLED[rbenv]} = 'true' ]; then
   mkdir -p "$(rbenv root)"/plugins/
   git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
   git clone https://github.com/rkh/rbenv-update.git "$(rbenv root)"/plugins/rbenv-update
+  if [ ! -d "$(rbenv root)"/bin ] && [ -d "$(rbenv root)"/shims ]; then
+    pushd "$(rbenv root)"
+    ln -s ./shims ./bin
+    popd
+  fi
 fi
 
 # golang
@@ -260,6 +270,11 @@ if [ -n $GOENV_ROOT ] && [ ${ENVS_INSTALLED[goenv]} = 'true' ]; then
   goenv global "${GOLANG_VERSIONS[@]}"
   mkdir -p "$(goenv root)"/plugins/
   git clone https://github.com/trafficgate/goenv-install-glide.git "$(goenv root)"/plugins/goenv-install-glide
+  if [ ! -d "$(goenv root)"/bin ] && [ -d "$(goenv root)"/shims ]; then
+    pushd "$(goenv root)"
+    ln -s ./shims ./bin
+    popd
+  fi
 fi
 
 # nodejs
@@ -271,6 +286,11 @@ if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
   mkdir -p "$(nodenv root)"/plugins/
   git clone https://github.com/nodenv/node-build.git "$(nodenv root)"/plugins/node-build
   git clone https://github.com/nodenv/nodenv-update.git "$(nodenv root)"/plugins/nodenv-update
+  if [ ! -d "$(nodenv root)"/bin ] && [ -d "$(nodenv root)"/shims ]; then
+    pushd "$(nodenv root)"
+    ln -s ./shims ./bin
+    popd
+  fi
 fi
 
 # perl
@@ -280,6 +300,11 @@ if [ -n $PLENV_ROOT ] && [ ${ENVS_INSTALLED[plenv]} = 'true' ]; then
   done
   plenv global "${PERL_VERSIONS[@]}"
   mkdir -p "$(plenv root)"/plugins/
+  if [ ! -d "$(plenv root)"/bin ] && [ -d "$(plenv root)"/shims ]; then
+    pushd "$(plenv root)"
+    ln -s ./shims ./bin
+    popd
+  fi
 fi
 
 EnvSetup
