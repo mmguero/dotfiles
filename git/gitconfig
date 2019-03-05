@@ -107,6 +107,8 @@
   up = "!bash -c '((git pull --rebase --autostash --recurse-submodules=yes --all) 3>&1 1>&2 2>&3 | grep -v \"to the list of known hosts\") 3>&1 1>&2 2>&3'"
   u = "!bash -c 'echo; gitcheck -v -r; echo; git up; echo; git status -u no; echo; gitcheck -v -r; echo'"
   ch = "!bash -c 'echo; gitcheck -v -r; echo'"
+  # find and update all git repositories underneath the current directory
+  upall = "!f() { find . -type d -name '*.git' -exec bash -c 'pushd \"{}\"/.. >/dev/null && echo && printf '=%.0s' {1..60} && echo && pwd && (git up; echo; git status -u no; echo; gitcheck -v -r) | grep -Pv \"(Updating.*remotes|master  up to date|Fetching origin|On branch master|Your branch is up-to-date|nothing to commit)\" && popd >/dev/null' ';' ; }; f "
   # unstage
   unstage = reset HEAD --
   # upstream integrate (from siem/siem) (no longer used since we\'re branching and not forking)
