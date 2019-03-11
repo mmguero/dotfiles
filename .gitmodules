@@ -4,3 +4,6 @@
 [submodule "scripts/Kindelabra"]
 	path = scripts/Kindelabra
 	url = https://github.com/richardpeng/Kindelabra
+[submodule "scripts/x11docker"]
+	path = scripts/x11docker
+	url = https://github.com/mviereck/x11docker.git
