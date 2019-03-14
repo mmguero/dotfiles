@@ -54,15 +54,19 @@ elif grep -q Microsoft /proc/version; then
   alias open='explorer.exe'
 else
   export LINUX=0
-  alias open='xdg-open'
+  if [[ "$(xdg-mime query default inode/directory)" == "thunar.desktop" ]]; then
+    alias open="XDG_CURRENT_DESKTOP='XFCE' xdg-open"
+  else
+    alias open="xdg-open"
+  fi
 fi
 
 function o() {
   if [ $# -eq 0 ]; then
-    open .;
+    open .
   else
-    open "$@";
-  fi;
+    open "$@"
+  fi
 }
 
 ###############################################################################
