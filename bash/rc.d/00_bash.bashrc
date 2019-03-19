@@ -53,8 +53,9 @@ elif grep -q Microsoft /proc/version; then
   export LC_WINDOWS10=$WINDOWS10
   alias open='explorer.exe'
 else
+  shopt -s nocasematch
   export LINUX=0
-  if [[ "$(xdg-mime query default inode/directory)" == "thunar.desktop" ]]; then
+  if [[ "$(xdg-mime query default inode/directory)" =~ "thunar" ]]; then
     alias open="XDG_CURRENT_DESKTOP='XFCE' xdg-open"
   else
     alias open="xdg-open"
