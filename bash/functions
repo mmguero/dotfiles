@@ -628,6 +628,36 @@ function cpuuse() {
 }
 
 ########################################################################
+# misc. shell/tmux/etc
+########################################################################
+function tmux() {
+  TMUX="$(which tmux)"
+
+  # old habits die hard, make "screen -l" and "screen -r" work the way I want them to for tmux
+
+  if [ "$#" -eq 1 ] && ([ "$1" = "-list" ] || [ "$1" = "-l" ]); then
+    shift
+    "$TMUX" ls
+
+  elif ([ "$#" -eq 1 ] || [ "$#" -ge 2 ]) && [ "$1" = "-r" ]; then
+    shift
+    if [ "$#" -eq 0 ]; then
+      "$TMUX" attach
+    else
+      SID="$1"; shift
+      "$TMUX" attach -t "$SID" "$@"
+    fi
+
+  else
+    "$TMUX" "$@"
+  fi
+}
+
+function screen() {
+  tmux "$@"
+}
+
+########################################################################
 # helper functions for docker
 ########################################################################
 

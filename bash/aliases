@@ -64,8 +64,6 @@ alias dmesg='dmesg -wHx'
 alias tran='trans --brief'
 alias neo='neofetch'
 alias multibootusb='sudo multibootusb'
-alias screen='tmux attach'
-alias tmux='tmux attach'
 
 #json/msgpack/xml/etc
 alias jsontool='python3 -mjson.tool'
