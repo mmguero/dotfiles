@@ -642,7 +642,7 @@ function tmux() {
   elif ([ "$#" -eq 1 ] || [ "$#" -ge 2 ]) && [ "$1" = "-r" ]; then
     shift
     if [ "$#" -eq 0 ]; then
-      "$TMUX" attach
+      "$TMUX" ls >/dev/null 2>&1 && "$TMUX" attach || echo "No tmux sessions found"
     else
       SID="$1"; shift
       "$TMUX" attach -t "$SID" "$@"
