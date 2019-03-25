@@ -536,6 +536,19 @@ function urldecode() {
     printf '%b' "${url_encoded//%/\\x}"
 }
 
+function ddisousb() {
+  if [ "$1" ] && [[ -r "$1" ]] ; then
+    if [ "$2" ] && [[ -r "$2" ]] ; then
+      echo "dd if=\"$1\" of=\"$2\" bs=4M status=progress oflag=sync"
+      dd if="$1" of="$2" bs=4M status=progress oflag=sync
+    else
+      echo "No destination device specified">&2
+    fi
+  else
+    echo "No iso file specified">&2
+  fi
+}
+
 ########################################################################
 # system
 ########################################################################
