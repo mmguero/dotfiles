@@ -844,10 +844,23 @@ function lpibuild() {
 # things I want to nohup
 ########################################################################
 function sublime() {
-  nohup "/opt/sublime_text/sublime_text" $@ </dev/null >/dev/null 2>&1 &
+  nohup "/opt/sublime_text/sublime_text" "$@" </dev/null >/dev/null 2>&1 &
 }
+
 function subl() {
-  nohup "/opt/sublime_text/sublime_text" $@ </dev/null >/dev/null 2>&1 &
+  sublime "$@"
+}
+
+function kate() {
+  sublime "$@"
+}
+
+function edit() {
+  sublime "$@"
+}
+
+function gedit() {
+  sublime "$@"
 }
 
 function rdp() {
