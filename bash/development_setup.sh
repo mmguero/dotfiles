@@ -328,6 +328,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       entrypoint2 \
       git+git://github.com/badele/gitcheck.git \
       git-up \
+      namedlist \
       numpy \
       ordered-set \
       pandas \
