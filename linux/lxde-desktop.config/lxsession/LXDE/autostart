@@ -1,0 +1,6 @@
+@lxpanel --profile LXDE
+@thunar --daemon
+@xfdesktop
+@xscreensaver -no-splash
+@pcloud
+@/home/tlacuache/bin/keepassxc_delay.sh
