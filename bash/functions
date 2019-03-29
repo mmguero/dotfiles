@@ -846,21 +846,8 @@ function lpibuild() {
 function sublime() {
   nohup "/opt/sublime_text/sublime_text" $@ </dev/null >/dev/null 2>&1 &
 }
-
 function subl() {
-  sublime "$@"
-}
-
-function kate() {
-  sublime "$@"
-}
-
-function edit() {
-  sublime "$@"
-}
-
-function gedit() {
-  sublime "$@"
+  nohup "/opt/sublime_text/sublime_text" $@ </dev/null >/dev/null 2>&1 &
 }
 
 function rdp() {
