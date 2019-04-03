@@ -40,6 +40,10 @@ function taildiff () {
   diff -bwBy --suppress-common-lines <(head -n $RIGHT_LINES "$LEFT_FILE") <(head -n $RIGHT_LINES "$RIGHT_FILE")
 }
 
+function lin () {
+  sed -n $1p
+}
+
 function fs() {
   if du -b /dev/null > /dev/null 2>&1; then
     local arg=-sbh;
@@ -51,10 +55,6 @@ function fs() {
   else
     du $arg .[^.]* ./*;
   fi;
-}
-
-function lin () {
-  sed -n $1p
 }
 
 function fsize () {
@@ -99,17 +99,15 @@ function ytsel () {
   youtube-dl -o - "$(xsel)" | mpv -
 }
 
+function pytv() {
+  youtube-dl -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -
+}
+
 function pyt() {
   youtube-dl -f bestaudio -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -vo null /dev/fd/3 3<&0 </dev/tty
 }
 
 function ytmp3() {
-  # old way
-  #youtube-dl -f bestaudio -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -vo null -ao pcm:fast:file="$1.wav" /dev/fd/3 3<&0 </dev/tty
-  #ffmpeg -i "$1.wav" -codec:a libmp3lame -qscale:a 2 "$1.mp3"
-  #rm "$1.wav"
-
-  # automatic way
   search="$1"
   if [[ "$search" =~ ^http ]]
   then
@@ -117,10 +115,6 @@ function ytmp3() {
   else
     youtube-dl -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
   fi
-}
-
-function pytv() {
-  youtube-dl -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -
 }
 
 function ytsearch() {
@@ -265,7 +259,7 @@ function fname() { find . -iname "*$@*"; }
 ########################################################################
 # examine running processes
 ########################################################################
-function auxer() {
+function aux() {
   ps aux | grep -i "$(echo "$1" | sed "s/^\(.\)\(.*$\)/\[\1\]\2/")"
 }
 
@@ -447,24 +441,7 @@ function parse_git_branch ()
   fi
 }
 
-function lfsfix ()
-{
-  if [ "$1" ]
-  then
-    LFS_FILE="$1"
-  elif [ -f ".lfs" ]
-  then
-    LFS_FILE=".lfs"
-  fi
-
-  if [ -f "$LFS_FILE" ]
-  then
-    echo "Fixing \"$LFS_FILE\""
-    perl -p -i -e "s/'(\w\w+)'/\$1/g" $LFS_FILE
-  fi
-}
-
-get_latest_release () {
+git_latest_release () {
   if [ "$1" ]; then
     curl --silent "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
       grep '"tag_name":' |                                            # Get tag line
@@ -534,19 +511,6 @@ function urldecode() {
 
     local url_encoded="${1//+/ }"
     printf '%b' "${url_encoded//%/\\x}"
-}
-
-function ddisousb() {
-  if [ "$1" ] && [[ -r "$1" ]] ; then
-    if [ "$2" ] && [[ -r "$2" ]] ; then
-      echo "dd if=\"$1\" of=\"$2\" bs=4M status=progress oflag=sync"
-      dd if="$1" of="$2" bs=4M status=progress oflag=sync
-    else
-      echo "No destination device specified">&2
-    fi
-  else
-    echo "No iso file specified">&2
-  fi
 }
 
 ########################################################################
@@ -638,6 +602,23 @@ function cpuuse() {
    { cat /proc/stat; sleep "$SLEEPSEC"; cat /proc/stat; } | \
       awk '/^cpu / {usr=$2-usr; sys=$4-sys; idle=$5-idle; iow=$6-iow} \
       END {total=usr+sys+idle+iow; printf "%.2f\n", (total-idle)*100/total}'
+}
+
+function lsofpwd() {
+  lsof -u "$USER" -a +D "$(pwd)" -a -d 0-65535 2>/dev/null | tail -n +2 | awk '{print $9}' | sort -u
+}
+
+function ddisousb() {
+  if [ "$1" ] && [[ -r "$1" ]] ; then
+    if [ "$2" ] && [[ -r "$2" ]] ; then
+      echo "dd if=\"$1\" of=\"$2\" bs=4M status=progress oflag=sync"
+      dd if="$1" of="$2" bs=4M status=progress oflag=sync
+    else
+      echo "No destination device specified">&2
+    fi
+  else
+    echo "No iso file specified">&2
+  fi
 }
 
 ########################################################################
@@ -737,12 +718,6 @@ alias dis="docker images | tail -n +2 | cols 1 2 | sed \"s/ /:/\""
 # Get container IP
 alias dip="docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
 
-# Run deamonized container, e.g., $dkd base /bin/echo hello
-alias dkd="docker run -d -P"
-
-# Run new interactive container, e.g., $dki base /bin/bash
-alias dki="docker run -i -t -P"
-
 # Execute in existing interactive container, e.g., $dex base /bin/bash
 alias dex="docker exec -i -t"
 
@@ -759,10 +734,6 @@ function dockup() {
 function dxl() {
   CONTAINER=$(docker ps -l -q)
   docker exec -i -t $CONTAINER "$@"
-}
-
-function dxq() {
-  dxl nquery_ssl.sh -q "$@"
 }
 
 # list virtual networks
@@ -793,51 +764,8 @@ function dock2go() {
   ssh-copy-id -i $HOME/.ssh/id_rsa.pub -p 22 dockerx@$IP
 }
 
-function ffmdock() {
-  if [ "$1" ]
-  then
-    MEDIADIR=$(dirname "$1")
-  else
-    MEDIADIR=$(pwd)
-  fi
-  docker run -t -i -P --rm --entrypoint='bash' \
-    -e HISTFILE=/tmp/.bash_history \
-    -v $DOCKER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z \
-    -v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z \
-    -v $DOCKER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z \
-    -v $DOCKER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z \
-    -v $MEDIADIR:/host:rw,Z \
-    jrottenberg/ffmpeg:latest
-}
-
 function dregls () {
   curl -k -X GET "https://"$1"/v2/_catalog"
-}
-
-########################################################################
-# x2go
-########################################################################
-function x2go-ls () {
-  grep "^name =" $HOME/.x2goclient/sessions | sed "s/^name = //"
-}
-
-function x2go () {
-  nohup pyhoca-cli -k $HOME/.ssh/id_rsa --session-profile "$@" </dev/null >/dev/null 2>&1 &
-}
-
-function x2go-resume () {
-  nohup pyhoca-cli -k $HOME/.ssh/id_rsa --session-profile "$@" -R NEWEST </dev/null >/dev/null 2>&1 &
-}
-
-function x2go-session-ls () {
-  pyhoca-cli -k $HOME/.ssh/id_rsa --session-profile "$@" -L
-}
-
-########################################################################
-# development stuff
-########################################################################
-function lpibuild() {
-  lpibuild.pl "$@" 2>&1 | sed '/^$/N;/^\n$/D'
 }
 
 ########################################################################
@@ -851,40 +779,8 @@ function subl() {
   sublime "$@"
 }
 
-function kate() {
-  sublime "$@"
-}
-
-function edit() {
-  sublime "$@"
-}
-
-function gedit() {
-  sublime "$@"
-}
-
 function rdp() {
   nohup /usr/bin/rdesktop -g 1600x1024 -z -x m -P -r sound:off -0 $@ </dev/null >/dev/null 2>&1 &
-}
-
-function xrdp() {
-  if [ "$1" ]
-  then
-    USER="$1"
-  fi
-  if [ "$2" ]
-  then
-    SERVER="$2"
-  else
-    SERVER="alien.local.lan"
-  fi
-  if [ "$3" ]
-  then
-    PORT="$3"
-  else
-    PORT="3389"
-  fi
-  xfreerdp /v:$SERVER:$PORT /u:"$USER" /cert-ignore /w:1300 /h:1024 +clipboard -wallpaper -themes 2>/dev/null
 }
 
 function regexxer() {

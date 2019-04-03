@@ -41,7 +41,7 @@
   # new branch
   nb = !sh -c 'git checkout -b $1 && git push -u origin $1' -
   # run gitcheck script
-  check = !gitcheck -a -v -r -l '^(database|docs|pkgs)$'
+  check = !gitcheck -v -r -a
   # show modified files in last commit
   last = !git ll -1
   # list commits not yet pushed
@@ -102,6 +102,8 @@
   stat = status -uno
   # update submodules recursively
   sub = submodule update --recursive
+  # move all submodule heads
+  submove = submodule foreach --recursive git up
   # reset the previous commit, but keeps all the changes from that commit in the working directory
   undo = reset HEAD~1 --mixed
   up = "!bash -c '((git pull --rebase --autostash --recurse-submodules=yes --all) 3>&1 1>&2 2>&3 | grep -v \"to the list of known hosts\") 3>&1 1>&2 2>&3'"

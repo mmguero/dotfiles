@@ -525,6 +525,7 @@ if [ $MACOS ]; then
     brew install psgrep
     brew install psutils
     brew install screen
+    brew install tmux
     brew install tree
     brew install unrar
     brew install vim
@@ -632,7 +633,6 @@ elif [ $LINUX ]; then
       rar
       rename
       rsync
-      screen
       sed
       socat
       sshfs
@@ -643,8 +643,10 @@ elif [ $LINUX ]; then
       tcpdump
       testdisk
       time
+      tmux
       tofrodos
       traceroute
+      tree
       tshark
       tzdata
       ufw
