@@ -1,0 +1,5 @@
+1. Download the Office Deployment Tool from microsoft.com
+2. Run the tool to extract the setup.exe
+3. .\setup.exe /configure config.xml
+4. ???
+5. Profit!
