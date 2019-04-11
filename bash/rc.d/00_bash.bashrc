@@ -55,7 +55,7 @@ elif grep -q Microsoft /proc/version; then
 else
   shopt -s nocasematch
   export LINUX=0
-  if [[ "$(xdg-mime query default inode/directory)" =~ "thunar" ]]; then
+  if [[ "$(xdg-mime query default inode/directory 2>/dev/null)" =~ "thunar" ]]; then
     alias open="XDG_CURRENT_DESKTOP='XFCE' xdg-open"
   else
     alias open="xdg-open"
