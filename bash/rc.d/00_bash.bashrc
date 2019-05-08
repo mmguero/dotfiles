@@ -66,7 +66,9 @@ function o() {
   if [ $# -eq 0 ]; then
     open .
   else
-    open "$@"
+    for FILE in "$@"; do
+      open "$FILE"
+    done
   fi
 }
 
