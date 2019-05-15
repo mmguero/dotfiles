@@ -462,6 +462,12 @@ function cmdfu () {
   curl "https://www.commandlinefu.com/commands/matching/$@/$(echo -n $@ | openssl base64)/plaintext";
 }
 
+function cheat () {
+  for var in "$@"; do
+    curl cht.sh/"$var"
+  done
+}
+
 function goog() {
   search=""
   for term in $*; do
