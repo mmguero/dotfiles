@@ -1129,8 +1129,8 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
     [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
 
     if [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
-      while IFS= read -d $'\0' -r file; do
-        echo "[$file];"
+      while IFS= read -d $'\0' -r CONFDIR; do
+        rm -vf "~/.config/$(basename "$CONFDIR")" && ln -vrs "$CONFDIR" ~/.config/
       done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
     fi
   fi
