@@ -385,7 +385,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       python-magic \
       pyunpack \
       pyyaml \
-      requests \
+      requests\[security\] \
       scapy \
       scipy \
       urllib3
@@ -932,21 +932,25 @@ EOT
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
     DEBIAN_PACKAGE_LIST=(
-      audacity
       audacious
+      audacity
+      ffmpeg
       gimp
       gimp-plugin-registry
       gimp-texturize
-      imagemagick
-      recordmydesktop
       gtk-recordmydesktop
-      ffmpeg
+      imagemagick
       mpv
       pithos
+      recordmydesktop
+      wodim
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
+    if pip -V >/dev/null 2>&1 ; then
+      pip install -U youtube-dl
+    fi
   fi
 
   unset CONFIRMATION
@@ -1067,11 +1071,14 @@ EOT
     read -p "Add $SCRIPT_USER to godlike groups [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      sudo groupadd fuse
+      sudo groupadd cryptkeeper
       POWER_GROUPS=(
         adm
         bluetooth
         audio
         cdrom
+        cryptkeeper
         disk
         docker
         fuse
@@ -1083,11 +1090,24 @@ EOT
         sudo
         vboxusers
         video
-        wireshark
       )
       for i in ${POWER_GROUPS[@]}; do
         $SUDO_CMD usermod -a -G "$i" "$SCRIPT_USER"
       done
+    fi
+    unset CONFIRMATION
+    read -p "Setup some additional sudoers stuff for groups? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD tee /etc/sudoers.d/power_groups > /dev/null <<'EOT'
+%cdrom ALL=(root) NOPASSWD: /usr/bin/readom
+%cdrom ALL=(root) NOPASSWD: /usr/bin/wodim
+%disk ALL=(root) NOPASSWD: /bin/mount
+%disk ALL=(root) NOPASSWD: /bin/umount
+%netdev ALL=(root) NOPASSWD: /usr/sbin/openvpn
+%cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
+EOT
+      $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
     fi
   fi
 
