@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export DEBIAN_FRONTEND=noninteractive
+
 ENV_LIST=(
   pyenv
   rbenv
@@ -75,7 +77,6 @@ elif grep -q Microsoft /proc/version; then
 
 else
   export LINUX=0
-  export DEBIAN_FRONTEND=noninteractive
   if command -v lsb_release >/dev/null 2>&1 ; then
     LINUX_DISTRO="$(lsb_release -is)"
     LINUX_RELEASE="$(lsb_release -cs)"
@@ -124,7 +125,7 @@ function InstallCurlAndGit {
       brew install git # since Jaguar curl is already installed in MacOS
     elif [ $LINUX ]; then
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
-        $SUDO_CMD apt-get install -y curl git
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git
     fi
   fi
 }
@@ -273,8 +274,9 @@ EnvSetup
 # python
 if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
   if [ $LINUX ]; then
-    $SUDO_CMD apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
-                                 wget llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev
+    DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+      make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+      wget llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev
   fi
   for ver in "${PYTHON_VERSIONS[@]}"; do
     pyenv install "$ver"
@@ -457,12 +459,12 @@ elif [ $LINUX ]; then
 
       InstallCurlAndGit
 
-      $SUDO_CMD apt-get install -y \
-                         apt-transport-https \
-                         ca-certificates \
-                         curl \
-                         gnupg2 \
-                         software-properties-common
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+                                                 apt-transport-https \
+                                                 ca-certificates \
+                                                 curl \
+                                                 gnupg2 \
+                                                 software-properties-common
 
       curl -fsSL https://download.docker.com/linux/debian/gpg | $SUDO_CMD apt-key add -
 
@@ -481,7 +483,7 @@ elif [ $LINUX ]; then
       fi
 
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1
-      $SUDO_CMD apt-get install -y docker-ce
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y docker-ce
 
       if [[ "$SCRIPT_USER" != "root" ]]; then
         echo "Adding \"$SCRIPT_USER\" to group \"docker\"..."
@@ -591,7 +593,7 @@ elif [ $LINUX ]; then
       read -p "Install $VBOX_PACKAGE_NAME [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        $SUDO_CMD apt-get install -y dkms module-assistant linux-headers-$(uname -r) "$VBOX_PACKAGE_NAME"
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y dkms module-assistant linux-headers-$(uname -r) "$VBOX_PACKAGE_NAME"
         if [[ "$SCRIPT_USER" != "root" ]]; then
           echo "Adding \"$SCRIPT_USER\" to group \"vboxusers\"..."
           $SUDO_CMD usermod -a -G vboxusers "$SCRIPT_USER"
@@ -614,7 +616,7 @@ elif [ $LINUX ]; then
       unset CONFIRMATION
       read -p "Install vagrant via apt-get instead [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
-      [[ $CONFIRMATION =~ ^[Yy] ]] && $SUDO_CMD apt-get install -y vagrant
+      [[ $CONFIRMATION =~ ^[Yy] ]] && DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y vagrant
     fi
   fi # check VBoxManage is not in path to see if some form of virtualbox is now installed
 
@@ -810,6 +812,7 @@ elif [ $LINUX ]; then
       iproute2
       less
       linux-headers-$(uname -r)
+      localepurge
       lshw
       lsof
       make
@@ -842,8 +845,6 @@ elif [ $LINUX ]; then
       sshfs
       ssldump
       strace
-      subversion
-      sudo
       sysstat
       tcpdump
       testdisk
@@ -862,9 +863,14 @@ elif [ $LINUX ]; then
       whois
       zlib1g
     )
+    echo 'localepurge localepurge/nopurge multiselect en,en_US.UTF-8' | $SUDO_CMD debconf-set-selections
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-      sudo apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
+    if command -v localepurge >/dev/null 2>&1 ; then
+      dpkg-reconfigure localepurge
+      localepurge
+    fi
   fi
 
   unset CONFIRMATION
@@ -891,7 +897,7 @@ elif [ $LINUX ]; then
       x2goclient
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-      sudo apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
   fi
 
@@ -914,7 +920,7 @@ elif [ $LINUX ]; then
       pithos
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-      sudo apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
   fi
 
