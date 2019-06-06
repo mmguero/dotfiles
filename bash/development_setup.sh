@@ -601,10 +601,12 @@ elif [ $LINUX ]; then
         fi
       fi
     fi
+  else
+    echo "\"virtualbox\" is already installed!"
   fi # check VBoxManage is not in path to see if some form of virtualbox is already installed
 
   # install Vagrant only if vagrant is not yet installed and virtualbox is now installed
-  if ! command -v vagrant >/dev/null 2>&1 && command -v VBoxManage >/dev/null 2>&1 ; then
+  if ! command -v vagrant >/dev/null 2>&1; then
     unset CONFIRMATION
     read -p "Attempt to download and install latest version of Vagrant from releases.hashicorp.com [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -618,7 +620,9 @@ elif [ $LINUX ]; then
       CONFIRMATION=${CONFIRMATION:-Y}
       [[ $CONFIRMATION =~ ^[Yy] ]] && DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y vagrant
     fi
-  fi # check VBoxManage is not in path to see if some form of virtualbox is now installed
+  else
+    echo "\"vagrant\" is already installed!"
+  fi # check vagrant is already installed
 
 fi # MacOS vs. Linux for virtualbox/vagrant
 
