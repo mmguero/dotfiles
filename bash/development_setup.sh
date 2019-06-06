@@ -772,12 +772,15 @@ elif [ $LINUX ]; then
       cloc
       coreutils
       cmake
+      clamav-freshclam
+      clamav
       cpio
       cryptmount
       cryptsetup
       curl
       dialog
       diffutils
+      dnsutils
       eject
       ethtool
       exfat-fuse
@@ -809,6 +812,7 @@ elif [ $LINUX ]; then
       netsniff-ng
       netcat-traditional
       ngrep
+      ninja-build
       ntfs-3g
       openssh-client
       openresolv
@@ -830,6 +834,7 @@ elif [ $LINUX ]; then
       sed
       socat
       sshfs
+      ssldump
       strace
       subversion
       sudo
@@ -848,6 +853,7 @@ elif [ $LINUX ]; then
       unzip
       vim-tiny
       wget
+      whois
       zlib1g
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
@@ -876,6 +882,7 @@ elif [ $LINUX ]; then
       xxdiff
       xxdiff-scripts
       xdiskusage
+      x2goclient
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       sudo apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
@@ -893,6 +900,7 @@ elif [ $LINUX ]; then
       gimp
       gimp-plugin-registry
       gimp-texturize
+      imagemagick
       recordmydesktop
       gtk-recordmydesktop
       ffmpeg
