@@ -1009,7 +1009,6 @@ EOT
       dnsutils
       dsniff
       ethtool
-      fusesmb
       iproute2
       mosh
       ncat
