@@ -892,19 +892,20 @@ EOT
       rm -f /tmp/localepurge-preseed.cfg
     fi
     $SUDO_CMD dpkg-reconfigure --frontend=noninteractive wireshark-common
-    $SUDO_CMD tee -a /etc/pmount.allow > /dev/null <<'EOT'
-
-    # mountpoints for luks volumes
-    /dev/mapper/tc1
-    /dev/mapper/tc2
-    /dev/mapper/tc3
-    /dev/mapper/tc4
-    /dev/mapper/tc5
-    /dev/mapper/tc6
-    /dev/mapper/tc7
-    /dev/mapper/tc8
-    /dev/mapper/tc9
+    if ! grep -q mapper /etc/pmount.allow; then
+      $SUDO_CMD tee -a /etc/pmount.allow > /dev/null <<'EOT'
+# mountpoints for luks volumes
+/dev/mapper/tc1
+/dev/mapper/tc2
+/dev/mapper/tc3
+/dev/mapper/tc4
+/dev/mapper/tc5
+/dev/mapper/tc6
+/dev/mapper/tc7
+/dev/mapper/tc8
+/dev/mapper/tc9
 EOT
+    fi
   fi
 
   unset CONFIRMATION
