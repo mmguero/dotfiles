@@ -109,8 +109,8 @@ else
     echo "This command must be run as root, or \"sudo\" must be available (in case packages must be installed)"
     exit 1
   fi
-  if ! command -v apt-get >/dev/null 2>&1 ; then
-    echo "This command only target Debian-based Linux distributions"
+  if ! dpkg -s apt >/dev/null 2>&1; then
+    echo "This command only target Linux distributions that use apt/apt-get"
     exit 1
   fi
 fi
@@ -930,7 +930,7 @@ EOT
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
-    if command -v localepurge >/dev/null 2>&1 ; then
+    if dpkg -s localepurge >/dev/null 2>&1 ; then
       $SUDO_CMD dpkg-reconfigure --frontend=noninteractive localepurge
       $SUDO_CMD localepurge
       rm -f /tmp/localepurge-preseed.cfg
@@ -1040,7 +1040,7 @@ Host *
 EOT
     fi
 
-    command -v thunar >/dev/null 2>&1 && xdg-mime default Thunar-folder-handler.desktop inode/directory application/x-gnome-saved-search
+    dpkg -s thunar >/dev/null 2>&1 && xdg-mime default Thunar-folder-handler.desktop inode/directory application/x-gnome-saved-search
   fi
 
   unset CONFIRMATION
