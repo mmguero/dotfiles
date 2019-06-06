@@ -1128,12 +1128,10 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
     [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
     [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
 
-    if [[ "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
-      pushd "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config >/dev/null 2>&1
+    if [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
       while IFS= read -d $'\0' -r file; do
         echo "[$file];"
-      done < <(find /path/to/dir/ -mindepth 1 -maxdepth 1 -type d -print0)
+      done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
     fi
-    popd >/dev/null 2>&1
   fi
 fi
