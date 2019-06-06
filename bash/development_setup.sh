@@ -1040,6 +1040,7 @@ EOT
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
     DEBIAN_PACKAGE_LIST=(
+      forensics-all
       aesfix
       aeskeyfind
       afflib-tools
