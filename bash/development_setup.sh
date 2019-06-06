@@ -894,6 +894,7 @@ EOT
     $SUDO_CMD dpkg-reconfigure --frontend=noninteractive wireshark-common
     if ! grep -q mapper /etc/pmount.allow; then
       $SUDO_CMD tee -a /etc/pmount.allow > /dev/null <<'EOT'
+
 # mountpoints for luks volumes
 /dev/mapper/tc1
 /dev/mapper/tc2
