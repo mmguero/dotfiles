@@ -422,6 +422,7 @@ if [[ -n $LINUX ]] && [[ -n $LINUX_RELEASE ]]; then
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       $SUDO_CMD cp -iv "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE"/* /etc/apt/sources.list.d/
+      # pull GPG keys from keyserver.ubuntu.com and update the apt cache
       $SUDO_CMD apt-get update 2>&1 | grep -Po "NO_PUBKEY\s*\w+" | awk '{print $2}' | sort -u | xargs -r -l $SUDO_CMD apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1
     fi
@@ -1117,7 +1118,7 @@ EOT
 
   if dpkg -s ufw >/dev/null 2>&1; then
     unset CONFIRMATION
-    read -p "Enable/configure UFW (uncomplicated firewall)? " CONFIRMATION
+    read -p "Enable/configure UFW (uncomplicated firewall) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       $SUDO_CMD ufw enable
@@ -1144,6 +1145,66 @@ EOT
       done
     fi # ufw confirmation
   fi # ufw installed check
+
+  if [[ -r /etc/sysctl.conf ]] && ! grep -q swappiness /etc/sysctl.conf; then
+    unset CONFIRMATION
+    read -p "Tweak sysctl.conf (swap, NIC buffers, handles, etc.) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
+
+# allow dmg reading
+kernel.dmesg_restrict=0
+
+# the maximum number of open file handles
+fs.file-max=65536
+
+# the maximum number of user inotify watches
+fs.inotify.max_user_watches=131072
+
+# the maximum number of memory map areas a process may have
+vm.max_map_count=262144
+
+# the maximum number of incoming connections
+net.core.somaxconn=65535
+
+# decrease "swappiness" (swapping out runtime memory vs. dropping pages)
+vm.swappiness=1
+
+# the % of system memory fillable with "dirty" pages before flushing
+vm.dirty_background_ratio=40
+
+# maximum % of dirty system memory before committing everything
+vm.dirty_ratio=80
+
+# network buffer sizes
+net.core.netdev_max_backlog=250000
+net.core.optmem_max=33554432
+net.core.rmem_default=425984
+net.core.rmem_max=33554432
+net.core.somaxconn=65535
+net.core.wmem_default=425984
+net.core.wmem_max=33554432
+net.ipv4.tcp_rmem=10240 425984 33554432
+net.ipv4.tcp_wmem=10240 425984 33554432
+net.ipv4.udp_mem=10240 425984 33554432
+EOT
+    fi # sysctl confirmation
+  fi # sysctl check
+
+  if [[ ! -f /etc/security/limits.d/limits.conf ]]; then
+    unset CONFIRMATION
+    read -p "Increase limits for file handles and memlock [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      SUDO_CMD tee /etc/security/limits.d/limits.conf > /dev/null <<'EOT'
+* soft nofile 65535
+* hard nofile 65535
+* soft memlock unlimited
+* hard memlock unlimited
+EOT
+    fi # limits.conf confirmation
+  fi # limits.conf check
 
 fi # linux
 
