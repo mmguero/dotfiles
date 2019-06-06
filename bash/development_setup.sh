@@ -769,11 +769,11 @@ elif [ $LINUX ]; then
       cgdb
       checkinstall
       cifs-utils
-      cloc
-      coreutils
-      cmake
-      clamav-freshclam
       clamav
+      clamav-freshclam
+      cloc
+      cmake
+      coreutils
       cpio
       cryptmount
       cryptsetup
@@ -788,6 +788,12 @@ elif [ $LINUX ]; then
       fdisk
       file
       findutils
+      firmware-amd-graphics
+      firmware-iwlwifi
+      firmware-linux
+      firmware-linux-free
+      firmware-linux-nonfree
+      firmware-misc-nonfree
       flex
       fonts-hack
       fonts-hack-ttf
@@ -803,19 +809,20 @@ elif [ $LINUX ]; then
       htop
       iproute2
       less
+      linux-headers-$(uname -r)
       localepurge
       lshw
       lsof
       make
       moreutils
       mosh
-      netsniff-ng
       netcat-traditional
+      netsniff-ng
       ngrep
       ninja-build
       ntfs-3g
-      openssh-client
       openresolv
+      openssh-client
       openvpn
       p7zip
       p7zip-full
