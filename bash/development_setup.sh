@@ -872,7 +872,7 @@ elif [ $LINUX ]; then
 
     cat <<EOT >> /tmp/localepurge-preseed.cfg
 localepurge localepurge/nopurge multiselect en, en_US, en_us.UTF-8, C.UTF-8
-localepurge localepurge/use-dpkg-feature boolean false
+localepurge localepurge/use-dpkg-feature boolean true
 localepurge localepurge/none_selected boolean false
 localepurge localepurge/verbose boolean false
 localepurge localepurge/dontbothernew boolean false
