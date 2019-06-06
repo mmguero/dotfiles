@@ -895,10 +895,14 @@ elif [ $LINUX ]; then
       regexxer
       sublime-text
       tilix
+      thunar
+      thunar-archive-plugin
+      thunar-volman
       wireshark
       xxdiff
       xxdiff-scripts
       xdiskusage
+      xfdesktop4
       x2goclient
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
