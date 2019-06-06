@@ -1125,6 +1125,7 @@ EOT
         https
         mosh
         nfs
+        ntp
         ssh
         24800/tcp
         28400/tcp
