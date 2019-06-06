@@ -108,6 +108,10 @@ else
     echo "This command must be run as root, or \"sudo\" must be available (in case packages must be installed)"
     exit 1
   fi
+  if ! command -v apt-get >/dev/null 2>&1 ; then
+    echo "This command only target Debian-based Linux distributions"
+    exit 1
+  fi
 fi
 
 # convenience function for installing git for cloning/downloading
@@ -405,7 +409,7 @@ if [[ -n $LINUX ]] && [[ -n $LINUX_RELEASE ]]; then
     read -p "Enable contrib and non-free for $LINUX_RELEASE in /etc/apt/sources.list [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      sed -i "s/$LINUX_RELEASE main/$LINUX_RELEASE main contrib non-free/" /etc/apt/sources.list
+      $SUDO_CMD sed -i "s/$LINUX_RELEASE main/$LINUX_RELEASE main contrib non-free/" /etc/apt/sources.list
     fi
   fi
 
@@ -498,7 +502,7 @@ elif [ $LINUX ]; then
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       if pip -V >/dev/null 2>&1 ; then
         echo "Installing Docker Compose via pip..."
-        pip install docker-compose
+        pip install -U docker-compose
         if ! docker-compose version >/dev/null 2>&1 ; then
           echo "Installing docker-compose failed"
           exit 1
@@ -519,6 +523,123 @@ elif [ $LINUX ]; then
   fi # docker-compose install check
 
 fi # MacOS vs. Linux for docker
+
+################################################################################
+# virtualbox/vagrant
+################################################################################
+if [ $MACOS ]; then
+
+  # install virtualbox, if needed
+  if ! brew cask ls --versions virtualbox >/dev/null 2>&1 ; then
+    unset CONFIRMATION
+    read -p "\"virtualbox\" cask is not installed, attempt to install virtualbox via brew [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      echo "Installing virtualbox..."
+      brew cask install virtualbox
+      echo "Installed virtualbox."
+    fi # virtualbox install confirmation check
+  else
+    echo "\"virtualbox\" is already installed!"
+  fi # virtualbox install check
+
+  # install Vagrant only if vagrant is not yet installed and virtualbox is now installed
+  if ! brew cask ls --versions vagrant >/dev/null 2>&1 && brew cask ls --versions virtualbox >/dev/null 2>&1; then
+    unset CONFIRMATION
+    read -p "\"vagrant\" cask is not installed, attempt to install vagrant via brew [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      echo "Installing vagrant..."
+      brew cask install vagrant
+      echo "Installed vagrant."
+    fi # vagrant install confirmation check
+  fi
+
+  # install vagrant-manager only if vagrant is installed
+  if ! brew cask ls --versions vagrant-manager >/dev/null 2>&1 && brew cask ls --versions vagrant >/dev/null 2>&1; then
+    unset CONFIRMATION
+    read -p "\"vagrant-manager\" cask is not installed, attempt to install vagrant-manager via brew [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      echo "Installing vagrant-manager..."
+      brew cask install vagrant-manager
+      echo "Installed vagrant-manager."
+    fi # vagrant-manager install confirmation check
+  fi
+
+elif [ $LINUX ]; then
+
+  # virtualbox (if not already installed)
+  $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+
+  if ! command -v VBoxManage >/dev/null 2>&1 ; then
+    unset VBOX_PACKAGE_NAME
+    VBOX_PACKAGE_NAMES=(
+      virtualbox-6.0
+      virtualbox
+      virtualbox-5.2
+    )
+    for i in ${VBOX_PACKAGE_NAMES[@]}; do
+      VBOX_CANDIDATE="$(apt-cache policy "$i" | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
+      if [[ -n $VBOX_CANDIDATE ]]; then
+        VBOX_PACKAGE_NAME=$i
+        break
+      fi
+    done
+    if [[ -n $VBOX_PACKAGE_NAME ]]; then
+      unset CONFIRMATION
+      read -p "Install $VBOX_PACKAGE_NAME [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD apt-get install dkms module-assistant linux-headers-$(uname -r) "$VBOX_PACKAGE_NAME"
+        if [[ "$SCRIPT_USER" != "root" ]]; then
+          echo "Adding \"$SCRIPT_USER\" to group \"vboxusers\"..."
+          $SUDO_CMD usermod -a -G vboxusers "$SCRIPT_USER"
+          echo "You will need to log out and log back in for this to take effect"
+        fi
+      fi
+    fi
+  fi # check VBoxManage is not in path to see if some form of virtualbox is already installed
+
+  # install Vagrant only if vagrant is not yet installed and virtualbox is now installed
+  if ! command -v vagrant >/dev/null 2>&1 && command -v VBoxManage >/dev/null 2>&1 ; then
+    unset CONFIRMATION
+    read -p "Attempt to download and install latest version of Vagrant from releases.hashicorp.com [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      curl -o /tmp/vagrant.deb "https://releases.hashicorp.com$(curl -fsL "https://releases.hashicorp.com$(curl -fsL "https://releases.hashicorp.com/vagrant" | grep 'href="/vagrant/' | head -n 1 | grep -o '".*"' | tr -d '"' )" | grep "x86_64\.deb" | head -n 1 | grep -o 'href=".*"' | sed 's/href=//' | tr -d '"')"
+      $SUDO_CMD dpkg -i /tmp/vagrant.deb
+      rm -f /tmp/vagrant.deb
+    else
+      unset CONFIRMATION
+      read -p "Install vagrant via apt-get instead [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      [[ $CONFIRMATION =~ ^[Yy] ]] && $SUDO_CMD apt-get install vagrant
+    fi
+  fi # check VBoxManage is not in path to see if some form of virtualbox is now installed
+
+fi # MacOS vs. Linux for virtualbox/vagrant
+
+# see if we want to install vagrant plugins
+if command -v vagrant >/dev/null 2>&1; then
+  unset CONFIRMATION
+  read -p "Install/update common vagrant plugins [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    VAGRANT_PLUGINS=(
+      vagrant-reload
+      vagrant-scp
+      vagrant-sshfs
+      vagrant-vbguest
+    )
+    for i in ${VAGRANT_PLUGINS[@]}; do
+      if (( "$( vagrant plugin list | grep -c "^$i " )" == 0 )); then
+        vagrant plugin install $i
+      fi
+    done
+    vagrant plugin update all
+  fi # vagrant plugin install confirmation
+fi # check for vagrant being installed
 
 ################################################################################
 # other packages
