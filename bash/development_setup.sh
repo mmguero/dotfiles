@@ -942,9 +942,7 @@ elif [ $LINUX ]; then
 
     mkdir -p "$HOME/Desktop" "$HOME/download" "$HOME/media/music" "$HOME/media/images" "$HOME/media/video" "$HOME/tmp" "$HOME/bin"
 
-    if [ ! -f ~/.vimrc ]; then
-      echo "set nocompatible" > ~/.vimrc
-    fi
+    [ ! -f ~/.vimrc ] && echo "set nocompatible" > ~/.vimrc
 
     if [ ! -d ~/.ssh ]; then
       mkdir ~/.ssh
@@ -962,6 +960,8 @@ Host *
   ControlPath ~/.ssh/cm_socket/%r@%h:%p
 EOT
     fi
+
+    command -v thunar >/dev/null 2>&1 && xdg-mime default Thunar-folder-handler.desktop inode/directory application/x-gnome-saved-search
   fi
 
   unset CONFIRMATION
