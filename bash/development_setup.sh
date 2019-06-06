@@ -810,7 +810,6 @@ elif [ $LINUX ]; then
       iproute2
       less
       linux-headers-$(uname -r)
-      localepurge
       lshw
       lsof
       make
