@@ -1073,10 +1073,11 @@ EOT
   fi
 
   if [[ "$SCRIPT_USER" != "root" ]]; then
+
     # give unlimited, godlike power
     unset CONFIRMATION
-    read -p "Add $SCRIPT_USER to godlike groups [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
+    read -p "Add $SCRIPT_USER to godlike groups [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       sudo groupadd fuse
       sudo groupadd cryptkeeper
@@ -1101,12 +1102,14 @@ EOT
       for i in ${POWER_GROUPS[@]}; do
         $SUDO_CMD usermod -a -G "$i" "$SCRIPT_USER"
       done
-    fi
-    unset CONFIRMATION
-    read -p "Setup some additional sudoers stuff for groups [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD tee /etc/sudoers.d/power_groups > /dev/null <<'EOT'
+    fi # group add confirmation
+
+    if [[ ! -f /etc/sudoers.d/power_groups ]]; then
+      unset CONFIRMATION
+      read -p "Setup some additional sudoers stuff for groups [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD tee /etc/sudoers.d/power_groups > /dev/null <<'EOT'
 %cdrom ALL=(root) NOPASSWD: /usr/bin/readom
 %cdrom ALL=(root) NOPASSWD: /usr/bin/wodim
 %disk ALL=(root) NOPASSWD: /bin/mount
@@ -1114,8 +1117,10 @@ EOT
 %netdev ALL=(root) NOPASSWD: /usr/sbin/openvpn
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 EOT
-      $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
-    fi # confirmation on group stuff
+        $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
+      fi # confirmation on group stuff
+    fi
+
   fi # script_user is not root check
 
   if dpkg -s ufw >/dev/null 2>&1; then
@@ -1199,7 +1204,7 @@ EOT
     read -p "Increase limits for file handles and memlock [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      SUDO_CMD tee /etc/security/limits.d/limits.conf > /dev/null <<'EOT'
+      $SUDO_CMD tee /etc/security/limits.d/limits.conf > /dev/null <<'EOT'
 * soft nofile 65535
 * hard nofile 65535
 * soft memlock unlimited
