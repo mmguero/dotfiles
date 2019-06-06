@@ -422,7 +422,7 @@ if [[ -n $LINUX ]] && [[ -n $LINUX_RELEASE ]]; then
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       $SUDO_CMD cp -iv "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE"/* /etc/apt/sources.list.d/
-      $SUDO_CMD apt-get update 2>&1 | grep -Po "NO_PUBKEY\s*\w+" | awk '{print $2}' | sort -u | xargs -l $SUDO_CMD apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv
+      $SUDO_CMD apt-get update 2>&1 | grep -Po "NO_PUBKEY\s*\w+" | awk '{print $2}' | sort -u | xargs -r -l $SUDO_CMD apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1
     fi
   fi
@@ -529,8 +529,8 @@ fi # MacOS vs. Linux for docker
 
 if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   unset CONFIRMATION
-  read -p "Pull common docker images [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
+  read -p "Pull common docker images [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     DOCKER_IMAGES=(
       alpine:latest
@@ -541,7 +541,7 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
       jwilder/nginx-proxy:alpine
       ubuntu:latest
     )
-    for i in ${VAGRANT_PLUGINS[@]}; do
+    for i in ${DOCKER_IMAGES[@]}; do
       docker pull "$i"
     done
   fi # docker pull images confirmation
@@ -666,6 +666,30 @@ if command -v vagrant >/dev/null 2>&1; then
     done
     vagrant plugin update all
   fi # vagrant plugin install confirmation
+
+  unset CONFIRMATION
+  read -p "Install common vagrant boxes [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    VAGRANT_BOXES=(
+      bento/centos-7
+      bento/debian-9
+      bento/ubuntu-18.04
+      clink15/pxe
+      generic/debian10
+      generic/fedora30
+      generic/ubuntu1904
+      offensive-security/kali-linux
+    )
+    for i in ${VAGRANT_BOXES[@]}; do
+      if (( "$( vagrant box list | grep -c "^$i " )" == 0 )); then
+        vagrant box add --provider virtualbox $i
+      fi
+    done
+    vagrant box outdated --global | grep "is outdated" | awk '{print $2}' | xargs -r -l vagrant box update --provider virtualbox --box
+    vagrant box prune --provider virtualbox
+  fi # vagrant plugin install confirmation
+
 fi # check for vagrant being installed
 
 ################################################################################
