@@ -527,7 +527,7 @@ elif [ $LINUX ]; then
 
 fi # MacOS vs. Linux for docker
 
-if ! $SUDO_CMD docker info >/dev/null 2>&1 ; then
+if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   unset CONFIRMATION
   read -p "Pull common docker images [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
