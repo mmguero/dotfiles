@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# my one-stop-shopping Linux box setup.
+# tested in Debian Linux and sort-of on macOS.
+# if you are not me, this might not be what you want.
+
 export DEBIAN_FRONTEND=noninteractive
 
 ENV_LIST=(
@@ -17,25 +21,8 @@ NODEJS_VERSIONS=( 10.15.3 )
 PERL_VERSIONS=( 5.28.2 )
 DOCKER_COMPOSE_INSTALL_VERSION=( 1.24.0 )
 
-# add to .bashrc after running this script:
-
-# if [ -d ~/.anyenv ]; then
-#   export ANYENV_ROOT="$HOME/.anyenv"
-#   [[ -d $ANYENV_ROOT/bin ]] && PATH="$ANYENV_ROOT/bin:$PATH"
-#   eval "$(anyenv init -)"
-# fi
-
-# if [ $GOENV_ROOT ]; then
-#   export GOROOT="$(goenv prefix)"
-# fi
-
-# export GOPATH=$DEVEL_ROOT/gopath
-# [[ -d $GOPATH/bin ]] && PATH="$GOPATH/bin:$PATH"
-
-# if [ $PYENV_ROOT ]; then
-#   [[ -r $PYENV_ROOT/completions/pyenv.bash ]] && . $PYENV_ROOT/completions/pyenv.bash
-#   [[ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]] && eval "$(pyenv virtualenv-init -)"
-# fi
+# add contents of https://raw.githubusercontent.com/mmguero/config/master/bash/rc.d/04_envs.bashrc
+# to .bashrc after running this script (or let this script set up the symlinks for ~/.bashrc.d for you)
 
 if [ -z "$BASH_VERSION" ]; then
   echo "Wrong interpreter, please run \"$0\" with bash"
