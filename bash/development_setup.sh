@@ -1086,7 +1086,7 @@ EOT
         wireshark
       )
       for i in ${POWER_GROUPS[@]}; do
-        usermod -a -G "$i" "$SCRIPT_USER"
+        $SUDO_CMD usermod -a -G "$i" "$SCRIPT_USER"
       done
     fi
   fi
