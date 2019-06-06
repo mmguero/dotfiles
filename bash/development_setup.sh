@@ -804,6 +804,7 @@ elif [ $LINUX ]; then
       flex
       fonts-hack
       fonts-hack-ttf
+      fuse
       fuseiso
       gdb
       git
@@ -1060,4 +1061,34 @@ XDG_VIDEOS_DIR="$HOME/media/images"
 EOT
   fi
 
-fi
+  if [[ "$SCRIPT_USER" != "root" ]]; then
+    # give unlimited, godlike power
+    unset CONFIRMATION
+    read -p "Add $SCRIPT_USER to godlike groups [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      POWER_GROUPS=(
+        adm
+        bluetooth
+        audio
+        cdrom
+        disk
+        docker
+        fuse
+        lpadmin
+        netdev
+        plugdev
+        pulse-access
+        scanner
+        sudo
+        vboxusers
+        video
+        wireshark
+      )
+      for i in ${POWER_GROUPS[@]}; do
+        usermod -a -G "$i" "$SCRIPT_USER"
+      done
+    fi
+  fi
+
+fi # linux
