@@ -457,7 +457,7 @@ elif [ $LINUX ]; then
 
       InstallCurlAndGit
 
-      $SUDO_CMD apt-get install \
+      $SUDO_CMD apt-get install -y \
                          apt-transport-https \
                          ca-certificates \
                          curl \
@@ -591,7 +591,7 @@ elif [ $LINUX ]; then
       read -p "Install $VBOX_PACKAGE_NAME [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        $SUDO_CMD apt-get install dkms module-assistant linux-headers-$(uname -r) "$VBOX_PACKAGE_NAME"
+        $SUDO_CMD apt-get install -y dkms module-assistant linux-headers-$(uname -r) "$VBOX_PACKAGE_NAME"
         if [[ "$SCRIPT_USER" != "root" ]]; then
           echo "Adding \"$SCRIPT_USER\" to group \"vboxusers\"..."
           $SUDO_CMD usermod -a -G vboxusers "$SCRIPT_USER"
@@ -614,7 +614,7 @@ elif [ $LINUX ]; then
       unset CONFIRMATION
       read -p "Install vagrant via apt-get instead [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
-      [[ $CONFIRMATION =~ ^[Yy] ]] && $SUDO_CMD apt-get install vagrant
+      [[ $CONFIRMATION =~ ^[Yy] ]] && $SUDO_CMD apt-get install -y vagrant
     fi
   fi # check VBoxManage is not in path to see if some form of virtualbox is now installed
 
