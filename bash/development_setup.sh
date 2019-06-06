@@ -1007,7 +1007,7 @@ EOT
 
     touch ~/.hushlogin
 
-    mkdir -p "$HOME/Desktop" "$HOME/download" "$HOME/media/music" "$HOME/media/images" "$HOME/media/video" "$HOME/tmp" "$HOME/bin"
+    mkdir -p "$HOME/Desktop" "$HOME/download" "$HOME/media/music" "$HOME/media/images" "$HOME/media/video" "$HOME/tmp" "$HOME/.local/bin"
 
     [ ! -f ~/.vimrc ] && echo "set nocompatible" > ~/.vimrc
 
@@ -1218,17 +1218,39 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-    [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf ~/.bashrc && ln -vrs "$GUERO_GITHUB_PATH"/bash/rc ~/.bashrc
-    [[ -r "$GUERO_GITHUB_PATH"/bash/aliases ]] && rm -vf ~/.bash_aliases && ln -vrs "$GUERO_GITHUB_PATH"/bash/aliases ~/.bash_aliases
-    [[ -r "$GUERO_GITHUB_PATH"/bash/functions ]] && rm -vf ~/.bash_functions && ln -vrs "$GUERO_GITHUB_PATH"/bash/functions ~/.bash_functions
-    [[ -d "$GUERO_GITHUB_PATH"/bash/rc.d ]] && rm -vf ~/.bashrc.d && ln -vrs "$GUERO_GITHUB_PATH"/bash/rc.d ~/.bashrc.d
-    [[ -d "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf ~/.gitconfig && ln -vrs "$GUERO_GITHUB_PATH"/git/gitconfig ~/.gitconfig
-    [[ -d "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global ~/.gitignore_global
-    [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
-    [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
-    [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf ~/.gdbinit && ln -vrs "$GUERO_GITHUB_PATH"/gdb/gdbinit ~/.gdbinit
-    [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p ~/.cgdb && rm -vf ~/.cgdb/cgdbrc && ln -vrs "$GUERO_GITHUB_PATH"/gdb/cgdbrc ~/.cgdb/cgdbrc
-    [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p ~/.config/gdb && rm -vf ~/.config/gdb/hexdump.py && ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py ~/.config/gdb/hexdump.py
+    [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf ~/.bashrc && \
+      ln -vrs "$GUERO_GITHUB_PATH"/bash/rc ~/.bashrc
+
+    [[ -r "$GUERO_GITHUB_PATH"/bash/aliases ]] && rm -vf ~/.bash_aliases && \
+      ln -vrs "$GUERO_GITHUB_PATH"/bash/aliases ~/.bash_aliases
+
+    [[ -r "$GUERO_GITHUB_PATH"/bash/functions ]] && rm -vf ~/.bash_functions && \
+      ln -vrs "$GUERO_GITHUB_PATH"/bash/functions ~/.bash_functions
+
+    [[ -d "$GUERO_GITHUB_PATH"/bash/rc.d ]] && rm -vf ~/.bashrc.d && \
+      ln -vrs "$GUERO_GITHUB_PATH"/bash/rc.d ~/.bashrc.d
+
+    [[ -d "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf ~/.gitconfig && \
+      ln -vrs "$GUERO_GITHUB_PATH"/git/gitconfig ~/.gitconfig
+
+    [[ -d "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && \
+      ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global ~/.gitignore_global
+
+    [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && \
+      ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
+
+    [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && \
+      ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
+
+    [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf ~/.gdbinit && \
+      ln -vrs "$GUERO_GITHUB_PATH"/gdb/gdbinit ~/.gdbinit
+
+    [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p ~/.cgdb && rm -vf ~/.cgdb/cgdbrc && \
+      ln -vrs "$GUERO_GITHUB_PATH"/gdb/cgdbrc ~/.cgdb/cgdbrc
+
+    [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p ~/.config/gdb && rm -vf ~/.config/gdb/hexdump.py && \
+      ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py ~/.config/gdb/hexdump.py
+
     [[ ! -d ~/.config/gdb/peda ]] && git clone --recursive https://github.com/longld/peda.git ~/.config/gdb/peda
 
     if [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
@@ -1237,6 +1259,23 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
         rm -vf ~/.config/"$DIRNAME" && ln -vrs "$CONFDIR" ~/.config/"$DIRNAME"
       done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
     fi
+
+    dpkg -s albert >/dev/null 2>&1 && rm -vf ~/.config/autostart/albert.desktop && \
+      ln -vrs /usr/share/applications/albert.desktop ~/.config/autostart/albert.desktop
+
+    mkdir -p ~/.local/bin
+    LINKED_SCRIPTS=(
+      keepassxc_delay.sh
+      sound_cap.sh
+      tilix.sh
+      upto.sh
+      vid_rename.sh
+      vid_to_dvd_mpeg.sh
+      windems.sh
+    )
+    for i in ${LINKED_SCRIPTS[@]}; do
+      rm -vf ~/.local/bin/"$i" && ln -vrs "$GUERO_GITHUB_PATH"/scripts/"$i" ~/.local/bin/
+    done
 
   fi # dotfiles setup confirmation
 fi # dotfiles check for github checkout
