@@ -35,20 +35,60 @@ DOCKER_COMPOSE_INSTALL_VERSION=( 1.24.0 )
 #   [[ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]] && eval "$(pyenv virtualenv-init -)"
 # fi
 
+if [ -z "$BASH_VERSION" ]; then
+  echo "Wrong interpreter, please run \"$0\" with bash"
+  exit 1
+fi
+
+[[ "$(uname -s)" = 'Darwin' ]] && REALPATH=grealpath || REALPATH=realpath
+[[ "$(uname -s)" = 'Darwin' ]] && DIRNAME=gdirname || DIRNAME=dirname
+if ! (type "$REALPATH" && type "$DIRNAME") > /dev/null; then
+  echo "$(basename "${BASH_SOURCE[0]}") requires $REALPATH and $DIRNAME"
+  exit 1
+fi
+SCRIPT_PATH="$($DIRNAME $($REALPATH -e "${BASH_SOURCE[0]}"))"
+
+# see if this has been cloned from github (so we can assume other stuff might be here)
+unset GUERO_GITHUB_PATH
+if [ $(basename "$SCRIPT_PATH") = 'bash' ]; then
+  pushd "$SCRIPT_PATH"/.. >/dev/null 2>&1
+  if (( "$( (git remote -v 2>/dev/null | awk '{print $2}' | grep -P 'config(_private)?' | wc -l) || echo 0 )" > 0 )); then
+    GUERO_GITHUB_PATH="$(pwd)"
+  fi
+  popd >/dev/null 2>&1
+fi
 
 # determine OS
 unset MACOS
 unset LINUX
 unset WINDOWS
+unset LINUX_DISTRO
+unset LINUX_RELEASE
+
 if [ $(uname -s) = 'Darwin' ]; then
   export MACOS=0
+
 elif grep -q Microsoft /proc/version; then
   export WINDOWS=0
   echo "Windows is not currently supported by this script."
   exit 1
+
 else
   export LINUX=0
   export DEBIAN_FRONTEND=noninteractive
+  if command -v lsb_release >/dev/null 2>&1 ; then
+    LINUX_DISTRO="$(lsb_release -is)"
+    LINUX_RELEASE="$(lsb_release -cs)"
+  else
+    if [[ -r '/etc/redhat-release' ]]; then
+      RELEASE_FILE='/etc/redhat-release'
+    elif [[ -r '/etc/issue' ]]; then
+      RELEASE_FILE='/etc/issue'
+    else
+      unset RELEASE_FILE
+    fi
+    [[ -n "$RELEASE_FILE" ]] && LINUX_DISTRO="$( ( awk '{print $1}' < "$RELEASE_FILE" ) | head -n 1 )"
+  fi
 fi
 
 # determine user and/or if we need to use sudo to install packages
@@ -320,7 +360,6 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
   if pip -V >/dev/null 2>&1 ; then
     pip install -U \
-      bat \
       cachetools \
       beautifulsoup4 \
       colored \
@@ -352,6 +391,35 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     go get -u -v golang.org/x/tools/cmd/gorename
     go get -u -v github.com/nsf/gocode
   fi
+fi
+
+################################################################################
+# apt repositories
+################################################################################
+
+# enable contrib and non-free in sources.list
+if [[ -n $LINUX ]] && [[ -n $LINUX_RELEASE ]]; then
+
+  if [[ -f /etc/apt/sources.list ]] && (( "$(grep -cP "(contrib|non-free)" /etc/apt/sources.list)" == 0 )); then
+    unset CONFIRMATION
+    read -p "Enable contrib and non-free for $LINUX_RELEASE in /etc/apt/sources.list [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      sed -i "s/$LINUX_RELEASE main/$LINUX_RELEASE main contrib non-free/" /etc/apt/sources.list
+    fi
+  fi
+
+  # sources.list.d entries for this release
+  if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d /etc/apt/sources.list.d ]] && [[ -d "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE" ]]; then
+    unset CONFIRMATION
+    read -p "Install sources.list.d entries for $LINUX_RELEASE [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD cp -iv "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE"/* /etc/apt/sources.list.d/
+      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    fi
+  fi
+
 fi
 
 ################################################################################
@@ -396,12 +464,12 @@ elif [ $LINUX ]; then
 
       echo "Installing Docker CE..."
 
-      if grep -i Ubuntu /etc/issue >/dev/null 2>&1 ; then
+      if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
         $SUDO_CMD add-apt-repository \
            "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
            $(lsb_release -cs) \
            stable"
-      elif grep -i Debian /etc/issue >/dev/null 2>&1 ; then
+      elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
         $SUDO_CMD add-apt-repository \
            "deb [arch=amd64] https://download.docker.com/linux/debian \
            $(lsb_release -cs) \
