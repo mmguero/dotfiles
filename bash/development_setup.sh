@@ -527,6 +527,26 @@ elif [ $LINUX ]; then
 
 fi # MacOS vs. Linux for docker
 
+if ! $SUDO_CMD docker info >/dev/null 2>&1 ; then
+  unset CONFIRMATION
+  read -p "Pull common docker images [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    DOCKER_IMAGES=(
+      alpine:latest
+      debian:stable-backports
+      debian:stable-slim
+      debian:testing-slim
+      hello-world:latest
+      jwilder/nginx-proxy:alpine
+      ubuntu:latest
+    )
+    for i in ${VAGRANT_PLUGINS[@]}; do
+      docker pull "$i"
+    done
+  fi # docker pull images confirmation
+fi # docker is there
+
 ################################################################################
 # virtualbox/vagrant
 ################################################################################
