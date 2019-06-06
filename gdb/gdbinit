@@ -7,10 +7,12 @@ set print thread-events off
 set history remove-duplicates unlimited
 
 python
-sys.path.insert(0, '/home/tlacuache/bin/devel/gdb')
+sys.path.insert(0, '/home/tlacuache/.config/gdb')
 import hexdump
 end
 alias -a hd = hex-dump
+
+source ~/.config/gdb/peda/peda.py
 
 # core debugging examples:
 # set auto-load safe-path /

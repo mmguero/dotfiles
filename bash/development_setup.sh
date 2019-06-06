@@ -1000,61 +1000,6 @@ EOT
   fi
 
   unset CONFIRMATION
-  read -p "Configure GDB [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-
-    if [ ! -f ~/.gdbinit ]; then
-      cat <<EOT >> ~/.gdbinit
-set auto-load safe-path /
-set print frame-arguments no
-set print pretty on
-set print null-stop
-set print elements 1000
-set print thread-events off
-set history remove-duplicates unlimited
-EOT
-
-      mkdir -p ~/.config/gdb
-      GDB_HEXDUMP_PY_B64="aW1wb3J0IGdkYgpmcm9tIGN1cnNlcy5hc2NpaSBpbXBvcnQgaXNncmFwaAoKZGVmIGdyb3Vwc19vZihpdGVyYWJsZSwgc2l6ZSwgZmlyc3Q9MCk6CiAgICBmaXJzdCA9IGZpcnN0IGlmIGZpcnN0ICE9IDAgZWxzZSBzaXplCiAgICBjaHVuaywgaXRlcmFibGUgPSBpdGVyYWJsZVs6Zmlyc3RdLCBpdGVyYWJsZVtmaXJzdDpdCiAgICB3aGlsZSBjaHVuazoKICAgICAgICB5aWVsZCBjaHVuawogICAgICAgIGNodW5rLCBpdGVyYWJsZSA9IGl0ZXJhYmxlWzpzaXplXSwgaXRlcmFibGVbc2l6ZTpdCgpjbGFzcyBIZXhEdW1wKGdkYi5Db21tYW5kKToKICAgIGRlZiBfX2luaXRfXyhzZWxmKToKICAgICAgICBzdXBlciAoSGV4RHVtcCwgc2VsZikuX19pbml0X18gKCdoZXgtZHVtcCcsIGdkYi5DT01NQU5EX0RBVEEpCgogICAgZGVmIGludm9rZShzZWxmLCBhcmcsIGZyb21fdHR5KToKICAgICAgICBhcmd2ID0gZ2RiLnN0cmluZ190b19hcmd2KGFyZykKCiAgICAgICAgYWRkciA9IGdkYi5wYXJzZV9hbmRfZXZhbChhcmd2WzBdKS5jYXN0KAogICAgICAgICAgICBnZGIubG9va3VwX3R5cGUoJ3ZvaWQnKS5wb2ludGVyKCkpCiAgICAgICAgaWYgbGVuKGFyZ3YpID09IDI6CiAgICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICAgYnl0ZXMgPSBpbnQoZ2RiLnBhcnNlX2FuZF9ldmFsKGFyZ3ZbMV0pKQogICAgICAgICAgICAgZXhjZXB0IFZhbHVlRXJyb3I6CiAgICAgICAgICAgICAgICAgcmFpc2UgZ2RiLkdkYkVycm9yKCdCeXRlIGNvdW50IG51bXN0IGJlIGFuIGludGVnZXIgdmFsdWUuJykKICAgICAgICBlbHNlOgogICAgICAgICAgICAgYnl0ZXMgPSA1MTIKCiAgICAgICAgaW5mZXJpb3IgPSBnZGIuc2VsZWN0ZWRfaW5mZXJpb3IoKQoKICAgICAgICBhbGlnbiA9IGdkYi5wYXJhbWV0ZXIoJ2hleC1kdW1wLWFsaWduJykKICAgICAgICB3aWR0aCA9IGdkYi5wYXJhbWV0ZXIoJ2hleC1kdW1wLXdpZHRoJykKICAgICAgICBpZiB3aWR0aCA9PSAwOgogICAgICAgICAgICB3aWR0aCA9IDE2CgogICAgICAgIG1lbSA9IGluZmVyaW9yLnJlYWRfbWVtb3J5KGFkZHIsIGJ5dGVzKQogICAgICAgIHByX2FkZHIgPSBpbnQoc3RyKGFkZHIpLCAxNikKICAgICAgICBwcl9vZmZzZXQgPSB3aWR0aAoKICAgICAgICBpZiBhbGlnbjoKICAgICAgICAgICAgcHJfb2Zmc2V0ID0gd2lkdGggLSAocHJfYWRkciAlIHdpZHRoKQogICAgICAgICAgICBwcl9hZGRyIC09IHByX2FkZHIgJSB3aWR0aAogICAgICAgIHN0YXJ0PShwcl9hZGRyKSAmIDB4ZmY7CgoKICAgICAgICBwcmludCAoJyAgICAgICAgICAgICAgICAgJyAsIGVuZD0iIikKICAgICAgICBwcmludCAoJyAgJy5qb2luKFsnJTAxWCcgJSAoaSYweDBmLCkgZm9yIGkgaW4gcmFuZ2Uoc3RhcnQsc3RhcnQrd2lkdGgpXSkgLCBlbmQ9IiIpCiAgICAgICAgcHJpbnQgKCcgJyAsIGVuZD0iIikKICAgICAgICBwcmludCAoJycuam9pbihbJyUwMVgnICUgKGkmMHgwZiwpIGZvciBpIGluIHJhbmdlKHN0YXJ0LHN0YXJ0K3dpZHRoKV0pICkKCiAgICAgICAgZm9yIGdyb3VwIGluIGdyb3Vwc19vZihtZW0sIHdpZHRoLCBwcl9vZmZzZXQpOgogICAgICAgICAgICBwcmludCAoJzB4JXg6ICcgJSAocHJfYWRkciwpICsgJyAgICcqKHdpZHRoIC0gcHJfb2Zmc2V0KSwgZW5kPSIiKQogICAgICAgICAgICBwcmludCAoJyAnLmpvaW4oWyclMDJYJyAlIChvcmQoZyksKSBmb3IgZyBpbiBncm91cF0pICsgXAogICAgICAgICAgICAgICAgJyAgICcgKiAod2lkdGggLSBsZW4oZ3JvdXApIGlmIHByX29mZnNldCA9PSB3aWR0aCBlbHNlIDApICsgJyAnLCBlbmQ9IiIpCiAgICAgICAgICAgIHByaW50ICgnICcqKHdpZHRoIC0gcHJfb2Zmc2V0KSArICAnJy5qb2luKAogICAgICAgICAgICAgICAgW2NociggaW50LmZyb21fYnl0ZXMoZywgYnl0ZW9yZGVyPSdiaWcnKSkgaWYgaXNncmFwaCggaW50LmZyb21fYnl0ZXMoZywgYnl0ZW9yZGVyPSdiaWcnKSAgICkgb3IgZyA9PSAnICcgZWxzZSAnLicgZm9yIGcgaW4gZ3JvdXBdKSkKICAgICAgICAgICAgcHJfYWRkciArPSB3aWR0aAogICAgICAgICAgICBwcl9vZmZzZXQgPSB3aWR0aAoKY2xhc3MgSGV4RHVtcEFsaWduKGdkYi5QYXJhbWV0ZXIpOgogICAgZGVmIF9faW5pdF9fKHNlbGYpOgogICAgICAgIHN1cGVyIChIZXhEdW1wQWxpZ24sIHNlbGYpLl9faW5pdF9fKCdoZXgtZHVtcC1hbGlnbicsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZ2RiLkNPTU1BTkRfREFUQSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBnZGIuUEFSQU1fQk9PTEVBTikKCiAgICBzZXRfZG9jID0gJ0RldGVybWluZXMgaWYgaGV4LWR1bXAgYWx3YXlzIHN0YXJ0cyBhdCBhbiAiYWxpZ25lZCIgYWRkcmVzcyAoc2VlIGhleC1kdW1wLXdpZHRoJwogICAgc2hvd19kb2MgPSAnSGV4IGR1bXAgYWxpZ25tZW50IGlzIGN1cnJlbnRseScKCmNsYXNzIEhleER1bXBXaWR0aChnZGIuUGFyYW1ldGVyKToKICAgIGRlZiBfX2luaXRfXyhzZWxmKToKICAgICAgICBzdXBlciAoSGV4RHVtcFdpZHRoLCBzZWxmKS5fX2luaXRfXygnaGV4LWR1bXAtd2lkdGgnLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGdkYi5DT01NQU5EX0RBVEEsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZ2RiLlBBUkFNX0lOVEVHRVIpCgogICAgc2V0X2RvYyA9ICdTZXQgdGhlIG51bWJlciBvZiBieXRlcyBwZXIgbGluZSBvZiBoZXgtZHVtcCcKCiAgICBzaG93X2RvYyA9ICdUaGUgbnVtYmVyIG9mIGJ5dGVzIHBlciBsaW5lIGluIGhleC1kdW1wIGlzJwoKSGV4RHVtcCgpCkhleER1bXBBbGlnbigpCkhleER1bXBXaWR0aCgpCg=="
-      echo "$GDB_HEXDUMP_PY_B64" | base64 -d > ~/.config/gdb/hexdump.py
-      chmod +x ~/.config/gdb/hexdump.py
-      cat <<EOT >> ~/.gdbinit
-
-python
-sys.path.insert(0, '$HOME/.config/gdb')
-import hexdump
-end
-alias -a hd = hex-dump
-EOT
-
-      if [ ! -d ~/.config/gdb/peda ]; then
-        git clone https://github.com/longld/peda.git ~/.config/gdb/peda
-      fi
-      echo "" >> ~/.gdbinit
-      echo "# source ~/.config/gdb/peda/peda.py" >> ~/.gdbinit
-    fi
-  fi
-
-  if [ ! -e ~/.cgdb/cgdbrc ]; then
-    mkdir -p ~/.cgdb
-    cat <<EOT >> ~/.cgdb/cgdbrc
-:set autosourcereload
-:set arrowstyle=long
-:set ignorecase on
-:set tabstop=2
-map <F2> i<Space>set<Space>scheduler-locking<Space>step<CR><Space>set<Space>print<Space>pretty<Space>on<CR><Space>set<Space>print<Space>thread-events<Space>off<CR><Space>set<Space>print<Space>null-stop<Space>on<CR><Space>set<Space>print<Space>frame-arguments<Space>no<CR><Esc>
-map r i<Space>run<CR><Esc>
-map c i<Space>continue<CR><Esc>
-map f i<Space>finish<CR><Esc>
-map n i<Space>next<CR><Esc>
-map s i<Space>step<CR><Esc>
-map u :up<CR>
-map d :down<CR>
-EOT
-  fi
-
-  unset CONFIRMATION
   read -p "Configure Tilix [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
@@ -1142,6 +1087,10 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
     [[ -d "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global ~/.gitignore_global
     [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
     [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
+    [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf ~/.gdbinit && ln -vrs "$GUERO_GITHUB_PATH"/gdb/gdbinit ~/.gdbinit
+    [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p ~/.cgdb && rm -vf ~/.cgdb/cgdbrc && ln -vrs "$GUERO_GITHUB_PATH"/gdb/cgdbrc ~/.cgdb/cgdbrc
+    [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p ~/.config/gdb && rm -vf ~/.config/gdb/hexdump.py && ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py ~/.config/gdb/hexdump.py
+    [[ ! -d ~/.config/gdb/peda ]] && git clone https://github.com/longld/peda.git ~/.config/gdb/peda
 
     if [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
       while IFS= read -d $'\0' -r CONFDIR; do
@@ -1149,5 +1098,6 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
         rm -vf ~/.config/"$DIRNAME" && ln -vrs "$CONFDIR" ~/.config/"$DIRNAME"
       done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
     fi
-  fi
-fi
+
+  fi # dotfiles setup confirmation
+fi # dotfiles check for github checkout
