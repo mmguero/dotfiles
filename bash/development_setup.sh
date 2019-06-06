@@ -1058,7 +1058,7 @@ MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/vn
 StartupWMClass=Firefox
 StartupNotify=true
 EOT
-        $SUDO_CMD apt-get -y --purge remove firefox-esr
+        dpkg -s firefox-esr >/dev/null 2>&1 && $SUDO_CMD apt-get -y --purge remove firefox-esr
       fi
     fi # /tmp/firefox.tar.bz2 check
 
