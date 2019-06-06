@@ -1032,6 +1032,36 @@ EOT
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
+
+    curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+    if [ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]; then
+      $SUDO_CMD mkdir -p /opt
+      $SUDO_CMD rm -rvf /opt/firefox
+      $SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C /opt/
+      rm -vf /tmp/firefox.tar.bz2
+      if [[ -f /opt/firefox/firefox ]]; then
+        $SUDO_CMD rm -vf /usr/local/bin/firefox
+        $SUDO_CMD ln -vrs /opt/firefox/firefox /usr/local/bin/firefox
+        $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
+[Desktop Entry]
+Name=Firefox
+Comment=Web Browser
+GenericName=Web Browser
+X-GNOME-FullName=Firefox Web Browser
+Exec=/opt/firefox/firefox %u
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=/opt/firefox/browser/chrome/icons/default/default128.png
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/vnd.mozilla.xul+xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;
+StartupWMClass=Firefox
+StartupNotify=true
+EOT
+        $SUDO_CMD apt-get -y --purge remove firefox-esr
+      fi
+    fi # /tmp/firefox.tar.bz2 check
+
   fi
 
   unset CONFIRMATION
