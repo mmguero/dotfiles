@@ -1115,6 +1115,36 @@ EOT
     fi # confirmation on group stuff
   fi # script_user is not root check
 
+  if dpkg -s ufw >/dev/null 2>&1; then
+    unset CONFIRMATION
+    read -p "Enable/configure UFW (uncomplicated firewall)? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD ufw enable
+      $SUDO_CMD ufw default deny incoming
+      $SUDO_CMD ufw default allow outgoing
+      UFW_ALLOW_RULES=(
+        CIFS
+        CUPS
+        http
+        https
+        mosh
+        nfs
+        ssh
+        24800/tcp
+        28400/tcp
+        5044/tcp
+        5601/tcp
+        8443/tcp
+        9200/tcp
+        9443/tcp
+      )
+      for i in ${UFW_ALLOW_RULES[@]}; do
+        $SUDO_CMD ufw allow "$i"
+      done
+    fi # ufw confirmation
+  fi # ufw installed check
+
 fi # linux
 
 if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
