@@ -1096,7 +1096,7 @@ EOT
       done
     fi
     unset CONFIRMATION
-    read -p "Setup some additional sudoers stuff for groups? " CONFIRMATION
+    read -p "Setup some additional sudoers stuff for groups [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       $SUDO_CMD tee /etc/sudoers.d/power_groups > /dev/null <<'EOT'
@@ -1108,7 +1108,32 @@ EOT
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 EOT
       $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
-    fi
-  fi
+    fi # confirmation on group stuff
+  fi # script_user is not root check
 
 fi # linux
+
+if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
+  unset CONFIRMATION
+  read -p "Setup symlinks for dotfiles in \"$GUERO_GITHUB_PATH\" [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+    [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf ~/.bashrc && ln -vrs "$GUERO_GITHUB_PATH"/bash/rc ~/.bashrc
+    [[ -r "$GUERO_GITHUB_PATH"/bash/aliases ]] && rm -vf ~/.bash_aliases && ln -vrs "$GUERO_GITHUB_PATH"/bash/aliases ~/.bash_aliases
+    [[ -r "$GUERO_GITHUB_PATH"/bash/functions ]] && rm -vf ~/.bash_functions && ln -vrs "$GUERO_GITHUB_PATH"/bash/functions ~/.bash_functions
+    [[ -d "$GUERO_GITHUB_PATH"/bash/rc.d ]] && rm -vf ~/.bashrc.d && ln -vrs "$GUERO_GITHUB_PATH"/bash/rc.d ~/.bashrc.d
+    [[ -d "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf ~/.gitconfig && ln -vrs "$GUERO_GITHUB_PATH"/git/gitconfig ~/.gitconfig
+    [[ -d "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global ~/.gitignore_global
+    [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
+    [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
+
+    if [[ "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
+      pushd "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config >/dev/null 2>&1
+      while IFS= read -d $'\0' -r file; do
+        echo "[$file];"
+      done < <(find /path/to/dir/ -mindepth 1 -maxdepth 1 -type d -print0)
+    fi
+    popd >/dev/null 2>&1
+  fi
+fi
