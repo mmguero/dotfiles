@@ -1090,7 +1090,7 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
     [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf ~/.gdbinit && ln -vrs "$GUERO_GITHUB_PATH"/gdb/gdbinit ~/.gdbinit
     [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p ~/.cgdb && rm -vf ~/.cgdb/cgdbrc && ln -vrs "$GUERO_GITHUB_PATH"/gdb/cgdbrc ~/.cgdb/cgdbrc
     [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p ~/.config/gdb && rm -vf ~/.config/gdb/hexdump.py && ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py ~/.config/gdb/hexdump.py
-    [[ ! -d ~/.config/gdb/peda ]] && git clone https://github.com/longld/peda.git ~/.config/gdb/peda
+    [[ ! -d ~/.config/gdb/peda ]] && git clone --recursive https://github.com/longld/peda.git ~/.config/gdb/peda
 
     if [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
       while IFS= read -d $'\0' -r CONFDIR; do
