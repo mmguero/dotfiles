@@ -868,14 +868,29 @@ elif [ $LINUX ]; then
       whois
       zlib1g
     )
-    echo 'localepurge localepurge/nopurge multiselect en,en_US.UTF-8' | $SUDO_CMD debconf-set-selections
+
+    cat <<EOT >> /tmp/localepurge-preseed.cfg
+localepurge localepurge/nopurge multiselect en, en_US, en_us.UTF-8, C.UTF-8
+localepurge localepurge/use-dpkg-feature boolean false
+localepurge localepurge/none_selected boolean false
+localepurge localepurge/verbose boolean false
+localepurge localepurge/dontbothernew boolean false
+localepurge localepurge/quickndirtycalc boolean true
+localepurge localepurge/mandelete boolean true
+localepurge localepurge/showfreedspace boolean false
+localepurge localepurge/remove_no note
+EOT
+    $SUDO_CMD debconf-set-selections -v /tmp/localepurge-preseed.cfg
+    echo "wireshark-common wireshark-common/install-setuid boolean false" | $SUDO_CMD debconf-set-selections
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
     if command -v localepurge >/dev/null 2>&1 ; then
-      dpkg-reconfigure localepurge
-      localepurge
+      $SUDO_CMD dpkg-reconfigure --frontend=noninteractive localepurge
+      $SUDO_CMD localepurge
+      rm -f /tmp/localepurge-preseed.cfg
     fi
+    $SUDO_CMD dpkg-reconfigure --frontend=noninteractive wireshark-common
   fi
 
   unset CONFIRMATION
