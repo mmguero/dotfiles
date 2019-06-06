@@ -298,15 +298,6 @@ function htopid () {
   htop -p $(pstree -p $PROCPID | perl -ne 'push @t, /\((\d+)\)/g; END { print join ",", @t }')
 }
 
-function lport () {
-  if [ "$1" ]
-  then
-    netstat -anp 2>/dev/null|grep "$1"|grep LISTEN|awk '{print $4}'|grep -P -o "\d+"|grep -v "^0$"
-  else
-    echo "No process specified">&2
-  fi
-}
-
 ########################################################################
 # language
 ########################################################################
@@ -356,6 +347,15 @@ function vagboxup() {
 ########################################################################
 # network
 ########################################################################
+function lport () {
+  if [ "$1" ]
+  then
+    netstat -anp 2>/dev/null|grep "$1"|grep LISTEN|awk '{print $4}'|grep -P -o "\d+"|grep -v "^0$"
+  else
+    echo "No process specified">&2
+  fi
+}
+
 function sshscr()
 {
   if [ "$1" ]
