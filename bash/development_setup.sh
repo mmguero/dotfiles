@@ -788,7 +788,6 @@ elif [ $LINUX ]; then
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
     DEBIAN_PACKAGE_LIST=(
-      apache2-utils
       apt-file
       apt-listchanges
       apt-show-versions
@@ -796,18 +795,15 @@ elif [ $LINUX ]; then
       apt-utils
       autoconf
       automake
-      autossh
       bash
       binutils
       bison
-      bridge-utils
       btrfs-progs
       build-essential
       bzip2
       ca-certificates
       cgdb
       checkinstall
-      cifs-utils
       clamav
       clamav-freshclam
       cloc
@@ -816,12 +812,9 @@ elif [ $LINUX ]; then
       cpio
       cryptmount
       cryptsetup
-      curl
       dialog
       diffutils
-      dnsutils
       eject
-      ethtool
       exfat-fuse
       exfat-utils
       fdisk
@@ -837,6 +830,8 @@ elif [ $LINUX ]; then
       fonts-hack
       fonts-hack-ttf
       fuse
+      fuseext2
+      fusefat
       fuseiso
       gdb
       git
@@ -847,23 +842,17 @@ elif [ $LINUX ]; then
       gzip
       haveged
       htop
-      iproute2
       less
+      libcap2-bin
       linux-headers-$(uname -r)
       localepurge
       lshw
       lsof
       make
       moreutils
-      mosh
-      netcat-traditional
-      netsniff-ng
-      ngrep
       ninja-build
       ntfs-3g
-      openresolv
-      openssh-client
-      openvpn
+      openssl
       p7zip
       p7zip-full
       parted
@@ -877,31 +866,22 @@ elif [ $LINUX ]; then
       qemu-utils
       rar
       rename
-      rsync
       sed
-      socat
-      sshfs
-      ssldump
       strace
       sysstat
-      tcpdump
-      testdisk
       time
       tmux
       tofrodos
-      traceroute
       tree
-      tshark
       tzdata
       ufw
       unrar
       unzip
       vim-tiny
-      wget
-      whois
       zlib1g
     )
 
+    # preseed some packages for setup post-installation
     cat <<EOT >> /tmp/localepurge-preseed.cfg
 localepurge localepurge/nopurge multiselect en, en_US, en_us.UTF-8, C.UTF-8
 localepurge localepurge/use-dpkg-feature boolean true
@@ -915,14 +895,22 @@ localepurge localepurge/remove_no note
 EOT
     $SUDO_CMD debconf-set-selections -v /tmp/localepurge-preseed.cfg
     echo "wireshark-common wireshark-common/install-setuid boolean false" | $SUDO_CMD debconf-set-selections
+
+    # install the packages
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
+
+    # pre-install configurations
+    $SUDO_CMD groupadd fuse
+    $SUDO_CMD groupadd cryptkeeper
+
     if dpkg -s localepurge >/dev/null 2>&1 ; then
       $SUDO_CMD dpkg-reconfigure --frontend=noninteractive localepurge
       $SUDO_CMD localepurge
       rm -f /tmp/localepurge-preseed.cfg
     fi
+
     $SUDO_CMD dpkg-reconfigure --frontend=noninteractive wireshark-common
     if ! grep -q mapper /etc/pmount.allow; then
       $SUDO_CMD tee -a /etc/pmount.allow > /dev/null <<'EOT'
@@ -939,7 +927,8 @@ EOT
 /dev/mapper/tc9
 EOT
     fi
-  fi
+
+  fi # install common packages confirmation
 
   unset CONFIRMATION
   read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
@@ -947,6 +936,7 @@ EOT
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
     DEBIAN_PACKAGE_LIST=(
+      arandr
       albert
       fonts-hack
       ghex
@@ -967,6 +957,7 @@ EOT
       xdiskusage
       xfdesktop4
       x2goclient
+      zenmap
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
@@ -988,6 +979,7 @@ EOT
       gtk-recordmydesktop
       imagemagick
       mpv
+      pavucontrol
       pithos
       recordmydesktop
       wodim
@@ -998,6 +990,166 @@ EOT
     if pip -V >/dev/null 2>&1 ; then
       pip install -U youtube-dl
     fi
+  fi
+
+  unset CONFIRMATION
+  read -p "Install common packages (networking) [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    DEBIAN_PACKAGE_LIST=(
+      apache2-utils
+      autossh
+      bridge-utils
+      bro
+      bro-aux
+      cifs-utils
+      cryptcat
+      curl
+      dnsutils
+      dsniff
+      ethtool
+      fusesmb
+      iproute2
+      mosh
+      ncat
+      netsniff-ng
+      ngrep
+      nmap
+      openresolv
+      openssh-client
+      openvpn
+      rsync
+      socat
+      sshfs
+      ssldump
+      tcpdump
+      telnet
+      traceroute
+      tshark
+      wget
+      whois
+    )
+    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+    done
+  fi
+
+  unset CONFIRMATION
+  read -p "Install common packages (forensics/security) [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    DEBIAN_PACKAGE_LIST=(
+      aesfix
+      aeskeyfind
+      afflib-tools
+      aircrack-ng
+      android-tools-adb
+      android-tools-fastboot
+      autopsy
+      bcrypt
+      blktool
+      bruteforce-salted-openssl
+      ccrypt
+      cewl
+      chaosreader
+      chntpw
+      clamav
+      clamav-freshclam
+      cmospwd
+      crack
+      darkstat
+      dc3dd
+      dcfldd
+      discover
+      disktype
+      dislocker
+      ed2k-hash
+      ettercap-graphical
+      ewf-tools
+      exif
+      exifprobe
+      exiftags
+      ext3grep
+      ext4magic
+      extundelete
+      fbi
+      fcrackzip
+      foremost
+      forensics-colorize
+      galleta
+      gddrescue
+      gpart
+      grokevt
+      guymager
+      hashdeep
+      hashrat
+      hunt
+      hydra
+      hydra-gtk
+      john
+      john-data
+      knocker
+      libafflib0v5
+      libewf2
+      libguytools2
+      lshw
+      mac-robber
+      magicrescue
+      medusa
+      memdump
+      metacam
+      missidentify
+      myrescue
+      nast
+      nasty
+      nbtscan
+      nikto
+      outguess
+      p0f
+      pasco
+      pff-tools
+      pipebench
+      plaso
+      pompem
+      recoverdm
+      recoverjpeg
+      reglookup
+      rekall-core
+      rephrase
+      rifiuti
+      rifiuti2
+      rkhunter
+      rsakeyfind
+      safecat
+      safecopy
+      samdump2
+      scalpel
+      scrounge-ntfs
+      scsitools
+      shed
+      sleuthkit
+      ssdeep
+      steghide
+      stenographer
+      stenographer-client
+      tableau-parm
+      testdisk
+      undbx
+      unhide
+      unhide.rb
+      vinetto
+      volatility
+      volatility-tools
+      weplab
+      winregfs
+      wipe
+      yara
+    )
+    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+    done
   fi
 
   unset CONFIRMATION
@@ -1066,8 +1218,6 @@ EOT
     read -p "Add $SCRIPT_USER to godlike groups [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      sudo groupadd fuse
-      sudo groupadd cryptkeeper
       POWER_GROUPS=(
         adm
         bluetooth
@@ -1090,13 +1240,14 @@ EOT
         $SUDO_CMD usermod -a -G "$i" "$SCRIPT_USER"
       done
     fi # group add confirmation
+  fi # script_user is not root check
 
-    if [[ ! -f /etc/sudoers.d/power_groups ]]; then
-      unset CONFIRMATION
-      read -p "Setup some additional sudoers stuff for groups [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        $SUDO_CMD tee /etc/sudoers.d/power_groups > /dev/null <<'EOT'
+  if [[ ! -f /etc/sudoers.d/power_groups ]]; then
+    unset CONFIRMATION
+    read -p "Setup some additional sudoers stuff for groups [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD tee /etc/sudoers.d/power_groups > /dev/null <<'EOT'
 %cdrom ALL=(root) NOPASSWD: /usr/bin/readom
 %cdrom ALL=(root) NOPASSWD: /usr/bin/wodim
 %disk ALL=(root) NOPASSWD: /bin/mount
@@ -1104,11 +1255,58 @@ EOT
 %netdev ALL=(root) NOPASSWD: /usr/sbin/openvpn
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 EOT
-        $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
-      fi # confirmation on group stuff
-    fi
+      $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
+    fi # confirmation on group stuff
+  fi # ! -f /etc/sudoers.d/power_groups
 
-  fi # script_user is not root check
+  # set capabilities for network capture
+  unset CONFIRMATION
+  read -p "Set capabilities for netdev users to sniff [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    EXE_LESS_CAP=(
+      /sbin/ethtool
+      /usr/bin/bro
+      /usr/bin/capstats
+      /usr/bin/dumpcap
+      /usr/bin/tcpflow
+      /usr/bin/tcpreplay
+      /usr/sbin/arpspoof
+      /usr/sbin/dnsspoof
+      /usr/sbin/dsniff
+      /usr/sbin/filesnarf
+      /usr/sbin/macof
+      /usr/sbin/mailsnarf
+      /usr/sbin/msgsnarf
+      /usr/sbin/nethogs
+      /usr/sbin/sshmitm
+      /usr/sbin/sshow
+      /usr/sbin/tcpdump
+      /usr/sbin/tcpkill
+      /usr/sbin/tcpnice
+      /usr/sbin/urlsnarf
+      /usr/sbin/webmitm
+      /usr/sbin/webspy
+    )
+    EXE_MORE_CAP=(
+      /usr/sbin/astraceroute
+      /usr/sbin/bpfc
+      /usr/sbin/curvetun
+      /usr/sbin/flowtop
+      /usr/sbin/ifpps
+      /usr/sbin/mausezahn
+      /usr/sbin/netsniff-ng
+      /usr/sbin/trafgen
+    )
+    for i in ${EXE_LESS_CAP[@]}; do
+      $SUDO_CMD chown root:netdev "$i" && \
+        $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' "$i"
+    done
+    for i in ${EXE_MORE_CAP[@]}; do
+      $SUDO_CMD chown root:netdev "$i" && \
+        $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_IPC_LOCK+eip CAP_SYS_ADMIN+eip' "$i"
+    done
+  fi # setcap confirmation
 
   if dpkg -s ufw >/dev/null 2>&1; then
     unset CONFIRMATION
