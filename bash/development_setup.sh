@@ -1253,14 +1253,14 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
 
     [[ ! -d ~/.config/gdb/peda ]] && git clone --recursive https://github.com/longld/peda.git ~/.config/gdb/peda
 
-    if [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
+    if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
       while IFS= read -d $'\0' -r CONFDIR; do
         DIRNAME="$(basename "$CONFDIR")"
         rm -vf ~/.config/"$DIRNAME" && ln -vrs "$CONFDIR" ~/.config/"$DIRNAME"
       done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
     fi
 
-    dpkg -s albert >/dev/null 2>&1 && rm -vf ~/.config/autostart/albert.desktop && \
+    [[ $LINUX ]] && dpkg -s albert >/dev/null 2>&1 && rm -vf ~/.config/autostart/albert.desktop && \
       ln -vrs /usr/share/applications/albert.desktop ~/.config/autostart/albert.desktop
 
     mkdir -p ~/.local/bin
