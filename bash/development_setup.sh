@@ -1213,6 +1213,16 @@ EOT
     fi # limits.conf confirmation
   fi # limits.conf check
 
+  if [[ -f /etc/default/grub ]] && ! grep -q deadline /etc/default/grub; then
+    unset CONFIRMATION
+    read -p "Tweak kernel parameters in grub (scheduler, cgroup, etc.) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=\).*/\1"elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem"/' /etc/default/grub
+      $SUDO_CMD update-grub
+    fi # grub confirmation
+  fi # grub check
+
 fi # linux
 
 if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
