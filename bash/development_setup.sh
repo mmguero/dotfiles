@@ -804,8 +804,6 @@ elif [ $LINUX ]; then
       ca-certificates
       cgdb
       checkinstall
-      clamav
-      clamav-freshclam
       cloc
       cmake
       coreutils

@@ -65,10 +65,11 @@ alias xml='xmllint --format -'
 # vpn/tunnel
 alias ov='sudo openvpn'
 
-#development
+#development/misc
 alias pycheck='python -m py_compile'
 alias delblanks='sed -i "/^\s*$/d"'
 alias extip='curl -s ifconfig.io'
+alias cl='curl -L -J -O'
 
 #vmware/vbox/kvm/qemu
 alias vs='virsh -c qemu:///system '
