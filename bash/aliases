@@ -80,6 +80,7 @@ alias vhalt='vagrant halt'
 alias vdest='vagrant destroy'
 alias vbl='vagrant box list'
 alias vags='vagrant global-status'
+alias vagssh='vagrant ssh'
 
 #media
 alias dexif="exiftool -T -description"
