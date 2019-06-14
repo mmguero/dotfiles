@@ -2,7 +2,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "generic/ubuntu1810"
   config.vm.network "private_network", type: "dhcp"
 
-  config.vm.network :forwarded_port, guest: 443,   host: 443,   id: "ssl"
+  config.vm.network :forwarded_port, guest: 443,   host: 4443,  id: "ssl"
   config.vm.network :forwarded_port, guest: 3030,  host: 3030,  id: "elastalert"
   config.vm.network :forwarded_port, guest: 5044,  host: 5044,  id: "logstash"
   config.vm.network :forwarded_port, guest: 5601,  host: 5601,  id: "kibana"
@@ -25,10 +25,26 @@ Vagrant.configure("2") do |config|
     systemctl disable systemd-resolved.service
     rm -f /etc/resolv.conf
     echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" >/etc/resolv.conf
+
     apt-get update
+
     mkdir -p /home/vagrant/.config
     git clone --depth 1 https://github.com/mmguero/config /home/vagrant/.config/mmguero
+
     git clone --depth 1 https://github.com/idaholab/Malcolm /home/vagrant/malcolm
+
+    git clone --depth 1 https://github.com/realtho/PartyLoud /home/vagrant/partyloud
+    echo "http://www.detik.com" > /home/vagrant/partyloud/partyloud.conf
+    echo "http://www.espn.com" >> /home/vagrant/partyloud/partyloud.conf
+    echo "http://xinhuanet.com" >> /home/vagrant/partyloud/partyloud.conf
+    echo "https://en.wikipedia.org/wiki/Main_Page" >> /home/vagrant/partyloud/partyloud.conf
+    echo "https://news.google.com" >> /home/vagrant/partyloud/partyloud.conf
+    echo "https://www.macrumors.com" >> /home/vagrant/partyloud/partyloud.conf
+    echo "https://www.reddit.com" >> /home/vagrant/partyloud/partyloud.conf
+    echo "https://www.techcrunch.com" >> /home/vagrant/partyloud/partyloud.conf
+    echo "https://www.theguardian.com/international" >> /home/vagrant/partyloud/partyloud.conf
+    echo "https://www.theverge.co" >> /home/vagrant/partyloud/partyloud.conf
+
     chown -R vagrant:vagrant /home/vagrant/.config /home/vagrant/malcolm
   STEP1
 
