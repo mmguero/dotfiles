@@ -75,6 +75,11 @@ alias cl='curl -L -J -O'
 alias vs='virsh -c qemu:///system '
 alias qemuls='virsh -c qemu:///system list --all'
 alias vag='vagrant'
+alias vup='vagrant up'
+alias vhalt='vagrant halt'
+alias vdest='vagrant destroy'
+alias vbl='vagrant box list'
+alias vags='vagrant global-status'
 
 #media
 alias dexif="exiftool -T -description"
