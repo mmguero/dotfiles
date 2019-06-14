@@ -1,13 +1,13 @@
 if [ $WINDOWS10 ]; then
-  export WINDOWS_USER=tlacuache
+  export WINDOWS_USER=$USER
   export DOCKER_HOST=tcp://localhost:2375
   export DOCKER_SHARE_HOME=C:/Users/$WINDOWS_USER
   export DOCKER_SHARE_TMP="-v $DOCKER_SHARE_HOME/tmp:/host:rw,Z"
   if [ -d /mnt/c/Users/$WINDOWS_USER/cloud/sync/config ]; then
-    export DOCKER_SHARE_BASH_RC="-v C:/Users/tlacuache/cloud/config/bash/rc:/etc/bash.bashrc:ro,Z -v C:/Users/tlacuache/cloud/config/bash/rc.d:/etc/bashrc.d:ro,Z"
-    export DOCKER_SHARE_BASH_ALIASES="-v C:/Users/tlacuache/cloud/config/bash/aliases:/etc/bash.bash_aliases:ro,Z"
-    export DOCKER_SHARE_BASH_FUNCTIONS="-v C:/Users/tlacuache/cloud/config/bash/functions:/etc/bash.bash_functions:ro,Z"
-    export DOCKER_SHARE_GIT_CONFIG="-v C:/Users/tlacuache/cloud/config/git/gitconfig:/etc/gitconfig:ro,Z"
+    export DOCKER_SHARE_BASH_RC="-v C:/Users/$WINDOWS_USER/cloud/config/bash/rc:/etc/bash.bashrc:ro,Z -v C:/Users/$WINDOWS_USER/cloud/config/bash/rc.d:/etc/bashrc.d:ro,Z"
+    export DOCKER_SHARE_BASH_ALIASES="-v C:/Users/$WINDOWS_USER/cloud/config/bash/aliases:/etc/bash.bash_aliases:ro,Z"
+    export DOCKER_SHARE_BASH_FUNCTIONS="-v C:/Users/$WINDOWS_USER/cloud/config/bash/functions:/etc/bash.bash_functions:ro,Z"
+    export DOCKER_SHARE_GIT_CONFIG="-v C:/Users/$WINDOWS_USER/cloud/config/git/gitconfig:/etc/gitconfig:ro,Z"
   else
     export DOCKER_SHARE_BASH_RC=""
     export DOCKER_SHARE_BASH_ALIASES=""

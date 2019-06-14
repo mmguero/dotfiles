@@ -7,7 +7,8 @@ set print thread-events off
 set history remove-duplicates unlimited
 
 python
-sys.path.insert(0, '/home/tlacuache/.config/gdb')
+import os
+sys.path.insert(0, os.path.join(os.path.expanduser('~'), '.config/gdb'))
 import hexdump
 end
 alias -a hd = hex-dump

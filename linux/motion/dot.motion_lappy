@@ -11,7 +11,7 @@
 daemon off
 
 # File to store the process ID, also called pid file. (default: not defined)
-process_id_file /home/tlacuache/.motion.pid
+process_id_file $HOME/.motion.pid
 
 ############################################################
 # Basic Setup Mode
@@ -417,7 +417,7 @@ text_double off
 
 # Target base directory for pictures and films
 # Recommended to use absolute path. (Default: current working directory)
-target_dir /home/tlacuache/media/motion
+target_dir $HOME/media/motion
 
 # File path for snapshots (jpeg or ppm) relative to target_dir
 # Default: %v-%Y%m%d%H%M%S-snapshot
@@ -659,7 +659,7 @@ on_movie_end killall -9 arecord; sleep 1; ~/bin/checklength.pl %f
 # %f = filename with full path
 # Default value:
 # Create tables :
-## 
+##
 # Mysql
 # CREATE TABLE security (camera int, filename char(80) not null, frame int, file_type int, time_stamp timestamp(14), event_time_stamp timestamp(14));
 #

@@ -18,7 +18,7 @@ my @files = split("\n", $paths);
 my $filecount = @files;
 if ($filecount > 0) {
   my @cmd = ();
-  push (@cmd, '/home/tlacuache/bin/webify.pl'); 
+  push (@cmd, $ENV{"HOME"}.'/.local/bin/webify.pl');
   push (@cmd, '-height', $height);
   push (@cmd, '-quality', $quality);
   push (@cmd, '-dpi', $dpi);

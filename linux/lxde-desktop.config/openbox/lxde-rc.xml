@@ -322,7 +322,7 @@
     </keybind>
     <keybind key="XF86Calculator">
       <action name="Execute">
-        <command>/usr/bin/python2 /home/tlacuache/bin/clarence-0.4.4/clarence.py</command>
+        <command>/usr/bin/python2 $HOME/.local/bin/clarence-0.4.4/clarence.py</command>
       </action>
     </keybind>
     <keybind key="F12">
@@ -366,7 +366,7 @@
     </keybind>
     <keybind key="Print">
       <action name="Execute">
-        <command>/home/tlacuache/bin/screenshot.sh</command>
+        <command>$HOME/.local/bin/screenshot.sh</command>
       </action>
     </keybind>
   </keyboard>
