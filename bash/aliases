@@ -77,10 +77,10 @@ alias qemuls='virsh -c qemu:///system list --all'
 alias vag='vagrant'
 alias vup='vagrant up'
 alias vhalt='vagrant halt'
-alias vdest='vagrant destroy'
+alias vrm='vagrant destroy'
 alias vbl='vagrant box list'
-alias vags='vagrant global-status'
-alias vagssh='vagrant ssh'
+alias vgs='vagrant global-status'
+alias vsh='vagrant ssh'
 
 #media
 alias dexif="exiftool -T -description"

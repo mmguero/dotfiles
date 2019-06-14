@@ -1,0 +1,35 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu1810"
+  config.vm.network "private_network", type: "dhcp"
+
+  config.vm.network :forwarded_port, guest: 443,   host: 443,   id: "ssl"
+  config.vm.network :forwarded_port, guest: 3030,  host: 3030,  id: "elastalert"
+  config.vm.network :forwarded_port, guest: 5044,  host: 5044,  id: "logstash"
+  config.vm.network :forwarded_port, guest: 5601,  host: 5601,  id: "kibana"
+  config.vm.network :forwarded_port, guest: 8443,  host: 8443,  id: "upload"
+  config.vm.network :forwarded_port, guest: 9200,  host: 9200,  id: "elasticsearch"
+  config.vm.network :forwarded_port, guest: 9600,  host: 9600,  id: "elasticsearch_mon"
+  config.vm.network :forwarded_port, guest: 28991, host: 28991, id: "kibana_maps"
+
+  config.vm.synced_folder '/home/tlacuache/Desktop/Malcolm', '/malcolm', :mount_options => ["ro"]
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "12288"
+    vb.cpus = 8
+  end
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
+
+  config.vm.provision "shell", inline: <<-STEP1
+    systemctl stop systemd-resolved.service
+    systemctl disable systemd-resolved.service
+    rm -f /etc/resolv.conf
+    echo -e "nameserver 8.8.8.8\nnameserver 8.8.4.4" >/etc/resolv.conf
+    apt-get update
+    mkdir -p /home/vagrant/.config
+    git clone --depth 1 https://github.com/mmguero/config /home/vagrant/.config/mmguero
+    git clone --depth 1 https://github.com/idaholab/Malcolm /home/vagrant/malcolm
+    chown -R vagrant:vagrant /home/vagrant/.config /home/vagrant/malcolm
+  STEP1
+
+end
