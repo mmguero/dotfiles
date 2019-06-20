@@ -1432,8 +1432,10 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
 
     mkdir -p ~/.local/bin
     LINKED_SCRIPTS=(
+      clarence-0.4.4
       keepassxc_delay.sh
       sound_cap.sh
+      screenshot.sh
       tilix.sh
       upto.sh
       vid_rename.sh

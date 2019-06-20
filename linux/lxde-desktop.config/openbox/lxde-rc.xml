@@ -322,12 +322,12 @@
     </keybind>
     <keybind key="XF86Calculator">
       <action name="Execute">
-        <command>/usr/bin/python2 $HOME/.local/bin/clarence-0.4.4/clarence.py</command>
+        <command>bash -c &quot;/usr/bin/python2 ~/.local/bin/clarence-0.4.4/clarence.py&quot;</command>
       </action>
     </keybind>
     <keybind key="F12">
       <action name="Execute">
-        <command>tilix --quake</command>
+        <command>bash -c &quot;~/.local/bin/tilix.sh --quake&quot;</command>
       </action>
     </keybind>
     <keybind key="XF86Mail">
@@ -351,7 +351,7 @@
     </keybind>
     <keybind key="XF86Favorites">
       <action name="Execute">
-        <command>tilix</command>
+        <command>bash -c &quot;~/.local/bin/tilix.sh&quot;</command>
       </action>
     </keybind>
     <keybind key="XF86Launch5">
@@ -366,7 +366,7 @@
     </keybind>
     <keybind key="Print">
       <action name="Execute">
-        <command>$HOME/.local/bin/screenshot.sh</command>
+        <command>bash -c &quot;~/.local/bin/screenshot.sh&quot;</command>
       </action>
     </keybind>
   </keyboard>

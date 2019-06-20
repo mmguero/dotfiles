@@ -2,4 +2,4 @@
 @thunar --daemon
 @xfdesktop
 @xscreensaver -no-splash
-@~/.local/bin/keepassxc_delay.sh
+@bash -c "~/.local/bin/keepassxc_delay.sh"
