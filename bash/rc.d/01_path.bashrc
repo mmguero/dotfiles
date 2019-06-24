@@ -12,16 +12,18 @@ if [ $MACOS ]; then
   [[ -d "/usr/local/opt/grep/libexec/gnubin" ]]       && PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
 fi
 
-[[ -d $HOME/bin/devel ]] && PATH="$HOME/bin/devel:$PATH"
+[[ -d /opt/bro/bin ]] && PATH="/opt/bro/bin:$PATH"
 
+[[ -d $HOME/bin/devel ]] && PATH="$HOME/bin/devel:$PATH"
 [[ -d $HOME/bin ]] && PATH="$HOME/bin:$PATH"
 
+[[ -d $HOME/.local/bin/devel ]] && PATH="$HOME/.local/bin/devel:$PATH"
 [[ -d $HOME/.local/bin ]] && PATH="$HOME/.local/bin:$PATH"
 
 ###############################################################################
 # LD_LIBRARY_PATH
 ###############################################################################
-export LD_LIBRARY_PATH=.:~/lib:~/lib32
+# export LD_LIBRARY_PATH=.:~/lib:~/lib32
 
 [[ -r "/opt/intel/ipp/bin/ippvars.sh" ]] && . "/opt/intel/ipp/bin/ippvars.sh" intel64
 
