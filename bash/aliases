@@ -56,6 +56,7 @@ alias dmesg='dmesg -wHx'
 alias tran='trans --brief'
 alias neo='neofetch'
 alias multibootusb='sudo multibootusb'
+alias cryptsetup='sudo cryptsetup'
 alias x='xargs -l'
 
 #json/msgpack/xml/etc
