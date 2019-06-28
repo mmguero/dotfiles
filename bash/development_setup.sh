@@ -14,10 +14,11 @@ ENV_LIST=(
   plenv
 )
 
-PYTHON_VERSIONS=( 3.7.3 2.7.16 )
-RUBY_VERSIONS=( 2.6.3 )
-GOLANG_VERSIONS=( 1.12.5 )
-NODEJS_VERSIONS=( 10.15.3 )
+# empty arrays will be populated with most recent available versions at runtime
+PYTHON_VERSIONS=( )
+RUBY_VERSIONS=( )
+GOLANG_VERSIONS=( )
+NODEJS_VERSIONS=( )
 PERL_VERSIONS=( 5.28.2 )
 DOCKER_COMPOSE_INSTALL_VERSION=( 1.24.0 )
 
@@ -242,6 +243,7 @@ elif [ $LINUX ]; then
 
   EnvSetup
   if [ -n $ANYENV_ROOT ]; then
+    anyenv update
     for i in ${ENV_LIST[@]}; do
       if ! ( anyenv envs | grep -q "$i" ) >/dev/null 2>&1 ; then
         unset CONFIRMATION
@@ -265,6 +267,10 @@ if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
       make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
       wget llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev
   fi
+  for MAJOR_VER in $(seq -s' ' 3 -1 2); do
+    PY_VER="$(pyenv install --list | awk '{print $1}' | grep ^$MAJOR_VER | grep -v - | grep -v b | tail -1)"
+    [[ -n $PY_VER ]] && PYTHON_VERSIONS+=($PY_VER)
+  done
   for ver in "${PYTHON_VERSIONS[@]}"; do
     pyenv install "$ver"
   done
@@ -281,6 +287,8 @@ fi
 
 # ruby
 if [ -n $RBENV_ROOT ] && [ ${ENVS_INSTALLED[rbenv]} = 'true' ]; then
+  RB_VER="$(pyenv install --list | awk '{print $1}' | grep -v - | grep -v b | tail -1)"
+  [[ -n $RB_VER ]] && RUBY_VERSIONS+=($RB_VER)
   for ver in "${RUBY_VERSIONS[@]}"; do
     rbenv install "$ver"
   done
@@ -297,6 +305,8 @@ fi
 
 # golang
 if [ -n $GOENV_ROOT ] && [ ${ENVS_INSTALLED[goenv]} = 'true' ]; then
+  GO_VER="$(goenv install --list | awk '{print $1}' | grep -v - | grep -v b | tail -1)"
+  [[ -n $GO_VER ]] && GOLANG_VERSIONS+=($GO_VER)
   for ver in "${GOLANG_VERSIONS[@]}"; do
     goenv install "$ver"
   done
@@ -312,6 +322,8 @@ fi
 
 # nodejs
 if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
+  NODE_VER="$(nodenv install --list | awk '{print $1}' | grep -v - | grep -v b | tail -1)"
+  [[ -n $NODE_VER ]] && NODEJS_VERSIONS+=($NODE_VER)
   for ver in "${NODEJS_VERSIONS[@]}"; do
     nodenv install "$ver"
   done
@@ -1437,7 +1449,6 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
       sound_cap.sh
       screenshot.sh
       tilix.sh
-      upto.sh
       vid_rename.sh
       vid_to_dvd_mpeg.sh
       windems.sh
