@@ -57,7 +57,7 @@ alias tran='trans --brief'
 alias neo='neofetch'
 alias multibootusb='sudo multibootusb'
 alias cryptsetup='sudo cryptsetup'
-alias x='xargs -l'
+alias x='xargs -r -l'
 
 #json/msgpack/xml/etc
 alias jsontool='python3 -mjson.tool'
