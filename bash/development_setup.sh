@@ -287,7 +287,7 @@ fi
 
 # ruby
 if [ -n $RBENV_ROOT ] && [ ${ENVS_INSTALLED[rbenv]} = 'true' ]; then
-  RB_VER="$(pyenv install --list | awk '{print $1}' | grep -v - | grep -v b | tail -1)"
+  RB_VER="$(rbenv install --list | awk '{print $1}' | grep -v - | grep -v b | tail -1)"
   [[ -n $RB_VER ]] && RUBY_VERSIONS+=($RB_VER)
   for ver in "${RUBY_VERSIONS[@]}"; do
     rbenv install "$ver"
