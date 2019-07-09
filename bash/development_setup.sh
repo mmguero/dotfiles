@@ -673,13 +673,9 @@ if command -v vagrant >/dev/null 2>&1; then
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     VAGRANT_BOXES=(
       bento/centos-7
-      bento/debian-9
-      bento/ubuntu-18.04
-      clink15/pxe
-      generic/debian10
-      generic/fedora30
-      generic/ubuntu1904
-      offensive-security/kali-linux
+      bento/debian-10
+      bento/fedora-30
+      bento/ubuntu-19.04
     )
     for i in ${VAGRANT_BOXES[@]}; do
       if (( "$( vagrant box list | grep -c "^$i " )" == 0 )); then
