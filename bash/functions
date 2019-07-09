@@ -599,8 +599,7 @@ function dirtydev() {
 }
 
 function cpuuse() {
-  if [ "$1" ]
-  then
+  if [ "$1" ]; then
     SLEEPSEC="$1"
   else
     SLEEPSEC=1
@@ -617,8 +616,14 @@ function lsofpwd() {
 function ddisousb() {
   if [ "$1" ] && [[ -r "$1" ]] ; then
     if [ "$2" ] && [[ -r "$2" ]] ; then
-      echo "dd if=\"$1\" of=\"$2\" bs=4M status=progress oflag=sync"
-      dd if="$1" of="$2" bs=4M status=progress oflag=sync
+      DEV_DESC="$2 $(lsblk "$2" | sed -n 2p | awk '{ print $4 }') $(udevadm info --query=all -n "$2" | grep -P "(ID_VENDOR|ID_MODEL|ID_FS_LABEL|ID_BUS)=" | cols 2 | sed "s/.*=//" | tr '\n' ' ')"
+      DEV_DESC="$(sed -e 's/[[:space:]]*$//' <<<${DEV_DESC})"
+      read -p "This will overwrite $DEV_DESC, are you sure? " -n 1 -r
+      echo
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "dd if=\"$1\" of=\"$2\" bs=4M status=progress oflag=sync"
+        dd if="$1" of="$2" bs=4M status=progress oflag=sync
+      fi
     else
       echo "No destination device specified">&2
     fi
