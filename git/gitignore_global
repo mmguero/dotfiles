@@ -6,6 +6,7 @@
 *.a
 *.compiled
 *.lps
+*seth*yml
 
 # Folder view configuration files
 .DS_Store
