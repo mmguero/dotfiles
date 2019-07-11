@@ -8,8 +8,7 @@ function cols () {
     commatime=""
     for var in "$@"
     do
-      if [ -z $commatime ]
-      then
+      if [ -z $commatime ]; then
         commatime="no"
         cmd=${cmd}\$${var}
       else
@@ -109,8 +108,7 @@ function pyt() {
 
 function ytmp3() {
   search="$1"
-  if [[ "$search" =~ ^http ]]
-  then
+  if [[ "$search" =~ ^http ]]; then
     youtube-dl -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 "$search"
   else
     youtube-dl -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
@@ -152,6 +150,36 @@ function calc () { python -c "from math import *; n = $1; print n; print '$'+hex
 function add () {
   awk '{s+=$1} END {print s}'
   # alternately: paste -sd+ - | bc
+}
+
+########################################################################
+# date/time
+########################################################################
+function dateu()
+{
+  if [ "$1" ]; then
+    echo $(date -u -d @$1);
+  else
+    echo "No UNIX time specified">&2
+  fi
+}
+
+function udate()
+{
+  if [ "$1" ]; then
+    date -u +%s -d "$1"
+  else
+    date -u +%s
+  fi
+}
+
+function sec2dhms() {
+  if [ "$1" ]; then
+    SECS="$1"
+    printf '%02d:%02d:%02d\n' $(($SECS/3600)) $(($SECS%3600/60)) $(($SECS%60))
+  else
+    echo "00:00:00"
+  fi
 }
 
 ########################################################################
@@ -272,8 +300,7 @@ function psgrep() {
 }
 
 function killtree() {
-  if [ "$1" ]
-  then
+  if [ "$1" ]; then
     kill $(pstree -p $1 | sed 's/(/\n(/g' | grep '(' | sed 's/(\(.*\)).*/\1/' | tr "\n" " ")
   else
     echo "No PID specified">&2
@@ -298,6 +325,17 @@ function htopid () {
   htop -p $(pstree -p $PROCPID | perl -ne 'push @t, /\((\d+)\)/g; END { print join ",", @t }')
 }
 
+function pidstart () {
+  for PROC_PID in "$@"; do
+    PROC_START_DATE_STR="$(ps -q $PROC_PID -o lstart=)"
+    PROC_START_DATE_UNIX="$(date +%s -d "$PROC_START_DATE_STR")"
+    NOW_DATE_UNIX="$(date +%s)"
+    PROC_START_SECONDS_AGO=$((NOW_DATE_UNIX-PROC_START_DATE_UNIX))
+    PROC_START_AGO="$(sec2dhms $PROC_START_SECONDS_AGO)"
+    echo "$PROC_START_DATE_STR ($PROC_START_AGO ago)"
+  done
+}
+
 ########################################################################
 # language
 ########################################################################
@@ -309,8 +347,7 @@ function saygoog() { if [[ "${1}" =~ -[a-z]{2} ]]; then local lang=${1#-}; local
 # news/weather
 ########################################################################
 function weather() {
-  if [ "$1" ]
-  then
+  if [ "$1" ]; then
     CITY="$1"
   else
     CITY="83401"
@@ -348,8 +385,7 @@ function vagboxup() {
 # network
 ########################################################################
 function lport () {
-  if [ "$1" ]
-  then
+  if [ "$1" ]; then
     netstat -anp 2>/dev/null|grep "$1"|grep LISTEN|awk '{print $4}'|grep -P -o "\d+"|grep -v "^0$"
   else
     echo "No process specified">&2
@@ -358,8 +394,7 @@ function lport () {
 
 function sshscr()
 {
-  if [ "$1" ]
-  then
+  if [ "$1" ]; then
     PNGNAME="sshscreencap_$(date +"%Y%m%d_%H%M%S").png"
     ssh "$@" 'DISPLAY=":0.0" import -window root png:-' > "$PNGNAME" && \
       echo "captured screenshot to \"$PNGNAME\"" || \
@@ -386,33 +421,6 @@ function server()
 function arps()
 {
   /usr/sbin/arp -a | grep -v '^?' | cols 4 1 | sed "s/ /|/" | sed "s/$/|/"
-}
-
-########################################################################
-# date/time
-########################################################################
-function dateu()
-{
-  if [ "$1" ]
-  then
-    echo $(date -u -d @$1);
-  else
-    echo "No UNIX time specified">&2
-  fi
-}
-
-function udate()
-{
-  if [ "$1" ]
-  then
-    date -u +%s -d "$1"
-  else
-    date -u +%s
-  fi
-}
-
-function sec2dhms() {
-  declare -i SS="$1" D=$(( SS / 86400 )) H=$(( SS % 86400 / 3600 )) M=$(( SS % 3600 / 60 )) S=$(( SS % 60 )) [ "$D" -gt 0 ] && echo -n "${D}:" [ "$H" -gt 0 ] && printf "%02g:" "$H" printf "%02g:%02g\n" "$M" "$S"
 }
 
 ########################################################################
@@ -571,10 +579,8 @@ function tre() {
 }
 
 function mountcrypt() {
-  if [ "$1" ]
-  then
-    if [ "$2" ]
-    then
+  if [ "$1" ]; then
+    if [ "$2" ]; then
       sudo /sbin/cryptsetup luksOpen "$1" "$2"
       pmount -A -e "/dev/mapper/$2"
     else
@@ -586,8 +592,7 @@ function mountcrypt() {
 }
 
 function umountcrypt() {
-  if [ "$1" ]
-  then
+  if [ "$1" ]; then
     pumount "/media/mapper_$1"
   else
     echo "No map name specified">&2
