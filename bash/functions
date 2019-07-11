@@ -199,7 +199,7 @@ function realpath {
   fi
 }
 
-function realgo() { fcd $(realpath $(which $1)) && pwd ; }
+function realgo() { fcd $(realpath $(which "$1" || echo "$1")) && pwd ; }
 
 function realwhich() { realpath $(which $1) ; }
 
