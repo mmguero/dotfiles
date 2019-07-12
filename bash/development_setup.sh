@@ -621,6 +621,24 @@ elif [ $LINUX ]; then
           echo "You will need to log out and log back in for this to take effect"
         fi
       fi
+
+      # virtualbox extension pack
+      VBOX_EXTPACK_URL="$(curl -fsL "https://www.virtualbox.org/wiki/Downloads" | grep -oP "https://.*?vbox-extpack" | sort -V | head -n 1)"
+      unset CONFIRMATION
+      read -p "Download and install $VBOX_EXTPACK_URL [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        VBOX_EXTPACK_FNAME="$(echo "$VBOX_EXTPACK_URL" | sed "s@.*/@@")"
+        pushd /tmp >/dev/null 2>&1
+        curl -L -J -O "$VBOX_EXTPACK_URL"
+        if [[ -r "$VBOX_EXTPACK_FNAME" ]]; then
+          $SUDO_CMD VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb --replace "$VBOX_EXTPACK_FNAME"
+        else
+          echo "Error downloading $VBOX_EXTPACK_URL to $VBOX_EXTPACK_FNAME"
+        fi
+        popd >/dev/null 2>&1
+      fi
+
     fi
   else
     echo "\"virtualbox\" is already installed!"
@@ -1405,16 +1423,16 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
     [[ -d "$GUERO_GITHUB_PATH"/bash/rc.d ]] && rm -vf ~/.bashrc.d && \
       ln -vrs "$GUERO_GITHUB_PATH"/bash/rc.d ~/.bashrc.d
 
-    [[ -d "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf ~/.gitconfig && \
+    [[ -r "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf ~/.gitconfig && \
       ln -vrs "$GUERO_GITHUB_PATH"/git/gitconfig ~/.gitconfig
 
-    [[ -d "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && \
+    [[ -r "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && \
       ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global ~/.gitignore_global
 
-    [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && \
+    [[ $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && \
       ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
 
-    [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && \
+    [[ $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && \
       ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
 
     [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf ~/.gdbinit && \
