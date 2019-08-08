@@ -423,6 +423,11 @@ function arps()
   /usr/sbin/arp -a | grep -v '^?' | cols 4 1 | sed "s/ /|/" | sed "s/$/|/"
 }
 
+function portping()
+{
+  python <<<"import socket; socket.setdefaulttimeout(1); socket.socket().connect(('$1', $2))" 2> /dev/null && echo OPEN || echo CLOSED;
+}
+
 ########################################################################
 # GIT
 ########################################################################
