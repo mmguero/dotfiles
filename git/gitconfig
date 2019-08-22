@@ -94,8 +94,8 @@
   extuna = !git ls-files --others | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n
   # merge, no commit, no ff
   mrg = merge --no-commit --no-ff
-  # "git add" modified files from this directory onward
-  addmod = !git status --short --untracked-files=no --porcelain . | awk '/^[ MA]M/{print $2}' | xargs -rl git add -v
+  # "git add" only modified files from this directory onward
+  addmod = !git status --short --untracked-files=no --porcelain ${GIT_PREFIX:-./} | awk '/^[ MA]M/{print $2}' | xargs -rl git add -v
   # commit adding all changes (but not to untracked files) with the message following this command
   save = commit -am
   # short status without untracked files
