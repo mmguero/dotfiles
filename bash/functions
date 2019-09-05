@@ -39,6 +39,19 @@ function taildiff () {
   diff -bwBy --suppress-common-lines <(head -n $RIGHT_LINES "$LEFT_FILE") <(head -n $RIGHT_LINES "$RIGHT_FILE")
 }
 
+function dirdiff () {
+  if [ -d "$1" ] && [ -d "$2" ]; then
+    dir1="$1"
+    dir2="$2"
+    IFS=$'\n'
+    for file in $(grep -Ilsr -m 1 '.' "$dir1"); do
+      diff -q "$file" "${file/${dir1}/${dir2}}"
+    done
+  else
+    echo "Must specify two directories">&2
+  fi
+}
+
 function lin () {
   sed -n $1p
 }
