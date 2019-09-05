@@ -252,6 +252,13 @@ elif [ $LINUX ]; then
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
           anyenv install "$i" && ENVS_INSTALLED[$i]=true
         fi
+      else
+        unset CONFIRMATION
+        read -p "\"$i\" is already installed, attempt to update it [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          ENVS_INSTALLED[$i]=true
+        fi
       fi
     done
   fi
@@ -267,7 +274,8 @@ if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
       make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
       wget llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev
   fi
-  for MAJOR_VER in $(seq -s' ' 3 -1 2); do
+  # make the second 3 to 2 for py2  V
+  for MAJOR_VER in $(seq -s' ' 3 -1 3); do
     PY_VER="$(pyenv install --list | awk '{print $1}' | grep ^$MAJOR_VER | grep -v - | grep -v b | tail -1)"
     [[ -n $PY_VER ]] && PYTHON_VERSIONS+=($PY_VER)
   done
@@ -382,6 +390,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       psutil \
       pyinotify \
       python-magic \
+      pyshark \
       pyunpack \
       pyyaml \
       requests\[security\] \
