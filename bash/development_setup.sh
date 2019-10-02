@@ -969,32 +969,45 @@ EOT
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
     DEBIAN_PACKAGE_LIST=(
-      arandr
       albert
+      arandr
+      dconf-cli
       fonts-hack
       ghex
       gparted
+      gtk2-engines-murrine
+      gtk2-engines-pixbuf
       keepassxc
       meld
       numix-gtk-theme
-      numix-icon-theme
+      obsidian-icon-theme
       regexxer
       sublime-text
-      tilix
       thunar
       thunar-archive-plugin
       thunar-volman
+      tilix
+      ttf-mscorefonts-installer
       wireshark
-      xxdiff
-      xxdiff-scripts
+      x2goclient
       xdiskusage
       xfdesktop4
-      x2goclient
+      xxdiff
+      xxdiff-scripts
       zenmap
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
+
+    if [ ! -d ~/.themes/vimix-dark-laptop-beryl ]; then
+      TMP_CLONE_DIR="$(mktemp -d)"
+      git clone --depth 1 https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
+      pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+      ./Install -d ~/.themes -n vimix -c dark -t beryl -s laptop
+      popd >/dev/null 2>&1
+    fi
+
   fi
 
   unset CONFIRMATION
