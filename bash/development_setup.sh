@@ -1006,6 +1006,7 @@ EOT
       pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
       ./Install -d ~/.themes -n vimix -c dark -t beryl -s laptop
       popd >/dev/null 2>&1
+      rm -rf "$TMP_CLONE_DIR"
     fi
 
   fi
