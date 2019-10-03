@@ -386,7 +386,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       ordered-set \
       pandas \
       patool \
-      Pillow \
+      pillow \
       psutil \
       pyinotify \
       python-magic \
