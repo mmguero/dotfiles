@@ -1,0 +1,9 @@
+! 8/26/2019 https://protopage.com
+protopage.com##div:nth-of-type(18)
+protopage.com##div:nth-of-type(19)
+
+! 10/2/2019 https://old.reddit.com
+old.reddit.com##.premium-banner
+
+! 10/15/2019 https://voice.google.com
+voice.google.com##gv-call-sidebar
