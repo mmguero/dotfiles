@@ -271,8 +271,32 @@ EnvSetup
 if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
   if [ $LINUX ]; then
     DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
-      make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
-      wget llvm libncurses5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev
+      build-essential \
+      libbz2-dev \
+      libffi-dev \
+      libfreetype6-dev \
+      libfribidi-dev \
+      libharfbuzz-dev \
+      libjpeg-dev \
+      liblcms2-dev \
+      libncurses5-dev \
+      libopenjp2-7-dev \
+      libreadline-dev \
+      libsqlite3-dev \
+      libssl-dev \
+      libtiff5-dev \
+      libwebp-dev \
+      libxml2-dev \
+      libxmlsec1-dev \
+      llvm \
+      make \
+      python-tk \
+      tcl8.6-dev \
+      tk-dev \
+      tk8.6-dev \
+      wget \
+      xz-utils \
+      zlib1g-dev
   fi
   # make the second 3 to 2 for py2  V
   for MAJOR_VER in $(seq -s' ' 3 -1 3); do
@@ -373,8 +397,8 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
   if pip -V >/dev/null 2>&1 ; then
     pip install -U \
-      cachetools \
       beautifulsoup4 \
+      cachetools \
       colored \
       cryptography \
       Cython \
@@ -382,20 +406,18 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       git+git://github.com/badele/gitcheck.git \
       git-up \
       namedlist \
-      numpy \
       ordered-set \
-      pandas \
       patool \
-      pillow \
+      Pillow \
       psutil \
       pyinotify \
+      pythondialog \
       python-magic \
       pyshark \
       pyunpack \
       pyyaml \
       requests\[security\] \
       scapy \
-      scipy \
       urllib3
   fi
 
