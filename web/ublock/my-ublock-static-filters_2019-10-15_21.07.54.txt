@@ -10,4 +10,6 @@ voice.google.com##gv-call-sidebar
 
 ! 10/15/2019 https://amazon.com
 amazon.com##a[href^="/dogsofamazon"]
+amazon.com##.h1v-wrapper.a-spacing-none.a-section
+amazon.com##.a-carousel-row-inner
 
