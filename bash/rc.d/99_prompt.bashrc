@@ -6,9 +6,10 @@ if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] ; then
   [[ -r "/usr/bin/neofetch" ]] && neofetch || ( [[ -r "/usr/bin/screenfetch" ]] && screenfetch )
 fi
 
-PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
-PROMPT_COLOR="$(context-color -p)"
 export PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1,3}.){4}' | sed "s/ //g")
+
+PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+PROMPT_COLOR="$(context-color -c "bash -c 'hostname; echo $PRIMARY_IP; whoami'" -p)"
 
 if [ -f /.dockerenv ]; then
   # DOCKER: we are inside a container, change a color or do anything else different you'd like to do
