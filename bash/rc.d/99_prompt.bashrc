@@ -6,10 +6,15 @@ if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ] ; then
   [[ -r "/usr/bin/neofetch" ]] && neofetch || ( [[ -r "/usr/bin/screenfetch" ]] && screenfetch )
 fi
 
+PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+
 export PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1,3}.){4}' | sed "s/ //g")
 
-PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
-PROMPT_COLOR="$(context-color -c "bash -c 'hostname; echo $PRIMARY_IP; whoami'" -p)"
+unset HASHER
+HASHERS=(sha512sum sha384sum sha256sum sha224sum sha1sum md5sum)
+for i in ${HASHERS[@]}; do command -v "$i" >/dev/null 2>&1 && HASHER="$i" && break; done
+PROMPT_SEED="$((hostname -A ; echo $PRIMARY_IP ; whoami ; lsb_release -s -i -r) 2>/dev/null | $HASHER | awk '{print $1}')"
+PROMPT_COLOR="$(context-color -c "echo $PROMPT_SEED" -p)"
 
 if [ -f /.dockerenv ]; then
   # DOCKER: we are inside a container, change a color or do anything else different you'd like to do
