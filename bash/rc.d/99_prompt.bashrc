@@ -11,7 +11,7 @@ PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1
 PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
 if [ -f /.dockerenv ]; then
-  PS1='🐳  \u \[\033[1;36m\]\h \[\033[1;34m\]\W\[\033[0;35m\] \[\033[1;36m\]# \[\033[0m\]'
+  PS1='🐳  \u \[\e[1;36m\]\h \[\e[1;34m\]\W\[\e[0;35m\] \[\e[1;36m\]# \[\e[0m\]'
 
 else
   unset HASHER
@@ -19,8 +19,6 @@ else
   for i in ${HASHERS[@]}; do command -v "$i" >/dev/null 2>&1 && HASHER="$i" && break; done
   PROMPT_STRING="$((hostname -A ; echo $PRIMARY_IP ; whoami ; lsb_release -s -d) 2>/dev/null | tr -d "\n" | tr -d " ")"
   PROMPT_SEED="$(echo "$PROMPT_STRING" | $HASHER | awk '{print $1}')"
-  PROMPT_COLOR="$(context-color -c "echo $PROMPT_SEED" -p 2>/dev/null)"
-
-  PS1="\u\[\033[1;30m\]@\[\033[$PROMPT_COLOR\]\h\[\033[1;30m\]:\[\033[01;34m\]\W\[\033[00m\]\[\033[01;30m\]\$(parse_git_branch)\[\033[01;37m\]\$ \[\033[00;37m\]"
+  PS1="[\`if [ \$? = 0 ]; then echo \[\e[32m\]✔\[\e[0m\]; else echo \[\e[31m\]✘\[\e[0m\]; fi\`] \[\e[01;49;39m\]\u\[\e[00m\]\[\e[01;49;39m\]@$(context-color -c "echo $PROMPT_SEED" -p 2>/dev/null)\h\[\e[0m\]\[\e[00m\] \[\e[1;49;34m\]\W\[\e[0m\] \[\e[1;32m\]\$(parse_git_branch 2>/dev/null)\[\e[0m\]▶ "
   [ $WINDOWS10 ] && cd ~
 fi
