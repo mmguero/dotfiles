@@ -4,9 +4,9 @@
 [submodule "scripts/Kindelabra"]
 	path = scripts/Kindelabra
 	url = https://github.com/richardpeng/Kindelabra
-[submodule "scripts/x11docker"]
-	path = scripts/x11docker
-	url = https://github.com/mviereck/x11docker.git
 [submodule "bash/context-color"]
 	path = bash/context-color
 	url = https://github.com/ramnes/context-color
+[submodule "scripts/sshrc"]
+	path = scripts/sshrc
+	url = https://github.com/Russell91/sshrc
