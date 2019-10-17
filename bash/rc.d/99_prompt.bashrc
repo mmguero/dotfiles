@@ -13,7 +13,8 @@ export PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src
 unset HASHER
 HASHERS=(sha512sum sha384sum sha256sum sha224sum sha1sum md5sum)
 for i in ${HASHERS[@]}; do command -v "$i" >/dev/null 2>&1 && HASHER="$i" && break; done
-PROMPT_SEED="$((hostname -A ; echo $PRIMARY_IP ; whoami ; lsb_release -s -i -r) 2>/dev/null | $HASHER | awk '{print $1}')"
+PROMPT_STRING="$((hostname -A ; echo $PRIMARY_IP ; whoami ; lsb_release -s -d) 2>/dev/null | tr -d "\n" | tr -d " ")"
+PROMPT_SEED="$(echo "$PROMPT_STRING" | $HASHER | awk '{print $1}')"
 PROMPT_COLOR="$(context-color -c "echo $PROMPT_SEED" -p)"
 
 if [ -f /.dockerenv ]; then
