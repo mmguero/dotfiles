@@ -398,14 +398,12 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
   if pip -V >/dev/null 2>&1 ; then
     pip install -U \
       beautifulsoup4 \
-      cachetools \
       colored \
       cryptography \
       Cython \
       entrypoint2 \
       git+git://github.com/badele/gitcheck.git \
       git-up \
-      namedlist \
       ordered-set \
       patool \
       Pillow \
