@@ -563,11 +563,9 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     DOCKER_IMAGES=(
       alpine:latest
-      debian:stable-backports
       debian:stable-slim
       debian:testing-slim
       hello-world:latest
-      jwilder/nginx-proxy:alpine
       ubuntu:latest
     )
     for i in ${DOCKER_IMAGES[@]}; do
@@ -719,10 +717,10 @@ if command -v vagrant >/dev/null 2>&1; then
   CONFIRMATION=${CONFIRMATION:-N}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     VAGRANT_BOXES=(
-      bento/centos-7
+      bento/centos-8
       bento/debian-10
-      bento/fedora-30
-      bento/ubuntu-19.04
+      bento/fedora-31
+      bento/ubuntu-19.10
     )
     for i in ${VAGRANT_BOXES[@]}; do
       if (( "$( vagrant box list | grep -c "^$i " )" == 0 )); then
