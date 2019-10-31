@@ -1024,6 +1024,7 @@ EOT
       TMP_CLONE_DIR="$(mktemp -d)"
       git clone --depth 1 https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
       pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+      mkdir -p ~/.themes
       ./Install -d ~/.themes -n vimix -c dark -t beryl -s laptop
       popd >/dev/null 2>&1
       rm -rf "$TMP_CLONE_DIR"
@@ -1513,6 +1514,9 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
     for i in ${LINKED_SCRIPTS[@]}; do
       rm -vf ~/.local/bin/"$i" && ln -vrs "$GUERO_GITHUB_PATH"/scripts/"$i" ~/.local/bin/
     done
+
+    [[ -r "$GUERO_GITHUB_PATH"/bash/context-color/context-color ]] && rm -vf ~/.local/bin/context-color && \
+      ln -vrs "$GUERO_GITHUB_PATH"/bash/context-color/context-color ~/.local/bin/context-color
 
   fi # dotfiles setup confirmation
 fi # dotfiles check for github checkout
