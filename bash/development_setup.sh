@@ -849,6 +849,7 @@ elif [ $LINUX ]; then
       autoconf
       automake
       bash
+      bc
       binutils
       bison
       btrfs-progs
@@ -1495,7 +1496,8 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
       done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
     fi
 
-    [[ $LINUX ]] && dpkg -s albert >/dev/null 2>&1 && rm -vf ~/.config/autostart/albert.desktop && \
+    [[ $LINUX ]] && dpkg -s albert >/dev/null 2>&1 && mkdir -p ~/.config/autostart && \
+      rm -vf ~/.config/autostart/albert.desktop && \
       ln -vrs /usr/share/applications/albert.desktop ~/.config/autostart/albert.desktop
 
     mkdir -p ~/.local/bin
