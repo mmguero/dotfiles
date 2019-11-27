@@ -1,0 +1,6 @@
+[Definition]
+
+failregex = <HOST>:\d+ (Connection reset, restarting|TLS Error: TLS handshake failed|Fatal TLS error|VERIFY ERROR|WARNING: Bad encapsulated packet length)
+
+ignoreregex =
+
