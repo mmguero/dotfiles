@@ -1,4 +1,4 @@
-1. install openresolv
+1. install openresolv (need 3.9.0+, https://roy.marples.name/downloads/openresolv/)
 
 2. place update-resolve-conf.sh in /usr/local/bin
 
