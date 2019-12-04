@@ -1013,6 +1013,7 @@ EOT
       xfdesktop4
       xxdiff
       xxdiff-scripts
+      xsel
       zenmap
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
