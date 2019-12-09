@@ -1,4 +1,4 @@
-1. follow https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-debian-8 through step 7
+1. follow https://www.golinuxcloud.com/install-openvpn-server-easy-rsa-3-centos-7/ for server setup
 
-2. use openvpn_easy_rsa_create_key.sh to generate keys easier
- 
+2. use openvpn_easy_rsa_create_key.sh to generate client keys easier
+
