@@ -992,6 +992,7 @@ EOT
       arandr
       dconf-cli
       fonts-hack
+      fonts-noto-color-emoji
       ghex
       gparted
       gtk2-engines-murrine
