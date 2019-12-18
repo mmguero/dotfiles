@@ -19,8 +19,8 @@ PYTHON_VERSIONS=( )
 RUBY_VERSIONS=( )
 GOLANG_VERSIONS=( )
 NODEJS_VERSIONS=( )
-PERL_VERSIONS=( 5.30.0 )
-DOCKER_COMPOSE_INSTALL_VERSION=( 1.24.1 )
+PERL_VERSIONS=( 5.31.6 )
+DOCKER_COMPOSE_INSTALL_VERSION=( 1.25.0 )
 
 # add contents of https://raw.githubusercontent.com/mmguero/config/master/bash/rc.d/04_envs.bashrc
 # to .bashrc after running this script (or let this script set up the symlinks for ~/.bashrc.d for you)
@@ -452,7 +452,13 @@ if [[ -n $LINUX ]] && [[ -n $LINUX_RELEASE ]]; then
       $SUDO_CMD cp -iv "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE"/* /etc/apt/sources.list.d/
       # pull GPG keys from keyserver.ubuntu.com and update the apt cache
       $SUDO_CMD apt-get update 2>&1 | grep -Po "NO_PUBKEY\s*\w+" | awk '{print $2}' | sort -u | xargs -r -l $SUDO_CMD apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      # some manual ones
+      GPG_KEY_URLS=(
+        https://build.opensuse.org/projects/home:manuelschneid3r/public_key
+      )
+      for i in ${GPG_KEY_URLS[@]}; do
+        curl -fsSL "$i" | $SUDO_CMD apt-key add -
+      done
     fi
   fi
 
@@ -625,6 +631,7 @@ elif [ $LINUX ]; then
   if ! command -v VBoxManage >/dev/null 2>&1 ; then
     unset VBOX_PACKAGE_NAME
     VBOX_PACKAGE_NAMES=(
+      virtualbox-6.1
       virtualbox-6.0
       virtualbox
       virtualbox-5.2
