@@ -13,7 +13,7 @@ import hexdump
 end
 alias -a hd = hex-dump
 
-source ~/.config/gdb/peda/peda.py
+# source ~/.config/gdb/peda/peda.py
 
 # core debugging examples:
 # set auto-load safe-path /

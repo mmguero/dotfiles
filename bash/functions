@@ -333,6 +333,10 @@ function mempercent () {
   ps -eo pmem,comm | grep "$PROCNAME" | awk '{sum+=$1} END {print sum " % of RAM"}'
 }
 
+function swapusage () {
+  for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file; done | sort -k 2 -n -r  | head -n 20
+}
+
 function htopid () {
   PROCPID="$1"
   htop -p $(pstree -p $PROCPID | perl -ne 'push @t, /\((\d+)\)/g; END { print join ",", @t }')
