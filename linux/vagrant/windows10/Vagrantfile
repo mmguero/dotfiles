@@ -36,6 +36,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision "shell", inline: <<-STEP1
     Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    choco install -y chocolateygui firefox 7zip.install sysinternals python3 curl putty.install winscp.install keepass.install conemu openssl.light git sublimetext3 sumatrapdf.install
   STEP1
 
 end
