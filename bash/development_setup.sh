@@ -398,6 +398,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
   if pip -V >/dev/null 2>&1 ; then
     pip install -U \
       beautifulsoup4 \
+      colorama \
       colored \
       cryptography \
       Cython \
@@ -570,9 +571,10 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
     DOCKER_IMAGES=(
       alpine:latest
       debian:stable-slim
-      debian:testing-slim
       hello-world:latest
       ubuntu:latest
+      jwilder/nginx-proxy:alpine
+      jrcs/letsencrypt-nginx-proxy-companion:latest
     )
     for i in ${DOCKER_IMAGES[@]}; do
       docker pull "$i"
@@ -728,6 +730,7 @@ if command -v vagrant >/dev/null 2>&1; then
       bento/debian-10
       bento/fedora-31
       bento/ubuntu-19.10
+      StefanScherer/windows_10
     )
     for i in ${VAGRANT_BOXES[@]}; do
       if (( "$( vagrant box list | grep -c "^$i " )" == 0 )); then
