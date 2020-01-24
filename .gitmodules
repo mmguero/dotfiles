@@ -1,12 +1,6 @@
 [submodule "gdb/peda"]
 	path = gdb/peda
 	url = https://github.com/longld/peda
-[submodule "scripts/Kindelabra"]
-	path = scripts/Kindelabra
-	url = https://github.com/richardpeng/Kindelabra
 [submodule "bash/context-color"]
 	path = bash/context-color
 	url = https://github.com/ramnes/context-color
-[submodule "scripts/sshrc"]
-	path = scripts/sshrc
-	url = https://github.com/Russell91/sshrc
