@@ -1020,6 +1020,8 @@ EOT
       ttf-mscorefonts-installer
       wireshark
       x2goclient
+      xautomation
+      xbindkeys
       xdiskusage
       xfdesktop4
       xxdiff
