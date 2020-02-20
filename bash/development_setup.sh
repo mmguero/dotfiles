@@ -1038,7 +1038,7 @@ EOT
       git clone --depth 1 https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
       pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
       mkdir -p ~/.themes
-      ./Install -d ~/.themes -n vimix -c dark -t beryl -s laptop
+      ./install.sh -d ~/.themes -n vimix -c dark -t beryl -s laptop
       popd >/dev/null 2>&1
       rm -rf "$TMP_CLONE_DIR"
     fi
