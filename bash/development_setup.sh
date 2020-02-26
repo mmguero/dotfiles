@@ -738,7 +738,7 @@ if command -v vagrant >/dev/null 2>&1; then
       fi
     done
     vagrant box outdated --global | grep "is outdated" | awk '{print $2}' | xargs -r -l vagrant box update --provider virtualbox --box
-    vagrant box prune --provider virtualbox
+    vagrant box prune -f -k --provider virtualbox
   fi # vagrant plugin install confirmation
 
 fi # check for vagrant being installed
