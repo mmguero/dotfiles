@@ -300,7 +300,7 @@ if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
   fi
   # make the second 3 to 2 for py2  V
   for MAJOR_VER in $(seq -s' ' 3 -1 3); do
-    PY_VER="$(pyenv install --list | awk '{print $1}' | grep ^$MAJOR_VER | grep -v - | grep -Pv "(b(eta)?|rc)\d*$" | tail -1)"
+    PY_VER="$(pyenv install --list | awk '{print $1}' | grep ^$MAJOR_VER | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc)\d*$" | tail -1)"
     [[ -n $PY_VER ]] && PYTHON_VERSIONS+=($PY_VER)
   done
   for ver in "${PYTHON_VERSIONS[@]}"; do
@@ -319,7 +319,7 @@ fi
 
 # ruby
 if [ -n $RBENV_ROOT ] && [ ${ENVS_INSTALLED[rbenv]} = 'true' ]; then
-  RB_VER="$(rbenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|rc)\d*$" | tail -1)"
+  RB_VER="$(rbenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc)\d*$" | tail -1)"
   [[ -n $RB_VER ]] && RUBY_VERSIONS+=($RB_VER)
   for ver in "${RUBY_VERSIONS[@]}"; do
     rbenv install "$ver"
@@ -337,7 +337,7 @@ fi
 
 # golang
 if [ -n $GOENV_ROOT ] && [ ${ENVS_INSTALLED[goenv]} = 'true' ]; then
-  GO_VER="$(goenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|rc)\d*$" | tail -1)"
+  GO_VER="$(goenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc)\d*$" | tail -1)"
   [[ -n $GO_VER ]] && GOLANG_VERSIONS+=($GO_VER)
   for ver in "${GOLANG_VERSIONS[@]}"; do
     goenv install "$ver"
@@ -354,7 +354,7 @@ fi
 
 # nodejs
 if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
-  NODE_VER="$(nodenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|rc)\d*$" | tail -1)"
+  NODE_VER="$(nodenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc)\d*$" | tail -1)"
   [[ -n $NODE_VER ]] && NODEJS_VERSIONS+=($NODE_VER)
   for ver in "${NODEJS_VERSIONS[@]}"; do
     nodenv install "$ver"
