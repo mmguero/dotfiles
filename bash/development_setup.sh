@@ -409,6 +409,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       patool \
       Pillow \
       psutil \
+      py-cui \
       pyinotify \
       pythondialog \
       python-magic \
