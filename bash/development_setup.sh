@@ -418,6 +418,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       pyyaml \
       requests\[security\] \
       scapy \
+      tldr \
       urllib3
   fi
 
