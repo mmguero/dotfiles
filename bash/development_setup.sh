@@ -418,8 +418,8 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       pyyaml \
       requests\[security\] \
       scapy \
-      tldr \
-      urllib3
+      urllib3 \
+      magic-wormhole
   fi
 
   if go version >/dev/null 2>&1 ; then

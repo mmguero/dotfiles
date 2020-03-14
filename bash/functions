@@ -448,6 +448,15 @@ function portping()
   python <<<"import socket; socket.setdefaulttimeout(1); socket.socket().connect(('$1', $2))" 2> /dev/null && echo OPEN || echo CLOSED;
 }
 
+function worm()
+{
+  if [ -n "$WORMHOLE_TRANSIT_HELPER" ]; then
+    wormhole --transit-helper "$WORMHOLE_TRANSIT_HELPER" "$@"
+  else
+    wormhole "$@"
+  fi
+}
+
 ########################################################################
 # GIT
 ########################################################################
