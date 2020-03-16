@@ -35,9 +35,16 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provision "shell", inline: <<-STEP1
-    Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-    choco install -y chocolateygui firefox 7zip.install sysinternals python3 curl putty.install winscp.install keepass.install conemu openssl.light git sublimetext3 sumatrapdf.install
+    Enable-WindowsOptionalFeature -NoRestart -Online -FeatureName Microsoft-Windows-Subsystem-Linux
   STEP1
+  config.vm.provision :reload
 
+  config.vm.provision "shell", inline: <<-STEP2
+    Invoke-WebRequest -Uri https://aka.ms/wsl-debian-gnulinux -OutFile Debian.appx -UseBasicParsing
+    Add-AppxPackage .\\Debian.appx
+    Remove-Item Debian.appx
+    Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    choco install -y chocolateygui firefox 7zip.install sysinternals putty.install winscp.install keepass.install conemu sublimetext3 sumatrapdf.install
+  STEP2
 end
 
