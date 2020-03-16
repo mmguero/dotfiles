@@ -7,7 +7,7 @@ Vagrant.configure(2) do |config|
   config.vm.box = "StefanScherer/windows_10"
   config.vm.communicator = "winrm"
 
-  # Admin user name and password
+  # Admin username and password (see also WSL username/password setup in WSL_Debian_Setup.ps1)
   config.winrm.username = "vagrant"
   config.winrm.password = "vagrant"
 
@@ -35,6 +35,10 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.provision "shell", inline: <<-STEP1
+    New-Item -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\' -Name 'Windows Search' | Out-Null
+    New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search' -Name 'AllowCortana' -PropertyType DWORD -Value '0' | Out-Null
+    taskkill /f /im OneDrive.exe
+    C:/Windows/SysWOW64/OneDriveSetup.exe /uninstall
     Enable-WindowsOptionalFeature -NoRestart -Online -FeatureName Microsoft-Windows-Subsystem-Linux
   STEP1
   config.vm.provision :reload
@@ -43,6 +47,9 @@ Vagrant.configure(2) do |config|
     Invoke-WebRequest -Uri https://aka.ms/wsl-debian-gnulinux -OutFile Debian.appx -UseBasicParsing
     Add-AppxPackage .\\Debian.appx
     Remove-Item Debian.appx
+
+    config.vm.provision "file", source: "WSL_Debian_Setup.ps1", destination: "C:\\Users\\vagrant\\Desktop\\WSL_Debian_Setup.ps1"
+
     Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
     choco install -y chocolateygui firefox 7zip.install sysinternals putty.install winscp.install keepass.install conemu sublimetext3 sumatrapdf.install
   STEP2
