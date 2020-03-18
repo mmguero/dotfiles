@@ -48,7 +48,7 @@ unset LC_WINDOWS10
 
 if [ $(uname -s) = 'Darwin' ]; then
   export MACOS=0
-elif grep -q Microsoft /proc/version; then
+elif grep -q Microsoft /proc/version 2>/dev/null; then
   export WINDOWS10=0
   export LC_WINDOWS10=$WINDOWS10
   alias open='explorer.exe'
