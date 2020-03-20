@@ -14,10 +14,11 @@ for file in "$@"
 do
   if [[ -f "${file}" ]]; then
 
-  	file_base_name="$(basename "${file}")"
-  	file_full_path="$(realpath "${file}")"
+    file_base_name="$(basename "${file}")"
+    file_full_path="$(realpath "${file}")"
+    file_base_path="$(dirname "${file}")"
 
-    DESTDIR="$(mktemp -d -t vid2dvd-XXXXXX)"
+    DESTDIR="$(mktemp -d -p "${file_base_path}" -t vid2dvd-XXXXXX)"
     trap "cleanup" EXIT
 
     pushd "${DESTDIR}"
