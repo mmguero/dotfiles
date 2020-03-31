@@ -142,6 +142,10 @@ function conv2nook() {
   find . -mindepth 1 -maxdepth 1 -type f -name "*$FINDARG" -print0 | xargs -r -0 -n 1 -P 4 -I XXX -r /bin/bash -c "handbrake-cli -i \"XXX\" -e x264 -q 26.0 -r 30 --pfr -a 1 -E ffaac -B 192 -6 dpl2 -R Auto -D 0.0 --audio-copy-mask aac,ac3,dtshd,dts,mp3 --audio-fallback ffac3 -f mp4 -X 480 -Y 360 --loose-anamorphic --modulus 2 -m --x264-preset medium --h264-profile baseline --encoder-tune fastdecode --h264-level 3.0 -o \"XXX_nook.mp4\""
 }
 
+function spotify() {
+  x11docker --hostuser="$USER" --pulseaudio -- "-v $HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v $HOME/.config/spotify/cache:/home/spotify/.cache/spotify" jess/spotify
+}
+
 function brownnoise() {
   play -c2 -n synth pinknoise band -n 280 80 band -n 60 25 gain +20 treble +40 500 bass -3 20 flanger 4 2 95 50 .3 sine 50 lin
 }
