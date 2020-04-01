@@ -406,6 +406,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       git+git://github.com/badele/gitcheck.git \
       git-up \
       ordered-set \
+      magic-wormhole \
       patool \
       Pillow \
       psutil \
