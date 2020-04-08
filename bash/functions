@@ -800,6 +800,9 @@ function drunvidia() {
     "$@"
 }
 
+# docker compose
+alias dc="docker-compose"
+
 # Get latest container ID
 alias dl="docker ps -l -q"
 
