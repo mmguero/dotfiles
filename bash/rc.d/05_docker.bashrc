@@ -36,3 +36,127 @@ else
   export DOCKER_SHARE_BASH_FUNCTIONS="-v $DOCKER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z"
   export DOCKER_SHARE_GIT_CONFIG="-v $DOCKER_SHARE_HOME/.gitconfig:/etc/gitconfig:ro,Z"
 fi
+
+########################################################################
+# aliases and helper functions for docker
+########################################################################
+
+########################################################################
+# media
+########################################################################
+alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt m4b-tool'
+
+function spotify() {
+  nohup x11docker --hostuser="$USER" --pulseaudio -- "-v $HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v $HOME/.config/spotify/cache:/home/spotify/.cache/spotify" jess/spotify </dev/null >/dev/null 2>&1 &
+}
+
+########################################################################
+# web
+########################################################################
+function tor() {
+  nohup x11docker --user=RETAIN -- --tmpfs /dev/shm -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
+}
+
+########################################################################
+# desktop
+########################################################################
+function dchromium() {
+  nohup x11docker --gpu --pulseaudio --user=RETAIN -- --tmpfs /dev/shm -- jess/chromium --no-sandbox "$@" </dev/null >/dev/null 2>&1 &
+}
+
+function dfirefox() {
+  nohup x11docker --gpu --pulseaudio -- --tmpfs /dev/shm -- jess/firefox "$@" </dev/null >/dev/null 2>&1 &
+}
+########################################################################
+# helper functions for docker
+########################################################################
+
+# run a new container and remove it when done
+function drun() {
+  docker run -t -i -P --rm \
+    -e HISTFILE=/tmp/.bash_history \
+    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
+    "$@"
+}
+
+# run a new container (with X11/pulse) and remove it when done
+function drunx() {
+  XSOCK=/tmp/.X11-unix
+  XAUTH=/tmp/.docker.xauth
+  touch $XAUTH
+  xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+  docker run -t -i -P --rm \
+    -v $XSOCK:$XSOCK:rw,Z \
+    -v $XAUTH:$XAUTH:rw,Z \
+    -e HISTFILE=/tmp/.bash_history \
+    -e DISPLAY=$DISPLAY \
+    -e XAUTHORITY=$XAUTH \
+    -e PULSE_SERVER=tcp:$(/sbin/ifconfig docker0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}'):4713 \
+    -e PULSE_COOKIE=/run/pulse/cookie \
+    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
+    -v $DOCKER_SHARE_HOME/.config/pulse/cookie:/run/pulse/cookie:rw,Z \
+    "$@"
+}
+
+# docker compose
+alias dc="docker-compose"
+
+# Get latest container ID
+alias dl="docker ps -l -q"
+
+# Get container process
+alias dps="docker ps"
+
+# Get process included stop container
+alias dpa="docker ps -a"
+
+# Get images
+alias di="docker images | tail -n +2"
+alias dis="docker images | tail -n +2 | cols 1 2 | sed \"s/ /:/\""
+
+# Get container IP
+alias dip="docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
+
+# Execute in existing interactive container, e.g., $dex base /bin/bash
+alias dex="docker exec -i -t"
+
+# a slimmed-down stats
+alias dstats="docker stats --format 'table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}'"
+
+# container health (if health check is provided)
+function dhealth() {
+  for CONTAINER in "$@"; do
+    docker inspect --format "{{json .State.Health }}" "$CONTAINER" | python3 -mjson.tool
+  done
+}
+
+# backup *all* docker images!
+function docker_backup() {
+  for IMAGE in `dis`; do export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g') ; docker save "$IMAGE" | pv | pigz > "$FN.tgz"  ; done
+}
+
+# pull updates for docker images
+function dockup() {
+  di | grep -Piv "(malcolm|gogs|aal)" | cols 1 2 | tr ' ' ':' | xargs -r -l docker pull
+}
+
+function dxl() {
+  CONTAINER=$(docker ps -l -q)
+  docker exec -i -t $CONTAINER "$@"
+}
+
+# list virtual networks
+alias dnl="docker network ls"
+
+# inspect virtual networks
+alias dnins="docker network inspect $@"
+
+# Stop all containers
+function dstop() { docker stop $(docker ps -a -q); }
+
+# Dockerfile build, e.g., $dbu tcnksm/test
+function dbuild() { docker build -t=$1 .; }
+
+function dregls () {
+  curl -k -X GET "https://"$1"/v2/_catalog"
+}

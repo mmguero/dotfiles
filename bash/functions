@@ -151,10 +151,6 @@ function conv2nook() {
   find . -mindepth 1 -maxdepth 1 -type f -name "*$FINDARG" -print0 | xargs -r -0 -n 1 -P 4 -I XXX -r /bin/bash -c "handbrake-cli -i \"XXX\" -e x264 -q 26.0 -r 30 --pfr -a 1 -E ffaac -B 192 -6 dpl2 -R Auto -D 0.0 --audio-copy-mask aac,ac3,dtshd,dts,mp3 --audio-fallback ffac3 -f mp4 -X 480 -Y 360 --loose-anamorphic --modulus 2 -m --x264-preset medium --h264-profile baseline --encoder-tune fastdecode --h264-level 3.0 -o \"XXX_nook.mp4\""
 }
 
-function spotify() {
-  x11docker --hostuser="$USER" --pulseaudio -- "-v $HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v $HOME/.config/spotify/cache:/home/spotify/.cache/spotify" jess/spotify
-}
-
 function brownnoise() {
   play -c2 -n synth pinknoise band -n 280 80 band -n 60 25 gain +20 treble +40 500 bass -3 20 flanger 4 2 95 50 .3 sine 50 lin
 }
@@ -166,7 +162,6 @@ function noise() {
 ########################################################################
 # reference
 ########################################################################
-
 
 ########################################################################
 # math
@@ -747,136 +742,6 @@ function tmux() {
 
 function screen() {
   tmux "$@"
-}
-
-########################################################################
-# helper functions for docker
-########################################################################
-
-# run a new container and remove it when done
-function drun() {
-  docker run -t -i -P --rm \
-    -e HISTFILE=/tmp/.bash_history \
-    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
-    "$@"
-}
-
-# run a new container (with X11/pulse) and remove it when done
-function drunx() {
-  XSOCK=/tmp/.X11-unix
-  XAUTH=/tmp/.docker.xauth
-  touch $XAUTH
-  xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
-  docker run -t -i -P --rm \
-    -v $XSOCK:$XSOCK:rw,Z \
-    -v $XAUTH:$XAUTH:rw,Z \
-    -e HISTFILE=/tmp/.bash_history \
-    -e DISPLAY=$DISPLAY \
-    -e XAUTHORITY=$XAUTH \
-    -e PULSE_SERVER=tcp:$(/sbin/ifconfig docker0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}'):4713 \
-    -e PULSE_COOKIE=/run/pulse/cookie \
-    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
-    -v $DOCKER_SHARE_HOME/.config/pulse/cookie:/run/pulse/cookie:rw,Z \
-    "$@"
-}
-
-# run a new container (with X11/pulse/nvidia dri) and remove it when done
-function drunvidia() {
-  XSOCK=/tmp/.X11-unix
-  XAUTH=/tmp/.docker.xauth
-  touch $XAUTH
-  xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
-  docker run -t -i -P --privileged --rm \
-    -v $XSOCK:$XSOCK:rw,Z \
-    -v $XAUTH:$XAUTH:rw,Z \
-    --device=/dev/dri/card0:/dev/dri/card0 \
-    -e DISPLAY=$DISPLAY \
-    -e HISTFILE=/tmp/.bash_history \
-    -e XAUTHORITY=$XAUTH \
-    -e PULSE_SERVER=tcp:$(/sbin/ifconfig docker0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}'):4713 \
-    -e PULSE_COOKIE=/run/pulse/cookie \
-    -v $DOCKER_SHARE_HOME/.config/pulse/cookie:/run/pulse/cookie:rw,Z \
-    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
-    "$@"
-}
-
-# docker compose
-alias dc="docker-compose"
-
-# Get latest container ID
-alias dl="docker ps -l -q"
-
-# Get container process
-alias dps="docker ps"
-
-# Get process included stop container
-alias dpa="docker ps -a"
-
-# Get images
-alias di="docker images | tail -n +2"
-alias dis="docker images | tail -n +2 | cols 1 2 | sed \"s/ /:/\""
-
-# Get container IP
-alias dip="docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
-
-# Execute in existing interactive container, e.g., $dex base /bin/bash
-alias dex="docker exec -i -t"
-
-# a slimmed-down stats
-alias dstats="docker stats --format 'table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}'"
-
-# container health (if health check is provided)
-function dhealth() {
-  for CONTAINER in "$@"; do
-    docker inspect --format "{{json .State.Health }}" "$CONTAINER" | python3 -mjson.tool
-  done
-}
-
-# backup *all* docker images!
-function docker_backup() {
-  for IMAGE in `dis`; do export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g') ; docker save "$IMAGE" | pv | pigz > "$FN.tgz"  ; done
-}
-
-# pull updates for docker images
-function dockup() {
-  di | grep -Piv "(malcolm|gogs|aal)" | cols 1 2 | tr ' ' ':' | xargs -r -l docker pull
-}
-
-function dxl() {
-  CONTAINER=$(docker ps -l -q)
-  docker exec -i -t $CONTAINER "$@"
-}
-
-# list virtual networks
-alias dnl="docker network ls"
-
-# inspect virtual networks
-alias dnins="docker network inspect $@"
-
-# Stop all containers
-function dstop() { docker stop $(docker ps -a -q); }
-
-# Dockerfile build, e.g., $dbu tcnksm/test
-function dbuild() { docker build -t=$1 .; }
-
-function dock2go() {
-  DOCKPORT=$(shuf -i25000-59000 -n1)
-  EXTRA_OPS="-v $DOCKER_SHARE_HOME/tmp:/host:rw,Z -v $DOCKER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z -v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z -v $DOCKER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z -v $DOCKER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z -v $DOCKER_SHARE_HOME/.gitconfig:/etc/gitconfig:ro,Z -v $DOCKER_SHARE_HOME/.ssh/id_rsa:/etc/ssh/id_rsa:ro,Z -v $DOCKER_SHARE_HOME/.ssh/id_rsa.pub:/etc/ssh/id_rsa.pub:ro,Z"
-  CID=$(docker run --name x2go -p $DOCKPORT:22 -t -d -e HISTFILE=/tmp/.bash_history $EXTRA_OPS x2go)
-  IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CID)
-  echo "Waiting a few moment for $CID to come up..."
-  while ! nc -z $IP 22; do
-    sleep 1
-  done
-  sleep 1
-  docker logs $CID
-  echo "Container $CID at $IP"
-  docker exec -i -t -u root $CID bash -c 'echo "Set root password..." && passwd && echo "Set dockerx password..." && passwd dockerx'
-  ssh-copy-id -i $HOME/.ssh/id_rsa.pub -p 22 dockerx@$IP
-}
-
-function dregls () {
-  curl -k -X GET "https://"$1"/v2/_catalog"
 }
 
 ########################################################################
