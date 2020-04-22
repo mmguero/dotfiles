@@ -47,25 +47,25 @@ fi
 alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt m4b-tool'
 
 function spotify() {
-  nohup x11docker --hostuser="$USER" --pulseaudio -- "-v $HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v $HOME/.config/spotify/cache:/home/spotify/.cache/spotify" jess/spotify </dev/null >/dev/null 2>&1 &
+  nohup x11docker --user=RETAIN --pulseaudio -- "-v $HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v $HOME/.config/spotify/cache:/home/spotify/spotify" jess/spotify </dev/null >/dev/null 2>&1 &
 }
 
 ########################################################################
 # web
 ########################################################################
 function tor() {
-  nohup x11docker --user=RETAIN -- --tmpfs /dev/shm -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
+  nohup x11docker --user=RETAIN -- --tmpfs /dev/shm jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
 }
 
 ########################################################################
 # desktop
 ########################################################################
 function dchromium() {
-  nohup x11docker --gpu --pulseaudio --user=RETAIN -- --tmpfs /dev/shm -- jess/chromium --no-sandbox "$@" </dev/null >/dev/null 2>&1 &
+  nohup x11docker --gpu --pulseaudio -- "-v $HOME/download:/Downloads" "--tmpfs /dev/shm" jess/chromium --no-sandbox "$@" </dev/null >/dev/null 2>&1 &
 }
 
 function dfirefox() {
-  nohup x11docker --gpu --pulseaudio -- --tmpfs /dev/shm -- jess/firefox "$@" </dev/null >/dev/null 2>&1 &
+  nohup x11docker --gpu --pulseaudio -- "-v $HOME/download:/Downloads" "--tmpfs /dev/shm" jess/firefox "$@" </dev/null >/dev/null 2>&1 &
 }
 ########################################################################
 # helper functions for docker
