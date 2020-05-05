@@ -1,0 +1,30 @@
+sudo apt-get -y update
+sudo apt-get -y install libnss-ldap libpam-ldap ldap-utils nscd
+
+libpam-ldap
+  ldaps://192.168.10.73:636/
+  dc=example,dc=org
+  3
+  No
+  Yes
+  cn=binddn,dc=example,dc=org
+  xxxxxxxx
+  crypt
+  enable all PAM profiles
+
+libnss-ldap
+  ldaps://172.16.0.73:636/
+  dc=example,dc=org
+  3
+  Yes
+  No
+  No
+  cn=binddn,dc=example,dc=org
+  xxxxxxxx
+
+sudo sed -i -r 's/^((passwd|group|shadow):.*)/\1 ldap/' /etc/nsswitch.conf
+sudo sed -i 's/[[:space:]]*use_authtok//g' /etc/pam.d/common-password
+echo -e "\nsession optional pam_mkhomedir.so skel=/etc/skel umask=077" | sudo tee -a /etc/pam.d/common-session
+echo -e "\nTLS_REQCERT never\nTLS_CHECKPEER no\n" | sudo tee -a /etc/ldap/ldap.conf
+sudo /usr/sbin/pam-auth-update
+sudo /etc/init.d/lightdm restart
