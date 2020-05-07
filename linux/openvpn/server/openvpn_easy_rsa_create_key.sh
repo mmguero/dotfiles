@@ -2,8 +2,10 @@
 
 set -e
 
-# Follow https://www.golinuxcloud.com/install-openvpn-server-easy-rsa-3-centos-7/
-# for server setup. This automates client key setup "Generate Certificates and Keys for Clients"
+# some relevant guides for server setup:
+#  - https://www.digitalocean.com/community/tutorials/how-to-set-up-an-openvpn-server-on-debian-8
+#  - https://www.golinuxcloud.com/install-openvpn-server-easy-rsa-3-centos-7/
+# This automates client key setup "Generate Certificates and Keys for Clients"
 
 # usage:
 # openvpn_easy_rsa_create_key.sh clientname
