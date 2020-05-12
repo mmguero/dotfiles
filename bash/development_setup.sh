@@ -185,14 +185,14 @@ if [ $MACOS ]; then
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       echo "Installing brew..."
       # kind of a chicken-egg situation here with curl/brew, but I think macOS has it installed already
-      /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+      bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     fi
   else
     echo "\"brew\" is already installed!"
   fi # brew install check
 
   brew cask list >/dev/null 2>&1
-  brew tap caskroom/versions
+  brew tap homebrew/cask-versions
 
 fi # MacOS check
 
@@ -909,6 +909,7 @@ elif [ $LINUX ]; then
       htop
       less
       libcap2-bin
+      libsquashfuse0
       linux-headers-$(uname -r)
       localepurge
       lshw
@@ -932,6 +933,8 @@ elif [ $LINUX ]; then
       rar
       rename
       sed
+      squashfs-tools
+      squashfuse
       strace
       sysstat
       time
@@ -1096,9 +1099,11 @@ EOT
       iproute2
       mosh
       ncat
+      net-tools
       netsniff-ng
       ngrep
       nmap
+      openbsd-inetd
       openresolv
       openssh-client
       openvpn
@@ -1106,12 +1111,15 @@ EOT
       socat
       sshfs
       ssldump
+      stunnel4
+      tcpcryptd
       tcpdump
       telnet
       traceroute
       tshark
       wget
       whois
+      wireguard
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
@@ -1307,6 +1315,7 @@ EOT
 %disk ALL=(root) NOPASSWD: /bin/mount
 %disk ALL=(root) NOPASSWD: /bin/umount
 %netdev ALL=(root) NOPASSWD: /usr/sbin/openvpn
+%netdev ALL=(root) NOPASSWD: /usr/bin/wireguard
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 EOT
       $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
@@ -1319,10 +1328,18 @@ EOT
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     EXE_LESS_CAP=(
+      /opt/zeek/bin/capstats
+      /opt/zeek/bin/zeek
       /sbin/ethtool
       /usr/bin/bro
       /usr/bin/capstats
       /usr/bin/dumpcap
+      /usr/bin/ncat
+      /usr/bin/openssl
+      /usr/bin/socat
+      /usr/bin/stunnel3
+      /usr/bin/stunnel4
+      /usr/bin/tcpcryptd
       /usr/bin/tcpflow
       /usr/bin/tcpreplay
       /usr/sbin/arpspoof
@@ -1335,6 +1352,7 @@ EOT
       /usr/sbin/nethogs
       /usr/sbin/sshmitm
       /usr/sbin/sshow
+      /usr/sbin/tcpd
       /usr/sbin/tcpdump
       /usr/sbin/tcpkill
       /usr/sbin/tcpnice
@@ -1348,17 +1366,21 @@ EOT
       /usr/sbin/curvetun
       /usr/sbin/flowtop
       /usr/sbin/ifpps
+      /usr/sbin/inetd
       /usr/sbin/mausezahn
       /usr/sbin/netsniff-ng
+      /usr/sbin/stenotype
       /usr/sbin/trafgen
     )
     for i in ${EXE_LESS_CAP[@]}; do
+      [[ -e "$i" ]] && \
       $SUDO_CMD chown root:netdev "$i" && \
-        $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' "$i"
+        $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip' "$i"
     done
     for i in ${EXE_MORE_CAP[@]}; do
+      [[ -e "$i" ]] && \
       $SUDO_CMD chown root:netdev "$i" && \
-        $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_IPC_LOCK+eip CAP_SYS_ADMIN+eip' "$i"
+        $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip CAP_IPC_LOCK+eip CAP_SYS_ADMIN+eip' "$i"
     done
   fi # setcap confirmation
 
@@ -1381,6 +1403,7 @@ EOT
         ssh
         24800/tcp
         28400/tcp
+        4001/tcp
         5044/tcp
         5601/tcp
         8443/tcp

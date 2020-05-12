@@ -1,6 +1,6 @@
 #!/bin/bash
 
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
 brew install bash
 grep /usr/local/bin/bash /etc/shells || (echo '/usr/local/bin/bash' | sudo tee -a /etc/shells)
@@ -9,7 +9,7 @@ grep /usr/local/bin/bash /etc/shells || (echo '/usr/local/bin/bash' | sudo tee -
 #  [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 brew install bash-completion
 
-brew install bro
+brew install zeek
 
 # Commands also provided by macOS have been installed with the prefix "g".
 # If you need to use these commands with their normal names, you
@@ -80,7 +80,7 @@ brew install wdiff
 brew install wget
 
 brew install cask
-brew tap caskroom/versions
+brew tap homebrew/cask-versions
 
 # brew cask install docker-edge
 brew cask install diskwave
