@@ -43,6 +43,7 @@ fi
 if [ $PYENV_ROOT ]; then
   [[ -r $PYENV_ROOT/completions/pyenv.bash ]] && . $PYENV_ROOT/completions/pyenv.bash
   [[ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]] && eval "$(pyenv virtualenv-init -)"
+  export PYTHONDONTWRITEBYTECODE=1
 fi
 
 if [ $GOENV_ROOT ]; then
