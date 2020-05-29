@@ -46,23 +46,41 @@ Vagrant.configure(2) do |config|
   #       "--product", "Cruzer Blade"]
   # end
 
+
   config.vm.provision "shell", inline: <<-STEP1
+    New-Item -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows' -Name CloudContent | Out-Null
+    New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent' -Name 'DisableWindowsConsumerFeatures' -PropertyType DWORD -Value '1' -Force | Out-Null
     New-Item -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\' -Name 'Windows Search' | Out-Null
-    New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search' -Name 'AllowCortana' -PropertyType DWORD -Value '0' | Out-Null
+    New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search' -Name 'AllowCortana' -PropertyType DWORD -Value '0' -Force | Out-Null
+    Set-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\SQMClient\\Windows' CEIPEnable 0 | Out-Null
+    schtasks /Change /TN 'Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip' /Disable | Out-Null
+
     taskkill /f /im OneDrive.exe
     C:/Windows/SysWOW64/OneDriveSetup.exe /uninstall
+
+    Enable-WindowsOptionalFeature -NoRestart -Online -FeatureName VirtualMachinePlatform
     Enable-WindowsOptionalFeature -NoRestart -Online -FeatureName Microsoft-Windows-Subsystem-Linux
   STEP1
   config.vm.provision :reload
 
   config.vm.provision "shell", inline: <<-STEP2
+    Invoke-WebRequest -Uri https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -OutFile wsl_update_x64.msi -UseBasicParsing
+    New-Item -Path 'c:\\' -Name 'wsl_msi_extract' -ItemType 'directory'
+    msiexec /a wsl_update_x64.msi /qb TARGETDIR=C:\\wsl_msi_extract
+    Start-Sleep -s 10
+    Copy-Item 'C:\\wsl_msi_extract\\System32\\lxss\\tools\\kernel' -Destination 'C:\\Windows\\System32\\lxss\\tools\\'
+    Remove-Item wsl_update_x64.msi
+    Remove-Item -recurse 'C:\\wsl_msi_extract'
+
+    wsl --set-default-version 1
     Invoke-WebRequest -Uri https://aka.ms/wsl-debian-gnulinux -OutFile Debian.appx -UseBasicParsing
     Add-AppxPackage .\\Debian.appx
     Remove-Item Debian.appx
+    wsl --set-version Debian 1
+    wsl --list --verbose
 
     Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
     choco install -y chocolateygui pgina chromium firefox 7zip.install sysinternals putty.install winscp.install keepass.install conemu sublimetext3 sumatrapdf.install
-
   STEP2
 
   config.vm.provision "file", source: "./WSL_Debian_Setup.ps1", destination: "C:/WSL_Debian_Setup.ps1"

@@ -1,3 +1,4 @@
+Start-Process "wsl.exe" -ArgumentList "--set-default-version 1" -Wait
 Start-Process "debian.exe" -ArgumentList "install --root" -Wait
 Start-Process "debian.exe" -ArgumentList 'run adduser vagrant --gecos ",,,," --disabled-password' -Wait
 Start-Process "debian.exe" -ArgumentList "run echo 'vagrant:vagrant' | sudo chpasswd" -Wait
