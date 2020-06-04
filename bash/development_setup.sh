@@ -290,10 +290,6 @@ if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
       libxmlsec1-dev \
       llvm \
       make \
-      python-tk \
-      tcl8.6-dev \
-      tk-dev \
-      tk8.6-dev \
       wget \
       xz-utils \
       zlib1g-dev
@@ -459,6 +455,7 @@ if [[ -n $LINUX ]] && [[ -n $LINUX_RELEASE ]]; then
       # some manual ones
       GPG_KEY_URLS=(
         https://build.opensuse.org/projects/home:manuelschneid3r/public_key
+        https://db.debian.org/fetchkey.cgi?fingerprint=FEDEC1CB337BCF509F43C2243914B532F4DFBE99
       )
       for i in ${GPG_KEY_URLS[@]}; do
         curl -fsSL "$i" | $SUDO_CMD apt-key add -
@@ -576,6 +573,7 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
       debian:stable-slim
       hello-world:latest
       ubuntu:latest
+      nginx:latest
       jwilder/nginx-proxy:alpine
       jrcs/letsencrypt-nginx-proxy-companion:latest
     )
