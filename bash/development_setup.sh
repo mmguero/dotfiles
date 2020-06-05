@@ -903,7 +903,6 @@ elif [ $LINUX ]; then
       google-perftools
       grep
       gzip
-      haveged
       htop
       less
       libcap2-bin
