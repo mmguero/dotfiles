@@ -57,9 +57,9 @@ function zoom() {
   nohup x11docker --gpu --pulseaudio --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" "-v" "$HOME/.config/zoomus.conf:/home.tmp/$USER/.config/zoomus.conf" -- jess/zoom-us "$@" </dev/null >/dev/null 2>&1 &
 }
 
-function teams() {
-  nohup x11docker --gpu --alsa --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" "-v" "$HOME/.config/Microsoft:/home.tmp/$USER/.config/Microsoft" -- teams "$@" </dev/null >/dev/null 2>&1 &
-}
+#function teams() {
+#  nohup x11docker --gpu --alsa --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" "-v" "$HOME/.config/Microsoft:/home.tmp/$USER/.config/Microsoft" -- teams "$@" </dev/null >/dev/null 2>&1 &
+#}
 
 ########################################################################
 # web
