@@ -1062,9 +1062,15 @@
 			{
 				"code": "html:not([stylus-iframe]) {\n  filter: invert(0.95) hue-rotate(180deg);\n  -webkit-filter: invert(0.95) hue-rotate(180deg);\n  -moz-filter: invert(0.95) hue-rotate(180deg);\n  -ms-filter: invert(0.95) hue-rotate(180deg);\n  -o-filter: invert(0.95) hue-rotate(180deg);\n   background:black;}\nimg,embed,video,canvas,iframe,svg,\nspan.Emoticon, span.emoji, i.emoji,\n[style*=\"background-image\"]:not(body),\n[style*=\"background: url(\"]:not(body),\n[class=\"EmbedVideo\"]:not(video),\n[type=\"application/x-shockwave-flash\"]:not(embed),\n[id=\"flashcontent\"]:not(embed) {\n  filter: invert(1) hue-rotate(180deg) !important;\n  -webkit-filter: invert(1) hue-rotate(180deg) !important;\n  -moz-filter: invert(1) hue-rotate(180deg) !important;\n  -ms-filter: invert(1) hue-rotate(180deg) !important;\n  -o-filter: invert(1) hue-rotate(180deg) !important;}\na[style*=\"background: url(\"] > img, \na[style*=\"background-image\"] > img, \nhtml[stylus-iframe], \nhtml[stylus-iframe] * {\n  -webkit-filter: none !important;\n  filter: none !important;\n  -moz-filter: none !important;\n  -ms-filter: none !important;\n  -o-filter: none !important;}",
 				"urlPrefixes": [
-					"https://omv.local.lan:3443"
+					"https://omv.local.lan:3443",
+					"https://omv.local.lan:4043",
+					"https://omv.local.lan:8083"
+				],
+				"urls": [
+					"https://omv.local.lan/"
 				],
 				"domains": [
+					"ldap.local.lan",
 					"lds.org",
 					"churchofjesuschrist.org",
 					"wikipedia.org",
@@ -1117,8 +1123,8 @@
 		"name": "Global dark style | Smart Invert",
 		"originalDigest": "60cd3ef680fa5bf32bce2e78f2bf14731812e780",
 		"_id": "ece790b5-4a55-4d79-a29d-5f8cf45de820",
-		"_rev": 1593233147311,
+		"_rev": 1593233604634,
 		"id": 40,
-		"updateDate": 1593233147311
+		"updateDate": 1593233604634
 	}
 ]
