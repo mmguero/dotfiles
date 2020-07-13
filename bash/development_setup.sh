@@ -660,13 +660,13 @@ elif [ $LINUX ]; then
       fi
 
       # virtualbox extension pack
-      VBOX_EXT_PACKAGE_NAME="$(apt-cache policy virtualbox-ext-pack | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
-      if [[ "$VBOX_PACKAGE_NAME" == "virtualbox" ]] && [[ -n $VBOX_EXT_PACKAGE_NAME ]]; then
+      VBOX_EXT_PACKAGE_CANDIDATE="$(apt-cache policy virtualbox-ext-pack | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
+      if [[ "$VBOX_PACKAGE_NAME" == "virtualbox" ]] && [[ -n $VBOX_EXT_PACKAGE_CANDIDATE ]]; then
         unset CONFIRMATION
         read -p "Install $VBOX_EXT_PACKAGE_NAME [Y/n]? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-Y}
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$VBOX_EXT_PACKAGE_NAME"
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y virtualbox-ext-pack
         fi
 
       else
