@@ -19,8 +19,8 @@ PYTHON_VERSIONS=( )
 RUBY_VERSIONS=( )
 GOLANG_VERSIONS=( )
 NODEJS_VERSIONS=( )
-PERL_VERSIONS=( 5.31.6 )
-DOCKER_COMPOSE_INSTALL_VERSION=( 1.25.0 )
+PERL_VERSIONS=( 5.32.0 )
+DOCKER_COMPOSE_INSTALL_VERSION=( 1.26.2 )
 
 # add contents of https://raw.githubusercontent.com/mmguero/config/master/bash/rc.d/04_envs.bashrc
 # to .bashrc after running this script (or let this script set up the symlinks for ~/.bashrc.d for you)
@@ -634,9 +634,9 @@ elif [ $LINUX ]; then
   if ! command -v VBoxManage >/dev/null 2>&1 ; then
     unset VBOX_PACKAGE_NAME
     VBOX_PACKAGE_NAMES=(
+      virtualbox
       virtualbox-6.1
       virtualbox-6.0
-      virtualbox
       virtualbox-5.2
     )
     for i in ${VBOX_PACKAGE_NAMES[@]}; do
@@ -660,28 +660,39 @@ elif [ $LINUX ]; then
       fi
 
       # virtualbox extension pack
-      VBOX_EXTPACK_URL="$(curl -fsL "https://www.virtualbox.org/wiki/Downloads" | grep -oP "https://.*?vbox-extpack" | sort -V | head -n 1)"
-      unset CONFIRMATION
-      read -p "Download and install $VBOX_EXTPACK_URL [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        VBOX_EXTPACK_FNAME="$(echo "$VBOX_EXTPACK_URL" | sed "s@.*/@@")"
-        pushd /tmp >/dev/null 2>&1
-        curl -L -J -O "$VBOX_EXTPACK_URL"
-        if [[ -r "$VBOX_EXTPACK_FNAME" ]]; then
-          $SUDO_CMD VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb --replace "$VBOX_EXTPACK_FNAME"
-        else
-          echo "Error downloading $VBOX_EXTPACK_URL to $VBOX_EXTPACK_FNAME"
+      VBOX_EXT_PACKAGE_NAME="$(apt-cache policy virtualbox-ext-pack | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
+      if [[ "$VBOX_PACKAGE_NAME" == "virtualbox" ]] && [[ -n $VBOX_EXT_PACKAGE_NAME ]]; then
+        unset CONFIRMATION
+        read -p "Install $VBOX_EXT_PACKAGE_NAME [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$VBOX_EXT_PACKAGE_NAME"
         fi
-        popd >/dev/null 2>&1
-      fi
 
+      else
+        VBOX_EXTPACK_URL="$(curl -fsL "https://www.virtualbox.org/wiki/Downloads" | grep -oP "https://.*?vbox-extpack" | sort -V | head -n 1)"
+        unset CONFIRMATION
+        read -p "Download and install $VBOX_EXTPACK_URL [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          VBOX_EXTPACK_FNAME="$(echo "$VBOX_EXTPACK_URL" | sed "s@.*/@@")"
+          pushd /tmp >/dev/null 2>&1
+          curl -L -J -O "$VBOX_EXTPACK_URL"
+          if [[ -r "$VBOX_EXTPACK_FNAME" ]]; then
+            $SUDO_CMD VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb --replace "$VBOX_EXTPACK_FNAME"
+          else
+            echo "Error downloading $VBOX_EXTPACK_URL to $VBOX_EXTPACK_FNAME"
+          fi
+          popd >/dev/null 2>&1
+        fi
+      fi
     fi
+
   else
     echo "\"virtualbox\" is already installed!"
   fi # check VBoxManage is not in path to see if some form of virtualbox is already installed
 
-  # install Vagrant only if vagrant is not yet installed and virtualbox is now installed
+  # install Vagrant only if vagrant is not yet installed
   if ! command -v vagrant >/dev/null 2>&1; then
     unset CONFIRMATION
     read -p "Attempt to download and install latest version of Vagrant from releases.hashicorp.com [Y/n]? " CONFIRMATION
@@ -690,6 +701,7 @@ elif [ $LINUX ]; then
       curl -o /tmp/vagrant.deb "https://releases.hashicorp.com$(curl -fsL "https://releases.hashicorp.com$(curl -fsL "https://releases.hashicorp.com/vagrant" | grep 'href="/vagrant/' | head -n 1 | grep -o '".*"' | tr -d '"' )" | grep "x86_64\.deb" | head -n 1 | grep -o 'href=".*"' | sed 's/href=//' | tr -d '"')"
       $SUDO_CMD dpkg -i /tmp/vagrant.deb
       rm -f /tmp/vagrant.deb
+
     else
       unset CONFIRMATION
       read -p "Install vagrant via apt-get instead [Y/n]? " CONFIRMATION
@@ -1390,22 +1402,8 @@ EOT
       $SUDO_CMD ufw default deny incoming
       $SUDO_CMD ufw default allow outgoing
       UFW_ALLOW_RULES=(
-        CIFS
-        CUPS
-        http
-        https
-        mosh
-        nfs
         ntp
         ssh
-        24800/tcp
-        28400/tcp
-        4001/tcp
-        5044/tcp
-        5601/tcp
-        8443/tcp
-        9200/tcp
-        9443/tcp
       )
       for i in ${UFW_ALLOW_RULES[@]}; do
         $SUDO_CMD ufw allow "$i"
@@ -1478,7 +1476,7 @@ EOT
     read -p "Tweak kernel parameters in grub (scheduler, cgroup, etc.) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=\).*/\1"elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem"/' /etc/default/grub
+      $SUDO_CMD sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=\).*/\1"random.trust_cpu=on elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem"/' /etc/default/grub
       $SUDO_CMD update-grub
     fi # grub confirmation
   fi # grub check
@@ -1543,7 +1541,6 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
     mkdir -p ~/.local/bin
     LINKED_SCRIPTS=(
       clarence-0.4.4
-      keepassxc_delay.sh
       sound_cap.sh
       screenshot.sh
       tilix.sh
