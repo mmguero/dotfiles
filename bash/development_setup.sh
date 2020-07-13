@@ -659,14 +659,27 @@ elif [ $LINUX ]; then
         fi
       fi
 
-      # virtualbox extension pack
-      VBOX_EXT_PACKAGE_CANDIDATE="$(apt-cache policy virtualbox-ext-pack | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
-      if [[ "$VBOX_PACKAGE_NAME" == "virtualbox" ]] && [[ -n $VBOX_EXT_PACKAGE_CANDIDATE ]]; then
-        unset CONFIRMATION
-        read -p "Install virtualbox-ext-pack [Y/n]? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-Y}
-        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y virtualbox-ext-pack
+      if [[ "$VBOX_PACKAGE_NAME" == "virtualbox" ]]; then
+        # virtualbox guest additions ISO
+        VBOX_ISO_PACKAGE_CANDIDATE="$(apt-cache policy virtualbox-guest-additions-iso | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
+        if [[ -n $VBOX_ISO_PACKAGE_CANDIDATE ]]; then
+          unset CONFIRMATION
+          read -p "Install virtualbox-guest-additions-iso [Y/n]? " CONFIRMATION
+          CONFIRMATION=${CONFIRMATION:-Y}
+          if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+            DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y virtualbox-guest-additions-iso
+          fi
+        fi
+
+        # virtualbox extension pack
+        VBOX_EXT_PACKAGE_CANDIDATE="$(apt-cache policy virtualbox-ext-pack | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
+        if [[ -n $VBOX_EXT_PACKAGE_CANDIDATE ]]; then
+          unset CONFIRMATION
+          read -p "Install virtualbox-ext-pack [Y/n]? " CONFIRMATION
+          CONFIRMATION=${CONFIRMATION:-Y}
+          if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+            DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y virtualbox-ext-pack
+          fi
         fi
 
       else
