@@ -401,15 +401,6 @@ function pipup() {
 }
 
 ########################################################################
-# vagrant
-########################################################################
-
-# update all outdated vagrant boxes
-function vagboxup() {
-  vagrant box outdated --global | grep "is outdated" | cols 2 | xargs -r -l vagrant box update --box
-}
-
-########################################################################
 # network
 ########################################################################
 function lport () {

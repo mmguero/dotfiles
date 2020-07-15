@@ -73,17 +73,6 @@ alias delblanks='sed -i "/^\s*$/d"'
 alias extip='curl -s ifconfig.io'
 alias cl='curl -L -J -O'
 
-#vmware/vbox/kvm/qemu
-alias vs='virsh -c qemu:///system '
-alias qemuls='virsh -c qemu:///system list --all'
-alias vag='vagrant'
-alias vup='vagrant up'
-alias vhalt='vagrant halt'
-alias vrm='vagrant destroy'
-alias vbl='vagrant box list'
-alias vgs='vagrant global-status'
-alias vsh='vagrant ssh'
-
 #media
 alias dexif="exiftool -T -description"
 alias wamcrest="vlc 'rtsp://wamcrest.local.lan:80/cam/realmonitor?channel=1&subtype=0'"

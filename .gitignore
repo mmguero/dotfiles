@@ -1,0 +1,7 @@
+# vagrant runtime directories
+.vagrant
+
+# Byte-compiled / optimized python
+__pycache__/
+*.py[cod]
+*$py.class
