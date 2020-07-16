@@ -401,6 +401,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       entrypoint2 \
       git+git://github.com/badele/gitcheck.git \
       git-up \
+      humanhash3 \
       ordered-set \
       magic-wormhole \
       patool \

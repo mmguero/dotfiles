@@ -109,6 +109,10 @@ function uni () {
   done
 }
 
+function humanhash () {
+  python -c "import humanhash, sys; [print(humanhash.humanize(line.strip()) if all(c.lower() in '0123456789abcdef' for c in line.strip()) else f'\'{line.strip()}\\' is not a digest') for line in sys.stdin]"
+}
+
 ########################################################################
 # media
 ########################################################################
