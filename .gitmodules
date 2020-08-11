@@ -1,9 +1,3 @@
-[submodule "gdb/peda"]
-	path = gdb/peda
-	url = https://github.com/longld/peda
 [submodule "bash/context-color"]
 	path = bash/context-color
 	url = https://github.com/ramnes/context-color
-[submodule "bash/bashtop"]
-	path = bash/bashtop
-	url = https://github.com/aristocratos/bashtop
