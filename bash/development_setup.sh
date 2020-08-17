@@ -1040,6 +1040,7 @@ EOT
       meld
       numix-gtk-theme
       obsidian-icon-theme
+      pdftk
       regexxer
       sublime-text
       thunar

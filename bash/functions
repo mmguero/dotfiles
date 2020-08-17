@@ -309,6 +309,20 @@ function h() { if [ -z "$1" ]; then history; else history | grep -i "$@"; fi; }
 ########################################################################
 function fname() { find . -iname "*$@*"; }
 
+function sfind() {
+  if [ "$1" ]; then
+    FIND_FOLDER="$1"
+  else
+    FIND_FOLDER="$(pwd)"
+  fi
+  if [ "$2" ]; then
+    FIND_PATTERN="$2"
+  else
+    FIND_PATTERN="*"
+  fi
+  find "$FIND_FOLDER" -type f -iname "$FIND_PATTERN" -print0 | xargs -r -0 ls -la | awk '{system("numfmt -z --to=iec-i --suffix=B --padding=7 "$5) ; out=""; for(i=9;i<=NF;i++){out=out" "$i}; print " KB\t"out}' | sort -h
+}
+
 ########################################################################
 # examine running processes
 ########################################################################
