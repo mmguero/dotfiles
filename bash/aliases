@@ -66,6 +66,7 @@ alias xml='xmllint --format -'
 
 # vpn/tunnel
 alias ov='sudo openvpn'
+alias wwg='sudo wwg.sh'
 
 #development/misc
 alias pycheck='python -m py_compile'

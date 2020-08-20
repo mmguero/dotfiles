@@ -1339,7 +1339,7 @@ EOT
 %disk ALL=(root) NOPASSWD: /bin/mount
 %disk ALL=(root) NOPASSWD: /bin/umount
 %netdev ALL=(root) NOPASSWD: /usr/sbin/openvpn
-%netdev ALL=(root) NOPASSWD: /usr/bin/wireguard
+%netdev ALL=(root) NOPASSWD: /usr/local/bin/wwg.sh
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 EOT
       $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
