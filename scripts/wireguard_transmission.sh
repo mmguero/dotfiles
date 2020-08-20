@@ -12,13 +12,15 @@ else
 fi
 
 function cleanup {
-  sudo systemctl stop wg-quick@"${WG_IFACE}"
+  # sudo systemctl stop wg-quick@"${WG_IFACE}"
+  wwg stop "${WG_IFACE}"
 }
 
 if [[ -n "${WG_IFACE}" ]]; then
   trap "cleanup" EXIT
 
-  sudo systemctl start wg-quick@"${WG_IFACE}"
+  #sudo systemctl start wg-quick@"${WG_IFACE}"
+  wwg start "${WG_IFACE}"
 
   transmission-daemon --foreground --config-dir "$HOME"/.config/transmission-daemon
 fi
