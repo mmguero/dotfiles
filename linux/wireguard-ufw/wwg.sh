@@ -11,7 +11,11 @@ EOF
 
 if (( $# >= 2 )) && validate_operation "$1" ; then
   if [[ "$1" == "show" ]]; then
-    wg show "$2"
+    if [[ "$2" == "all" ]]; then
+      wg show
+    else
+      wg show "$2"
+    fi
   else
     systemctl "$1" wg-quick@"$2".service
   fi
