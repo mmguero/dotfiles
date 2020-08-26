@@ -71,7 +71,7 @@ alias wwg='sudo wwg.sh'
 #development/misc
 alias pycheck='python -m py_compile'
 alias delblanks='sed -i "/^\s*$/d"'
-alias extip='curl -s ifconfig.io'
+alias extip='curl -sSLH "Cache-Control: no-cache" https://ifconfig.co/?$(date +%s)'
 alias cl='curl -L -J -O'
 
 #media
