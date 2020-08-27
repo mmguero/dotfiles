@@ -71,12 +71,37 @@ function tor() {
 ########################################################################
 # desktop
 ########################################################################
+function x11desktop() {
+  if [ "$1" ]; then
+    DESKTOP_PROVIDER="$1"
+    shift
+  else
+    DESKTOP_PROVIDER="lxde"
+  fi
+  if [[ "$DESKTOP_PROVIDER" == "mate" ]]; then
+    INITFLAG="--init=systemd"
+  else
+    INITFLAG=""
+  fi
+  nohup x11docker --desktop --sudouser $INITFLAG --pulseaudio -- x11docker/$DESKTOP_PROVIDER "$@" </dev/null >/dev/null 2>&1 &
+}
+
 function dchromium() {
   nohup x11docker --gpu --pulseaudio -- "-v" "$HOME/download:/Downloads" "--tmpfs" "/dev/shm" -- jess/chromium --no-sandbox "$@" </dev/null >/dev/null 2>&1 &
 }
 
 function dfirefox() {
   nohup x11docker --gpu --pulseaudio -- "-v" "$HOME/download:/Downloads" "--tmpfs" "/dev/shm" -- jess/firefox "$@" </dev/null >/dev/null 2>&1 &
+}
+
+function dkodi() {
+  if [ "$1" ]; then
+    MEDIA_FOLDER="$1"
+    shift
+  else
+    MEDIA_FOLDER="$(realpath $(pwd))"
+  fi
+  nohup x11docker --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
 }
 
 ########################################################################
