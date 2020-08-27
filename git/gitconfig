@@ -107,7 +107,7 @@
   # move all submodule heads
   submove = submodule foreach --recursive git up
   # set-upstream to another branch and reset hard to that branch
-  switchup = "!f() { git branch --set-upstream-to \"$1\" && git reset --hard \"$1\"; }; f"
+  switchup = "!f() { BRNCH=$(git rev-parse --abbrev-ref HEAD) && git branch --set-upstream-to \"$1/$BRNCH\" && git reset --hard \"$1/$BRNCH\"; }; f"
   # reset the previous commit, but keeps all the changes from that commit in the working directory
   undo = reset HEAD~1 --mixed
   upp = "!bash -c '((git pull --rebase --autostash --recurse-submodules=yes \"$0\" \"$(git rev-parse --abbrev-ref HEAD)\") 3>&1 1>&2 2>&3 | grep -v \"to the list of known hosts\") 3>&1 1>&2 2>&3'"
@@ -122,6 +122,7 @@
 
   # change commit owner info
   change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
+
 
 [filter "lfs"]
 	clean = git-lfs clean -- %f
