@@ -172,3 +172,5 @@ function dbuild() { docker build -t=$1 .; }
 function dregls () {
   curl -k -X GET "https://"$1"/v2/_catalog"
 }
+
+alias dockviz='docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz images -t'
