@@ -174,7 +174,7 @@ function docker_backup() {
 
 # pull updates for docker images
 function dockup() {
-  di | grep -Piv "(malcolm|gogs|aal)" | cols 1 2 | tr ' ' ':' | xargs -r -l docker pull
+  di | grep -Piv "(malcolmnetsec|x11docker|jess|mingc)/" | cols 1 2 | tr ' ' ':' | xargs -r -l docker pull
 }
 
 function dxl() {
@@ -199,3 +199,9 @@ function dregls () {
 }
 
 alias dockviz='docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz images -t'
+
+function dive () {
+  docker run --rm -it \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    wagoodman/dive:latest "$@"
+}
