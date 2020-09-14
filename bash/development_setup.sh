@@ -20,7 +20,7 @@ RUBY_VERSIONS=( )
 GOLANG_VERSIONS=( )
 NODEJS_VERSIONS=( )
 PERL_VERSIONS=( 5.32.0 )
-DOCKER_COMPOSE_INSTALL_VERSION=( 1.26.2 )
+DOCKER_COMPOSE_INSTALL_VERSION=( 1.27.1 )
 
 # add contents of https://raw.githubusercontent.com/mmguero/config/master/bash/rc.d/04_envs.bashrc
 # to .bashrc after running this script (or let this script set up the symlinks for ~/.bashrc.d for you)
@@ -247,15 +247,15 @@ elif [ $LINUX ]; then
     for i in ${ENV_LIST[@]}; do
       if ! ( anyenv envs | grep -q "$i" ) >/dev/null 2>&1 ; then
         unset CONFIRMATION
-        read -p "\"$i\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-Y}
+        read -p "\"$i\" is not installed, attempt to install it [y/N]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-N}
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
           anyenv install "$i" && ENVS_INSTALLED[$i]=true
         fi
       else
         unset CONFIRMATION
-        read -p "\"$i\" is already installed, attempt to update it [Y/n]? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-Y}
+        read -p "\"$i\" is already installed, attempt to update it [y/N]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-N}
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
           ENVS_INSTALLED[$i]=true
         fi
@@ -402,7 +402,6 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       git+git://github.com/badele/gitcheck.git \
       git-up \
       humanhash3 \
-      ordered-set \
       magic-wormhole \
       patool \
       Pillow \
@@ -571,12 +570,16 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     DOCKER_IMAGES=(
       alpine:latest
+      containous/whoami:latest
       debian:stable-slim
       hello-world:latest
-      ubuntu:latest
-      nginx:latest
-      jwilder/nginx-proxy:alpine
       jrcs/letsencrypt-nginx-proxy-companion:latest
+      jwilder/nginx-proxy:alpine
+      nate/dockviz:latest
+      nginx:latest
+      traefik:latest
+      ubuntu:latest
+      wagoodman/dive:latest
     )
     for i in ${DOCKER_IMAGES[@]}; do
       docker pull "$i"
@@ -755,8 +758,9 @@ if command -v vagrant >/dev/null 2>&1; then
     VAGRANT_BOXES=(
       bento/centos-8
       bento/debian-10
-      bento/fedora-31
-      bento/ubuntu-19.10
+      bento/fedora-32
+      bento/ubuntu-20.04
+      clink15/pxe
       StefanScherer/windows_10
     )
     for i in ${VAGRANT_BOXES[@]}; do
