@@ -79,8 +79,6 @@ Vagrant.configure(2) do |config|
     Invoke-WebRequest -Uri https://aka.ms/wsl-debian-gnulinux -OutFile Debian.appx -UseBasicParsing
     Add-AppxPackage .\\Debian.appx
     Remove-Item Debian.appx
-    wsl --set-version Debian 1
-    wsl --list --verbose
 
     Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
     choco install -y chocolateygui pginafork chromium firefox 7zip.install sysinternals putty.install winscp.install keepass.install conemu sublimetext3 sumatrapdf.install hackfont
