@@ -1,4 +1,7 @@
 {
   "graph": "/home/docker",
-  "iptables": false
+  "iptables": false,
+  "default-address-pools":[
+    {"base":"172.22.0.0/16","size":24}
+  ]
 }

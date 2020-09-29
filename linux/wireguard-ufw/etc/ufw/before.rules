@@ -12,7 +12,7 @@
 *nat
 :POSTROUTING ACCEPT [0:0]
 -A POSTROUTING -o eth0 -j MASQUERADE
--A POSTROUTING -o docker0 -s 172.17.0.0/16 -j MASQUERADE
+-A POSTROUTING -o docker0 -s 172.22.0.0/16 -j MASQUERADE
 COMMIT
 
 # Don't delete these required lines, otherwise there will be errors
