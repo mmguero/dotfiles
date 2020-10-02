@@ -1168,7 +1168,6 @@ Name=Firefox
 Comment=Web Browser
 GenericName=Web Browser
 X-GNOME-FullName=Firefox Web Browser
-#Exec=env MOZ_WEBRENDER=1 MOZ_X11_EGL=1 /opt/firefox/firefox %u
 Exec=/opt/firefox/firefox %u
 Terminal=false
 X-MultipleArgs=false
