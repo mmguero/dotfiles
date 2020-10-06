@@ -1417,6 +1417,38 @@ EOT
     read -p "Enable/configure UFW (uncomplicated firewall) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+      $SUDO_CMD sed -i "s/LOGLEVEL=.*/LOGLEVEL=off/" /etc/ufw/ufw.conf
+
+      # ufw/docker
+      UFWDOCKER=0
+      if $SUDO_CMD docker info >/dev/null 2>&1 ; then
+        read -p "Configure UFW/docker interaction and docker address pools? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+          $SUDO_CMD sed -i 's/DEFAULT_FORWARD_POLICY=.*/DEFAULT_FORWARD_POLICY="ACCEPT"/' /etc/default/ufw
+          $SUDO_CMD sed -i "s/#net\/ipv4\/ip_forward=1/net\/ipv4\/ip_forward=1/" /etc/ufw/sysctl.conf
+
+          cat <<EOF >> /tmp/docker-nat-rules.cfg
+# NAT table rules
+*nat
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -o docker0 -s 172.27.0.0/16 -j MASQUERADE
+COMMIT
+
+EOF
+          $SUDO_CMD cat /tmp/docker-nat-rules.cfg /etc/ufw/before.rules | $SUDO_CMD sponge /etc/ufw/before.rules
+          rm -f /tmp/docker-nat-rules.cfg
+
+          $SUDO_CMD mkdir -p /etc/docker/
+          (cat /etc/docker/daemon.json 2>/dev/null || echo '{}') | jq '. + { "iptables": false }' | jq '. + { "default-address-pools": [ { "base": "172.27.0.0/16", "size": 24 } ] }' | $SUDO_CMD sponge /etc/docker/daemon.json
+
+          UFWDOCKER=1
+        fi # ufw/docker confirmation
+      fi # ufw/docker check
+
+      # enable firewall, disallow everything in except SSH/NTP
       $SUDO_CMD ufw enable
       $SUDO_CMD ufw default deny incoming
       $SUDO_CMD ufw default allow outgoing
@@ -1427,6 +1459,9 @@ EOT
       for i in ${UFW_ALLOW_RULES[@]}; do
         $SUDO_CMD ufw allow "$i"
       done
+
+      (( $UFWDOCKER == 1 )) && ( ( $SUDO_CMD systemctl daemon-reload && $SUDO_CMD systemctl restart docker ) || true )
+
     fi # ufw confirmation
   fi # ufw installed check
 
