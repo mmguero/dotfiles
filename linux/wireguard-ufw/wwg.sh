@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# wwg.sh
+# a wrapper script for wg/wg-quick/systemctl wireguard operations
+
 CONFIG_DIR=${WIREGUARD_CONFIG_DIR:-"/etc/wireguard"}
 IFACE_REPLACER=XXX
 
