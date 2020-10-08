@@ -9,6 +9,8 @@ CONFIG_FILE="$CONFIG_DIR/$INTERFACE.conf"
 CONFIG_FILE_RESTORE=
 FINAL_EXIT_CODE=
 
+# map a user-supplied operation to the exutable, executable operation, and argument in which the interface should reside
+# op;exe;exe_op;iface_replacer
 WG_OPERATIONS=(
   "dec;;;"
   "down;wg-quick;down;$IFACE_REPLACER"
@@ -21,22 +23,42 @@ WG_OPERATIONS=(
   "stop;systemctl;stop;wg-quick@$IFACE_REPLACER.service"
   "up;wg-quick;up;$IFACE_REPLACER"
 )
-for i in ${FILES_IN_IMAGES[@]}; do
-  FILE="$(echo "$i" | cut -d';' -f1)"
-  IMAGE="$(echo "$i" | cut -d';' -f2)"
-  (( "$(filesize_in_image $IMAGE "$FILE")" > 0 )) || { echo "Failed to create \"$FILE\" in \"$IMAGE\""; exit 1; }
-done
 
+# shred a file if possible, and rm it if not
+function shred_file {
+  TARGET="$1"
+  if [[ -n $TARGET ]] && [[ -f "$TARGET" ]]; then
+    type shred >/dev/null 2>&1 && shred -f -u "$TARGET" || rm -f "$TARGET"
+  fi
+  [[ -n $TARGET ]] && [[ ! -f "$TARGET" ]] && return 0 || return 1
+}
+
+# shred a file with user-provided confirmation
+function shred_file_confirm {
+  TARGET="$1"
+  RETURN_CODE=1
+  read -p "Remove "$TARGET" [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    shred_file "$TARGET"
+    RETURN_CODE=$?
+  fi
+  return $RETURN_CODE
+}
+
+# encrypt a file (openssl will prompt for the password); does not allow encrypting an already encrypted file
 function encrypt_file() {
   DECFILE="$1"
   ENCFILE="$2"
   ( [[ -n $DECFILE ]] && \
     [[ -r "$DECFILE" ]] && \
+    ( ! ( file "$DECFILE" | grep -q 'openssl enc' ) ) && \
     openssl enc -base64 -aes-256-cbc -md sha512 -pbkdf2 -iter 1024 -salt -in "$DECFILE" -out "$ENCFILE" && \
     [[ -f "$ENCFILE" ]] && \
     chmod --reference="$DECFILE" "$ENCFILE" ) && return 0 || return 1
 }
 
+# encrypt a file (openssl will prompt for the password)
 function decrypt_file() {
   ENCFILE="$1"
   DECFILE="$2"
@@ -47,12 +69,15 @@ function decrypt_file() {
     chmod --reference="$ENCFILE" "$DECFILE" ) && return 0 || return 1
 }
 
+# restore the contents original config file ($CONFIG_FILE) if the variable $CONFIG_FILE_RESTORE is set and that file exists
 function restore_config_file {
   if [[ -n $CONFIG_FILE_RESTORE ]]; then
+    shred_file "$CONFIG_FILE"
     mv -f "$CONFIG_FILE_RESTORE" "$CONFIG_FILE"
   fi
 }
 
+# determine the operation provided by the user
 OP_MATCH=
 EXE=
 EXE_OP=
@@ -71,6 +96,7 @@ done
 if [[ -n $OP_MATCH ]]; then
 
   if [[ "$EXE_OP" == "show" ]]; then
+    # if "all" or "" is provided for the interface, show all
     if [[ -z $EXE_TARGET ]] || [[ "$EXE_TARGET" == "all" ]]; then
       "$EXE" "$EXE_OP"
     else
@@ -78,33 +104,40 @@ if [[ -n $OP_MATCH ]]; then
     fi
 
   elif [[ -r "$CONFIG_FILE" ]]; then
+    # only proceed if /etc/wireguard/XXXX.conf exists
 
     if [[ "$OP_MATCH" == "enc" ]]; then
+      # encrypt a config file but that's all
       CONFIG_FILE_ENC="$CONFIG_FILE.enc"
       if encrypt_file "$CONFIG_FILE" "$CONFIG_FILE_ENC"; then
         ls -l "$CONFIG_FILE_ENC"
-        rm -vi "$CONFIG_FILE" && [[ ! -f "$CONFIG_FILE" ]] && mv -v "$CONFIG_FILE_ENC" "$CONFIG_FILE"
+        # if requested, replace the original with the encrypted version
+        shred_file_confirm "$CONFIG_FILE" && mv -v "$CONFIG_FILE_ENC" "$CONFIG_FILE"
       else
         FINAL_EXIT_CODE=$?
         echo "Error encrypting configuration file "$CONFIG_FILE"" >&2
       fi
 
     elif [[ "$OP_MATCH" == "dec" ]]; then
+      # decrypt a config file but that's all
       CONFIG_FILE_DEC="$CONFIG_FILE.dec"
       if decrypt_file "$CONFIG_FILE" "$CONFIG_FILE_DEC"; then
         ls -l "$CONFIG_FILE_DEC"
-        rm -vi "$CONFIG_FILE" && [[ ! -f "$CONFIG_FILE" ]] && mv -v "$CONFIG_FILE_DEC" "$CONFIG_FILE"
+        # if requested, replace the encrypted version with the decrypted version
+        shred_file_confirm "$CONFIG_FILE" && mv -v "$CONFIG_FILE_DEC" "$CONFIG_FILE"
       else
         FINAL_EXIT_CODE=$?
         echo "Error decrypting configuration file "$CONFIG_FILE"" >&2
       fi
 
     elif [[ "$EXE_OP" == "up" ]] && ( file "$CONFIG_FILE" | grep -q 'openssl enc' ); then
+      # if we're doing an "up" operation and the file is encrypted, decrypt it first
       CONFIG_FILE_ENC="$CONFIG_FILE.enc"
       CONFIG_FILE_DEC="$CONFIG_FILE.dec"
       if decrypt_file "$CONFIG_FILE" "$CONFIG_FILE_DEC"; then
         mv "$CONFIG_FILE" "$CONFIG_FILE_ENC"
         mv "$CONFIG_FILE_DEC" "$CONFIG_FILE"
+        # ensure the decrypted version of the file is erased again before we exit
         CONFIG_FILE_RESTORE="$CONFIG_FILE_ENC"
         trap "restore_config_file" EXIT
       else
@@ -114,6 +147,7 @@ if [[ -n $OP_MATCH ]]; then
     fi
 
     if [[ -n $EXE_OP ]]; then
+      # perform the actual operation (wg, systemctl, whatever)
       "$EXE" "$EXE_OP" "$EXE_TARGET"
       FINAL_EXIT_CODE=$?
     fi
