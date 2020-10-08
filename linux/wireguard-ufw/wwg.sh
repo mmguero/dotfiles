@@ -3,17 +3,40 @@
 # wwg.sh
 # a wrapper script for wg/wg-quick/systemctl wireguard operations
 
-CONFIG_DIR=${WIREGUARD_CONFIG_DIR:-"/etc/wireguard"}
-IFACE_REPLACER=XXX
+# The idea is you create your wireguard config file (eg, `wg0.conf`),
+# then run `wwg.sh enc wg0.conf` to encrypt it. Then, you can use `wwg.sh up wg0.conf`
+# which will temporarily decrypt the file, run `wg-quick up` for that interface with
+# the decrypted config file, then shred it so the plaintext version doesn't remain on
+# disk for longer than the time the `wg-quick` operation takes.
+
+# Usage:
+# wwg.sh [operation] [interface]
 
 OPERATION="$1"
 INTERFACE="$2"
+FINAL_EXIT_CODE=
+
+# Operations include:
+#   up - run wg-quick up (detects and handles encrypted configuration files)
+#   down - run wg-quick down
+#   enc - encrypt a config file
+#   dec - decrypt a config file (e.g., for when you need to make edits to it)
+#   show - run wg show (don't confuse with status)
+#   status - run systemctl status wg-quick@XXX.service
+#   enable - run systemctl enable wg-quick@XXX.service
+#   disable - run systemctl enable wg-quick@XXX.service
+#   start - run systemctl start wg-quick@XXX.service (don't confuse with up; doesn't handle encrypted configuration files)
+#   stop - run systemctl stop wg-quick@XXX.service (don't confuse with down)
+
+# if your wireguard configuration directory is something other than /etc/wireguard, you can override it
+# with the WIREGUARD_CONFIG_DIR environment variable
+CONFIG_DIR=${WIREGUARD_CONFIG_DIR:-"/etc/wireguard"}
 CONFIG_FILE="$CONFIG_DIR/$INTERFACE.conf"
 CONFIG_FILE_RESTORE=
-FINAL_EXIT_CODE=
 
 # map a user-supplied operation to the exutable, executable operation, and argument in which the interface should reside
 # op;exe;exe_op;iface_replacer
+IFACE_REPLACER=XXX
 WG_OPERATIONS=(
   "dec;;;"
   "down;wg-quick;down;$IFACE_REPLACER"
@@ -162,7 +185,7 @@ if [[ -n $OP_MATCH ]]; then
 
 else
   echo "Usage:" >&2
-  echo -e "\t$(basename $(test -L "$0" && readlink "$0" || echo "$0")) [start|stop|status|show] [interface]" >&2
+  echo -e "\t$(basename $(test -L "$0" && readlink "$0" || echo "$0")) [operation] [interface]" >&2
   FINAL_EXIT_CODE=1
 fi
 
