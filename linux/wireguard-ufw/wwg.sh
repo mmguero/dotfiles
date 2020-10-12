@@ -84,13 +84,13 @@ function encrypt_file() {
     chmod --reference="$DECFILE" "$ENCFILE" ) && return 0 || return 1
 }
 
-# encrypt a file (openssl will prompt for the password)
+# decrypt a file (openssl will prompt for the password)
 function decrypt_file() {
   ENCFILE="$1"
   DECFILE="$2"
   ( [[ -n $ENCFILE ]] && \
     [[ -r "$ENCFILE" ]] && \
-    openssl enc -base64 -aes-256-cbc -md sha512 -pbkdf2 -iter 1024 -salt -d -in "$ENCFILE" -out "$DECFILE" && \
+    openssl enc -d -base64 -aes-256-cbc -md sha512 -pbkdf2 -iter 1024 -salt -in "$ENCFILE" -out "$DECFILE" && \
     [[ -f "$DECFILE" ]] && \
     chmod --reference="$ENCFILE" "$DECFILE" ) && return 0 || return 1
 }
