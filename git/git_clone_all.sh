@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # "git clone" all of a GitHub user's or organization's repositories (up to 100)
 # if the repo is a GitHub fork, add the parent fork as an upstream remote.
