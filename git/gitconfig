@@ -39,15 +39,15 @@
   cob = checkout -b
   cp = cherry-pick
   # new branch
-  nb = !sh -c 'git checkout -b $1 && git push -u origin $1' -
+  nb = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && git checkout -b \"$1\" && git push -u \"$RMT\" \"$1\"; }; f"
   # run gitcheck script
   check = !gitcheck -v -r -a
   # show modified files in last commit
   last = !git ll -1
   # list commits not yet pushed
   np = cherry -v
-  # shows commits from all branches which are not merged upstream, plus the last commit in upstream
-  noup = log --graph --decorate --pretty=oneline --abbrev-commit --all @{upstream}^..
+  # shows commits from all branches which are not merged upstream (the non-current remote), plus the last commit in upstream
+  noup = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && UPS=$(git branch -vvr | grep -Pv \"^\\s*$RMT\" | cut -d \"/\" -f1 | sort -u | head -n 1 | tr -d \" \") && git log --graph --decorate --pretty=oneline --abbrev-commit --all @{$UPS}^..; }; f"
   # show local diffs with tool
   xdiff = difftool
   # show cleaner in-line textual diff
@@ -106,7 +106,7 @@
   sub = submodule update --recursive
   # move all submodule heads
   submove = submodule foreach --recursive git up
-  # set-upstream to another branch and reset hard to that branch
+  # set-upstream to another branch and HARD RESET to that branch
   switchup = "!f() { BRNCH=$(git rev-parse --abbrev-ref HEAD) && git branch --set-upstream-to \"$1/$BRNCH\" && git reset --hard \"$1/$BRNCH\"; }; f"
   # reset the previous commit, but keeps all the changes from that commit in the working directory
   undo = reset HEAD~1 --mixed
@@ -114,11 +114,11 @@
   u = "!bash -c 'echo; gitcheck -v -r; echo; git up; echo; git status -u no; echo; gitcheck -v -r; echo'"
   ch = "!bash -c 'echo; gitcheck -v -r; echo'"
   # find and update all git repositories underneath the current directory
-  upall = "!f() { find . -type d -name '*.git' -exec bash -c 'pushd \"{}\"/.. >/dev/null && echo && printf '=%.0s' {1..60} && echo && pwd && (git up; echo; git status -u no; echo; gitcheck -v -r) | grep -Pv \"(Updating.*remotes|master  up to date|Fetching origin|On branch master|Your branch is up-to-date|nothing to commit)\" && popd >/dev/null' ';' ; }; f "
+  upall = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && find . -type d -name '*.git' -exec bash -c 'pushd \"{}\"/.. >/dev/null && echo && printf '=%.0s' {1..60} && echo && pwd && (git up; echo; git status -u no; echo; gitcheck -v -r) | grep -Pv \"(Updating.*remotes|master  up to date|Fetching $RMT|On branch master|Your branch is up-to-date|nothing to commit)\" && popd >/dev/null' ';' ; }; f "
   # unstage
   unstage = reset HEAD --
-  # upstream integrate (from siem/siem) (no longer used since we\'re branching and not forking)
-  upstreamintegrate = "!f() { BRNCH=$(git rev-parse --abbrev-ref HEAD) && echo && gitcheck -v -r && echo && echo "git pull --no-rebase upstream $BRNCH" && git pull --no-rebase upstream $BRNCH && echo "git push origin $BRNCH" && git push origin $BRNCH && echo && gitcheck -v -r; }; f"
+  # upstream (the non-current remote) integrate
+  upstreamintegrate = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && UPS=$(git branch -vvr | grep -Pv \"^\\s*$RMT\" | cut -d \"/\" -f1 | sort -u | head -n 1 | tr -d \" \") && BRNCH=$(git rev-parse --abbrev-ref HEAD) && echo && gitcheck -v -r && echo && echo "git pull --no-rebase $UPS $BRNCH" && git pull --no-rebase $UPS $BRNCH && echo "git push $RMT $BRNCH" && git push $RMT $BRNCH && echo && gitcheck -v -r; }; f"
 
   # change commit owner info
   change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
