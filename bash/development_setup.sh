@@ -1543,6 +1543,8 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
+    mkdir -p ~/.local/bin
+
     [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf ~/.bashrc && \
       ln -vrs "$GUERO_GITHUB_PATH"/bash/rc ~/.bashrc
 
@@ -1560,6 +1562,9 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
 
     [[ -r "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && \
       ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global ~/.gitignore_global
+
+    [[ -r "$GUERO_GITHUB_PATH"/git/git_clone_all.sh ]] && rm -vf ~/.local/bin/git_clone_all.sh && \
+      ln -vrs "$GUERO_GITHUB_PATH"/git/git_clone_all.sh ~/.local/bin/git_clone_all.sh
 
     [[ $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && \
       ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
@@ -1592,7 +1597,6 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
       rm -vf ~/.config/autostart/albert.desktop && \
       ln -vrs /usr/share/applications/albert.desktop ~/.config/autostart/albert.desktop
 
-    mkdir -p ~/.local/bin
     LINKED_SCRIPTS=(
       clarence-0.4.4
       sound_cap.sh
