@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# "git clone" all of a GitHub user's or organization's repositories.
+# "git clone" all of a GitHub user's or organization's repositories (up to 100)
 # if the repo is a GitHub fork, add the parent fork as an upstream remote.
 
 ENCODING="utf-8"
@@ -93,7 +93,7 @@ fi
 [[ -z $REMOTE_NAME ]] && REMOTE_NAME="$API_ENTITY_NAME"
 
 # retrieve and loop through the organization's|user's repositories
-for REPO_NAME in $(curl -sSL -H "Authorization: token $TOKEN" "$GIT_API_URL_PREFIX/$API_ENTITY_TYPE/$API_ENTITY_NAME/repos" | \
+for REPO_NAME in $(curl -sSL -H "Authorization: token $TOKEN" "$GIT_API_URL_PREFIX/$API_ENTITY_TYPE/$API_ENTITY_NAME/repos?per_page=100" | \
                    jq -r '.[] | .html_url' | \
                    sed "s/.*github\.com\///g" | \
                    sort -u); do
@@ -104,7 +104,7 @@ for REPO_NAME in $(curl -sSL -H "Authorization: token $TOKEN" "$GIT_API_URL_PREF
   pushd ./"$PROJECT_NAME" >/dev/null 2>&1
 
   # if there is a fork, set up the upstream remote
-  PARENT_FORK_URL="$(curl -f -sSL -H "Authorization: token $TOKEN" "$GIT_API_URL_PREFIX/repos/$REPO_NAME" | jq -r '.parent.html_url' 2>/dev/null)"
+  PARENT_FORK_URL="$(curl -f -sSL -H "Authorization: token $TOKEN" "$GIT_API_URL_PREFIX/repos/$REPO_NAME?per_page=100" | jq -r '.parent.html_url' 2>/dev/null)"
   if [[ -n $PARENT_FORK_URL ]] && [[ $PARENT_FORK_URL != "null" ]]; then
     git remote add "$UPSTREAM_NAME" "$PARENT_FORK_URL"
     git remote set-url --push "$UPSTREAM_NAME" no_push
