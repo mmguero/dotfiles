@@ -911,6 +911,7 @@ elif [ $LINUX ]; then
       exfat-fuse
       exfat-utils
       fdisk
+      fdupes
       file
       findutils
       firmware-amd-graphics
