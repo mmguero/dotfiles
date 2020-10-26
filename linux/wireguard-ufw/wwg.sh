@@ -41,6 +41,7 @@ WG_OPERATIONS=(
   "dec;;;"
   "down;wg-quick;down;$IFACE_REPLACER"
   "enc;;;"
+  "ls;;;"
   "show;wg;show;$IFACE_REPLACER"
   "start;systemctl;start;wg-quick@$IFACE_REPLACER.service"
   "status;systemctl;status;wg-quick@$IFACE_REPLACER.service"
@@ -128,6 +129,9 @@ if [[ -n $OP_MATCH ]]; then
     else
       "$EXE" "$EXE_OP" "$EXE_TARGET"
     fi
+
+  elif [[ "$OP_MATCH" == "ls" ]]; then
+    ls "$CONFIG_DIR"/ | sed "s/\.conf$//"
 
   elif [[ -r "$CONFIG_FILE" ]]; then
     # only proceed if /etc/wireguard/XXXX.conf exists
