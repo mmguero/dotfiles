@@ -28,6 +28,7 @@ verboseDebug = False
 debugToggled = False
 pdbFlagged = False
 shuttingDown = False
+dbWriteLock = Lock()
 
 scriptName = os.path.basename(__file__)
 scriptPath = os.path.dirname(os.path.realpath(__file__))
@@ -37,7 +38,7 @@ TABLE_NAME="projects"
 PROJECT_FIELD="project"
 TAGS_FIELD="tag"
 TIME_FIELD="refreshed"
-SQL_CREATE_PROJECTS_STATEMENT = f"CREATE TABLE IF NOT EXISTS {TABLE_NAME} ({PROJECT_FIELD} text NOT NULL, {TAGS_FIELD} text, {TIME_FIELD} timestamp, PRIMARY KEY ({TAGS_FIELD}));"
+SQL_CREATE_PROJECTS_STATEMENT = f"CREATE TABLE IF NOT EXISTS {TABLE_NAME} ({PROJECT_FIELD} text NOT NULL, {TAGS_FIELD} text, {TIME_FIELD} timestamp, PRIMARY KEY ({PROJECT_FIELD}));"
 
 ###################################################################################################
 class AtomicInt:
@@ -62,6 +63,7 @@ class AtomicInt:
 ###################################################################################################
 reqWorkersCount = AtomicInt(value=0)
 finishedWorkersCount = AtomicInt(value=0)
+totalProjCount = AtomicInt(value=0)
 
 ###################################################################################################
 flatten = lambda *n: (e for a in n
@@ -135,7 +137,9 @@ def execute_statement(conn, statement):
 ###################################################################################################
 # write a record for a project's tags (with "now" for the timestamp)
 def update_tags(conn, project, tags):
-  execute_statement(conn, f"REPLACE INTO {TABLE_NAME}({PROJECT_FIELD}, {TAGS_FIELD}, {TIME_FIELD}) VALUES ('{project}', '{json.dumps(tags) if ((tags is not None) and (len(tags) > 0)) else 'NULL'}', '{datetime.datetime.now()}')")
+  global dbWriteLock
+  with dbWriteLock:
+    execute_statement(conn, f"REPLACE INTO {TABLE_NAME}({PROJECT_FIELD}, {TAGS_FIELD}, {TIME_FIELD}) VALUES ('{project}', '{json.dumps(tags) if ((tags is not None) and (len(tags) > 0)) else 'NULL'}', '{datetime.datetime.now()}')")
 
 ###################################################################################################
 # check the database first and return the tags for a project. if it's not in there, request it from pypi.
@@ -170,10 +174,11 @@ def get_tags(conn, project):
     eprint('"{}" raised for "{}"'.format(str(e), project))
 
 ###################################################################################################
-def reqWorker(totalThreadCount, topicPort, allProjects, filterTags, sqlDbPath):
+def reqWorker(totalThreadCount, topicPort, allProjects, filterTags, sqlConn):
   global debug
   global verboseDebug
   global reqWorkersCount
+  global totalProjCount
   global finishedWorkersCount
   global shuttingDown
 
@@ -197,28 +202,27 @@ def reqWorker(totalThreadCount, topicPort, allProjects, filterTags, sqlDbPath):
       # matchSocket.SNDTIMEO = 5000
       if debug: eprint(f"{scriptName}[{reqWorkerId}]:\t🔗\tconnected to sink at {topicPort}")
 
-      with sqlite3.connect(sqlDbPath) as sqlConn:
+      # loop until we're told to shut down, or until we run out of projects
+      for project in myProjects:
 
-        # loop until we're told to shut down, or until we run out of projects
-        for project in myProjects:
+        if shuttingDown:
+          break
 
-          if shuttingDown:
-            break
+        totalProjCount.increment()
+        tags = get_tags(sqlConn, project)
+        if debug:
+          eprint(f"{scriptName}[{reqWorkerId}]:\t📎\t{project} ({len(tags) if (tags is not None) else 0}): {tags}")
 
-          tags = get_tags(sqlConn, project)
-          if debug:
-            eprint(f"{scriptName}[{reqWorkerId}]:\t📎\t{project} ({len(tags) if (tags is not None) else 0}): {tags}")
+        # if the list of this project's tags contains any of the requested tags from the command line that's a hit
+        if (tags is not None) and any(item in tags for item in filterTags):
+          try:
+            # Send results to sink
+            matchSocket.send_string(project)
+            if verboseDebug: eprint(f"{scriptName}[{reqWorkerId}]:\t✅\t{project}")
 
-          # if the list of this project's tags contains any of the requested tags from the command line that's a hit
-          if (tags is not None) and any(item in tags for item in filterTags):
-            try:
-              # Send results to sink
-              matchSocket.send_string(project)
-              if verboseDebug: eprint(f"{scriptName}[{reqWorkerId}]:\t✅\t{project}")
-
-            except zmq.Again as timeout:
-              # todo: what to do here?
-              if verboseDebug: eprint(f"{scriptName}[{reqWorkerId}]:\t🕑")
+          except zmq.Again as timeout:
+            # todo: what to do here?
+            if verboseDebug: eprint(f"{scriptName}[{reqWorkerId}]:\t🕑")
 
   finally:
     if debug: eprint(f"{scriptName}[{reqWorkerId}]:\t🙃\tfinished")
@@ -234,6 +238,7 @@ def main():
   global pdbFlagged
   global shuttingDown
   global finishedWorkersCount
+  global totalProjCount
 
   parser = argparse.ArgumentParser(description=scriptName, add_help=False, usage='{} <arguments>'.format(scriptName))
   parser.add_argument('-v', '--verbose', dest='debug', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Verbose/debug output")
@@ -289,7 +294,7 @@ def main():
 
   # default to current working directory pypi.db for SQL database
   dbPath = args.dbFileSpec if (args.dbFileSpec is not None) else os.path.join(origPath, 'pypi.db')
-  with sqlite3.connect(dbPath) as conn:
+  with sqlite3.connect(dbPath, check_same_thread=False) as conn:
 
     # print out some debug information about the database if requested
     cursor = conn.cursor()
@@ -300,7 +305,7 @@ def main():
       eprint(f"{scriptName}[0]:\t💾\t{TABLE_NAME} count: {cursor.execute(f'SELECT COUNT(*) FROM {TABLE_NAME}').fetchone()}")
 
     # start request threads to lookup the
-    reqThreads = ThreadPool(args.threads, reqWorker, ([args.threads, topicPort, projects, args.tags, dbPath]))
+    reqThreads = ThreadPool(args.threads, reqWorker, ([args.threads, topicPort, projects, args.tags, conn]))
 
     # wait, collect matching results and print them
     while (not shuttingDown) and (finishedWorkersCount.value() < args.threads):
@@ -322,9 +327,9 @@ def main():
       except zmq.Again as timeout:
         break
 
-    # graceful shutdown
-    if debug: eprint(f"{scriptName}: shutting down...")
-    time.sleep(1)
+  # graceful shutdown
+  if debug: eprint(f"{scriptName}: shutting down ({totalProjCount.value()} processed)...")
+  time.sleep(1)
 
 ###################################################################################################
 if __name__ == '__main__':
