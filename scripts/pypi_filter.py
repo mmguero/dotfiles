@@ -212,7 +212,7 @@ def reqWorker(totalThreadCount, topicPort, allProjects, filterTags, sqlConn):
         tags = get_tags(sqlConn, project)
         if debug:
           tagsLen = len(tags) if (tags is not None) else 0
-          eprint(f"{scriptName}[{reqWorkerId}]:\t{'📎' if (tagsLen > 0) else '🅾'}\t{project} ➔ {','.join(tags)}")
+          eprint(f"{scriptName}[{reqWorkerId}]:\t{'📎' if (tagsLen > 0) else '🅾'}\t{project} ➔ {','.join(tags) if (tagsLen > 0) else ''}")
 
         # if the list of this project's tags contains any of the requested tags from the command line that's a hit
         if (tags is not None) and any(item in tags for item in filterTags):
