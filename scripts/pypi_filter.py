@@ -56,20 +56,23 @@ def sizeof_fmt(num, suffix='B'):
     num /= 1024.0
   return "%.1f%s%s" % (num, 'Yi', suffix)
 
-def create_table(conn, create_sql):
+###################################################################################################
+# execute an SQL statement (not query)
+def execute_statement(conn, statement):
   try:
     cursor = conn.cursor()
-    cursor.execute(create_sql)
+    cursor.execute(statement)
   except Exception as e:
-    eprint('"{}" raised for "{}"'.format(str(e), create_sql))
+    eprint('"{}" raised for "{}"'.format(str(e), statement))
 
+###################################################################################################
+# write a record for a project's tags (with "now" for the timestamp)
 def update_tags(conn, project, tags):
-  try:
-    cursor = conn.cursor()
-    cursor.execute(f"REPLACE INTO {TABLE_NAME}({PROJECT_FIELD}, {TAGS_FIELD}, {TIME_FIELD}) VALUES ('{project}', '{json.dumps(tags) if ((tags is not None) and (len(tags) > 0)) else 'NULL'}', '{datetime.datetime.now()}')")
-  except Exception as e:
-    eprint('"{}" raised for {}: {}'.format(str(e), project, tags))
+  execute_statement(f"REPLACE INTO {TABLE_NAME}({PROJECT_FIELD}, {TAGS_FIELD}, {TIME_FIELD}) VALUES ('{project}', '{json.dumps(tags) if ((tags is not None) and (len(tags) > 0)) else 'NULL'}', '{datetime.datetime.now()}')")
 
+###################################################################################################
+# check the database first and return the tags for a project. if it's not in there, request it from pypi.
+# TODO: have some sort of expiration on the database entries
 def get_tags(conn, project):
   global debug
   try:
@@ -127,36 +130,42 @@ def main():
   else:
     sys.tracebacklimit = 0
 
-  dbPath = args.dbFileSpec if (args.dbFileSpec is not None) else os.path.join(orig_path, 'pypi.db')
+  filteredProjects = list()
 
+  # either get projects from command line or entire list from pypi.org
+  if (args.projects is not None):
+    projects = args.projects
+  else:
+    response = requests.get("https://pypi.org/simple")
+    soup = bs(response.text, "lxml")
+    projects = [x for x in soup.text.split() if x]
+  if debug:
+    eprint(f"{TABLE_NAME} ({len(projects)}): {projects}")
+
+  # default to current working directory pypi.db for SQL database
+  dbPath = args.dbFileSpec if (args.dbFileSpec is not None) else os.path.join(orig_path, 'pypi.db')
   with sqlite3.connect(dbPath) as conn:
 
+    # print out some debug information about the database if requested
     cursor = conn.cursor()
     if debug:
       eprint(f"SQLite version: {cursor.execute('SELECT SQLITE_VERSION()').fetchone()}")
-    create_table(conn, sql_create_projects_table)
+    execute_statement(conn, sql_create_projects_table)
     if debug:
       eprint(f"{TABLE_NAME} row count: {cursor.execute(f'SELECT COUNT(*) FROM {TABLE_NAME}').fetchone()}")
 
-    if (args.projects is not None):
-      projects = args.projects
-    else:
-      response = requests.get("https://pypi.org/simple")
-      soup = bs(response.text, "lxml")
-      projects = [x for x in soup.text.split() if x]
-
-    if debug:
-      eprint(f"{TABLE_NAME} ({len(projects)}): {projects}")
-
-    filteredProjects = list()
+    # for each project, get the list of tags
     for project in projects:
       tags = get_tags(conn, project)
       if debug:
         eprint(f"{project} {TAGS_FIELD}s ({len(tags) if (tags is not None) else 0}): {tags}")
+
+      # if the list of this project's tags contains any of the requested tags from the command line,
+      # add that project to the final result
       if (tags is not None) and any(item in tags for item in args.tags):
         filteredProjects.append(project)
 
-    print(*filteredProjects, sep = '\n')
+  print(*filteredProjects, sep = '\n')
 
 
 ###################################################################################################
