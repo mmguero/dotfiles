@@ -272,6 +272,7 @@ def main():
     response = requests.get("https://pypi.org/simple")
     soup = bs(response.text, "lxml")
     projects = [x for x in soup.text.split() if x]
+  projects = sorted(projects, key=str.casefold)
   if debug:
     eprint(f"{TABLE_NAME} ({len(projects)}): {projects}")
 
