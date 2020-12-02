@@ -442,6 +442,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     go get -u -v filippo.io/age
     pushd "$GOPATH/bin" >/dev/null 2>&1
     go build -o . filippo.io/age/cmd/age
+    go build -o . filippo.io/age/cmd/age-keygen
     popd >/dev/null 2>&1
   fi
 fi
