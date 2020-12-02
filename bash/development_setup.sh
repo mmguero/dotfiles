@@ -1650,6 +1650,14 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
       done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
     fi
 
+    if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/sublime ]]; then
+      mkdir -p ~/.config/sublime-text-3/Packages/User
+      while IFS= read -d $'\0' -r CONFFILE; do
+        FNAME="$(basename "$CONFFILE")"
+        rm -vf ~/.config/sublime-text-3/Packages/User/"$FNAME" && ln -vrs "$CONFFILE" ~/.config/sublime-text-3/Packages/User/"$FNAME"
+      done < <(find "$GUERO_GITHUB_PATH"/sublime -mindepth 1 -maxdepth 1 -type f -print0)
+    fi
+
     [[ $LINUX ]] && dpkg -s albert >/dev/null 2>&1 && mkdir -p ~/.config/autostart && \
       rm -vf ~/.config/autostart/albert.desktop && \
       ln -vrs /usr/share/applications/albert.desktop ~/.config/autostart/albert.desktop
