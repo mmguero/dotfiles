@@ -176,7 +176,7 @@ function EnvSetup {
   [[ -d "$GOPATH"/bin ]] && PATH="$GOPATH/bin:$PATH"
 }
 
-git_latest_release () {
+function git_latest_release () {
   if [ "$1" ]; then
     (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases/latest" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
       (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
@@ -437,7 +437,12 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     go get -u -v github.com/rogpeppe/godef
     go get -u -v golang.org/x/tools/cmd/goimports
     go get -u -v golang.org/x/tools/cmd/gorename
+    go get -u -v golang.org/x/term
     go get -u -v github.com/nsf/gocode
+    go get -u -v filippo.io/age
+    pushd "$GOPATH/bin" >/dev/null 2>&1
+    go build -o . filippo.io/age/cmd/age
+    popd >/dev/null 2>&1
   fi
 fi
 
@@ -1195,11 +1200,6 @@ EOT
       fi
     fi # /tmp/firefox.tar.bz2 check
 
-    CROC_RELEASE="$(git_latest_release schollz/croc | sed 's/^v//')"
-    curl -sSL -o /tmp/croc.deb "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-64bit.deb"
-    $SUDO_CMD dpkg -i /tmp/croc.deb
-    rm -f /tmp/croc.deb
-
     curl -sSL -o /tmp/synergy_debian_amd64.deb "https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/synergy_debian_amd64.deb"
     $SUDO_CMD dpkg -i /tmp/synergy_debian_amd64.deb
     rm -f /tmp/synergy_debian_amd64.deb
@@ -1323,29 +1323,38 @@ EOT
   fi
 
   unset CONFIRMATION
-  read -p "Install user-local fonts, packages, etc. [Y/n]? " CONFIRMATION
+  read -p "Install user-local fonts [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    mkdir -p ~/.local/share/fonts ~/.config/fontconfig/conf.d
 
     LATEST_NERDFONT_RELEASE="$(git_latest_release ryanoasis/nerd-fonts)"
-    mkdir -p ~/.local/share/fonts ~/.config/fontconfig/conf.d
     pushd ~/.local/share/fonts >/dev/null 2>&1
     for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Incosolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
-      curl -sSL -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$LATEST_NERDFONT_RELEASE/$NERDFONT.zip"
+      curl -L -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$LATEST_NERDFONT_RELEASE/$NERDFONT.zip"
       unzip -o ./$NERDFONT.zip
     done
     rm -f ~/.local/share/fonts/*Nerd*Windows*.ttf ~/.local/share/fonts/*.zip ~/.local/share/fonts/*Nerd*.otf
     popd >/dev/null 2>&1
     fc-cache -f -v
+  fi
 
+  unset CONFIRMATION
+  read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     mkdir -p ~/.local/bin
 
     PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
-    curl -sSL -o ~/.local/bin/pcloud "$PCLOUD_URL"
+    curl -L "$PCLOUD_URL" > ~/.local/bin/pcloud
     chmod 755 ~/.local/bin/pcloud
 
-
-
+    CROC_RELEASE="$(git_latest_release schollz/croc | sed 's/^v//')"
+    TMP_CLONE_DIR="$(mktemp -d)"
+    curl -L "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-64bit.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    cp -f "${TMP_CLONE_DIR}"/croc ~/.local/bin/croc
+    chmod 755 ~/.local/bin/croc
+    rm -rf "$TMP_CLONE_DIR"
   fi
 
   if [[ "$SCRIPT_USER" != "root" ]]; then

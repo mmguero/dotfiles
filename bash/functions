@@ -509,7 +509,7 @@ function parse_git_branch ()
   fi
 }
 
-git_latest_release () {
+function git_latest_release () {
   if [ "$1" ]; then
     (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases/latest" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
       (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
