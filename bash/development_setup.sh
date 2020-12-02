@@ -168,6 +168,7 @@ function EnvSetup {
 
   if [ $GOENV_ROOT ]; then
     export GOROOT="$(goenv prefix)"
+    [[ -d "$GOROOT"/bin ]] && PATH="$GOROOT/bin:$PATH"
   fi
   if [ -z "$GOPATH" ]; then
     export GOPATH="$HOME/go"
