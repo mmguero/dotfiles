@@ -172,6 +172,16 @@ function EnvSetup {
   [[ -d $GOPATH/bin ]] && PATH="$GOPATH/bin:$PATH"
 }
 
+function git_latest_release () {
+  if [ "$1" ]; then
+    curl -sSL "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
+      grep '"tag_name":' |                                        # Get tag line
+      sed -E 's/.*"([^"]+)".*/\1/'                                # Pluck JSON value
+  else
+    echo "unknown" >&2
+  fi
+}
+
 ################################################################################
 # brew on macOS
 ################################################################################
@@ -921,8 +931,6 @@ elif [ $LINUX ]; then
       firmware-linux-nonfree
       firmware-misc-nonfree
       flex
-      fonts-hack
-      fonts-hack-ttf
       fuse
       fuseext2
       fusefat
@@ -1035,7 +1043,6 @@ EOT
       albert
       arandr
       dconf-cli
-      fonts-hack
       fonts-noto-color-emoji
       ghex
       gparted
@@ -1183,6 +1190,14 @@ EOT
       fi
     fi # /tmp/firefox.tar.bz2 check
 
+    CROC_RELEASE="$(git_latest_release schollz/croc | sed 's/^v//')"
+    curl -sSL -o /tmp/croc.deb "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-64bit.deb"
+    $SUDO_CMD dpkg -i /tmp/croc.deb
+    rm -f /tmp/croc.deb
+
+    curl -sSL -o /tmp/synergy_debian_amd64.deb "https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/synergy_debian_amd64.deb"
+    $SUDO_CMD dpkg -i /tmp/synergy_debian_amd64.deb
+    rm -f /tmp/synergy_debian_amd64.deb
   fi
 
   unset CONFIRMATION
@@ -1300,6 +1315,27 @@ XDG_MUSIC_DIR="$HOME/media/music"
 XDG_PICTURES_DIR="$HOME/media/video"
 XDG_VIDEOS_DIR="$HOME/media/images"
 EOT
+  fi
+
+  unset CONFIRMATION
+  read -p "Install user-local fonts, packages, etc. [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+    mkdir -p ~/.local/share/fonts ~/.config/fontconfig/conf.d
+    pushd ~/.local/share/fonts >/dev/null 2>&1
+    for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Incosolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
+      curl -sSL -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$(git_latest_release ryanoasis/nerd-fonts)/$NERDFONT.zip"
+      unzip -o ./$NERDFONT.zip
+    done
+    rm -f ~/.local/share/fonts/*Nerd*Windows*.ttf ~/.local/share/fonts/*.zip ~/.local/share/fonts/*Nerd*.otf
+    popd >/dev/null 2>&1
+    fc-cache -f -v
+
+    mkdir -p ~/.local/bin
+    PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
+    curl -sSL -o ~/.local/bin/pcloud "$PCLOUD_URL"
+    chmod 755 ~/.local/bin/pcloud
   fi
 
   if [[ "$SCRIPT_USER" != "root" ]]; then
