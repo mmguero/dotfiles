@@ -163,13 +163,16 @@ function EnvSetup {
   if [ $PYENV_ROOT ]; then
     [[ -r $PYENV_ROOT/completions/pyenv.bash ]] && . $PYENV_ROOT/completions/pyenv.bash
     [[ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]] && eval "$(pyenv virtualenv-init -)"
+    export PYTHONDONTWRITEBYTECODE=1
   fi
 
   if [ $GOENV_ROOT ]; then
     export GOROOT="$(goenv prefix)"
   fi
-  export GOPATH=$DEVEL_ROOT/gopath
-  [[ -d $GOPATH/bin ]] && PATH="$GOPATH/bin:$PATH"
+  if [ -z "$GOPATH" ]; then
+    export GOPATH="$HOME/go"
+  fi
+  [[ -d "$GOPATH"/bin ]] && PATH="$GOPATH/bin:$PATH"
 }
 
 function git_latest_release () {

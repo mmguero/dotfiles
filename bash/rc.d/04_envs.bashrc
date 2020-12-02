@@ -49,8 +49,10 @@ fi
 if [ $GOENV_ROOT ]; then
   export GOROOT="$(goenv prefix)"
 fi
-export GOPATH=$DEVEL_ROOT/gopath
-[[ -d $GOPATH/bin ]] && PATH="$GOPATH/bin:$PATH"
+if [ -z "$GOPATH" ]; then
+  export GOPATH="$HOME/go"
+fi
+[[ -d "$GOPATH"/bin ]] && PATH="$GOPATH/bin:$PATH"
 
 [[ -d $HOME/.cargo/bin ]] && PATH="$HOME/.cargo/bin:$PATH"
 
