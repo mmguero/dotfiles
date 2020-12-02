@@ -1656,11 +1656,18 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
 
     LINKED_SCRIPTS=(
       clarence-0.4.4
-      sound_cap.sh
+      mpvurl.sh
+      nc_web_server.sh
+      office_webcam.sh
+      ovpn_password_change.sh
       screenshot.sh
+      self_signed_key_gen.sh
+      sound_cap.sh
+      ssh_speed_test.sh
       tilix.sh
+      trashthumbs.sh
+      vid_cap.sh
       vid_rename.sh
-      vid_to_dvd_mpeg.sh
       windems.sh
     )
     for i in ${LINKED_SCRIPTS[@]}; do

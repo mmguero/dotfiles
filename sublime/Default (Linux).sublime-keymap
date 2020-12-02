@@ -3,5 +3,6 @@
   { "keys": ["ctrl+v"], "command": "paste_and_indent" },
   { "keys": ["ctrl+b"], "command": "toggle_bookmark" },
   { "keys": ["ctrl+pageup"], "command": "next_bookmark" },
-  { "keys": ["ctrl+pagedown"], "command": "prev_bookmark" }
+  { "keys": ["ctrl+pagedown"], "command": "prev_bookmark" },
+  { "keys": ["ctrl+alt+m"], "command": "markdown_preview", "args": {"target": "browser", "parser":"markdown"} }
 ]
