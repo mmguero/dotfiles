@@ -110,10 +110,10 @@ function InstallCurlAndGit {
   else
     echo "Installing curl and git..."
     if [ $MACOS ]; then
-      brew install git # since Jaguar curl is already installed in MacOS
+      brew install git jq # since Jaguar curl is already installed in MacOS
     elif [ $LINUX ]; then
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
-        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq
     fi
   fi
 }
@@ -176,13 +176,13 @@ function EnvSetup {
   [[ -d "$GOPATH"/bin ]] && PATH="$GOPATH/bin:$PATH"
 }
 
-function git_latest_release () {
+git_latest_release () {
   if [ "$1" ]; then
-    curl -sSL "https://api.github.com/repos/$1/releases/latest" | # Get latest release from GitHub api
-      grep '"tag_name":' |                                        # Get tag line
-      sed -E 's/.*"([^"]+)".*/\1/'                                # Pluck JSON value
+    (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases/latest" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
+      (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
+      echo unknown
   else
-    echo "unknown" >&2
+    echo "unknown">&2
   fi
 }
 
@@ -405,7 +405,7 @@ read -p "Install common pip/go/etc. packages [Y/n]? " CONFIRMATION
 CONFIRMATION=${CONFIRMATION:-Y}
 if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-  if pip -V >/dev/null 2>&1 ; then
+  if pip -V >/dev/null 2>&1; then
     pip install -U \
       beautifulsoup4 \
       colorama \
@@ -433,7 +433,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       magic-wormhole
   fi
 
-  if go version >/dev/null 2>&1 ; then
+  if go version >/dev/null 2>&1; then
     go get -u -v github.com/rogpeppe/godef
     go get -u -v golang.org/x/tools/cmd/goimports
     go get -u -v golang.org/x/tools/cmd/gorename
@@ -947,6 +947,7 @@ elif [ $LINUX ]; then
       grep
       gzip
       htop
+      jq
       less
       libcap2-bin
       libsquashfuse0
@@ -1326,10 +1327,11 @@ EOT
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
+    LATEST_NERDFONT_RELEASE="$(git_latest_release ryanoasis/nerd-fonts)"
     mkdir -p ~/.local/share/fonts ~/.config/fontconfig/conf.d
     pushd ~/.local/share/fonts >/dev/null 2>&1
     for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Incosolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
-      curl -sSL -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$(git_latest_release ryanoasis/nerd-fonts)/$NERDFONT.zip"
+      curl -sSL -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$LATEST_NERDFONT_RELEASE/$NERDFONT.zip"
       unzip -o ./$NERDFONT.zip
     done
     rm -f ~/.local/share/fonts/*Nerd*Windows*.ttf ~/.local/share/fonts/*.zip ~/.local/share/fonts/*Nerd*.otf
@@ -1337,9 +1339,13 @@ EOT
     fc-cache -f -v
 
     mkdir -p ~/.local/bin
+
     PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
     curl -sSL -o ~/.local/bin/pcloud "$PCLOUD_URL"
     chmod 755 ~/.local/bin/pcloud
+
+
+
   fi
 
   if [[ "$SCRIPT_USER" != "root" ]]; then
