@@ -81,7 +81,7 @@ Vagrant.configure(2) do |config|
     Remove-Item Debian.appx
 
     Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-    choco install -y chocolateygui pginafork chromium firefox 7zip.install sysinternals putty.install winscp.install keepass.install conemu sublimetext3 sumatrapdf.install hackfont
+    choco install -y chocolateygui pginafork chromium firefox 7zip.install sysinternals putty.install winscp.install keepass.install conemu sublimetext3 sumatrapdf.install hackfont veracrypt
   STEP2
 
   config.vm.provision "file", source: "./WSL_Debian_Setup.ps1", destination: "C:/WSL_Debian_Setup.ps1"
