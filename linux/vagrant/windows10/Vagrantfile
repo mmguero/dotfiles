@@ -83,7 +83,9 @@ Vagrant.configure(2) do |config|
     Remove-Item Debian.appx
 
     Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-    choco install -y chocolateygui pginafork chromium firefox 7zip.install sysinternals putty.install winscp.install keepass.install conemu sublimetext3 sumatrapdf.install hackfont veracrypt
+    choco install -y chocolateygui pginafork chromium firefox 7zip.install sysinternals putty.install winscp.install keepass.install conemu sublimetext3 sumatrapdf.install hackfont
+
+    Invoke-WebRequest -Uri 'https://launchpad.net/veracrypt/trunk/1.24-update7/+download/VeraCrypt Portable 1.24-Update7.exe' -OutFile 'C:\\VeraCrypt Portable 1.24-Update7.exe' -UseBasicParsing
   STEP2
 
   config.vm.provision "file", source: "./WSL_Debian_Setup.ps1", destination: "C:/WSL_Debian_Setup.ps1"
