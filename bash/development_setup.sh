@@ -1027,6 +1027,12 @@ EOT
     fi
 
     $SUDO_CMD dpkg-reconfigure --frontend=noninteractive wireshark-common
+
+    # veracrypt
+    curl -L -o "/tmp/veracrypt-console-Debian-10-amd64.deb" "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio 'https://.+?veracrypt-console.+?Debian-10-amd64.deb' | sed "s/&#43;/+/" | head -n 1)"
+    dpkg -i "/tmp/veracrypt-console-Debian-10-amd64.deb"
+    rm -f "/tmp/veracrypt-console-Debian-10-amd64.deb"
+
     if ! grep -q mapper /etc/pmount.allow; then
       $SUDO_CMD tee -a /etc/pmount.allow > /dev/null <<'EOT'
 
@@ -1402,6 +1408,7 @@ EOT
 %netdev ALL=(root) NOPASSWD: /usr/sbin/openvpn
 %netdev ALL=(root) NOPASSWD: /usr/local/bin/wwg.sh
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
+%cryptkeeper ALL=(root) NOPASSWD:/usr/bin/veracrypt
 EOT
       $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
     fi # confirmation on group stuff
