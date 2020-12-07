@@ -57,6 +57,7 @@ alias tran='trans --brief'
 alias neo='neofetch'
 alias multibootusb='sudo multibootusb'
 alias cryptsetup='sudo cryptsetup'
+alias veracrypt='sudo veracrypt'
 alias x='xargs -r -l'
 alias entropy='cat /proc/sys/kernel/random/entropy_avail'
 
