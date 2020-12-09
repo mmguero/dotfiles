@@ -581,6 +581,21 @@ elif [ $LINUX ]; then
     echo "\"docker-compose\" is already installed!"
   fi # docker-compose install check
 
+  unset CONFIRMATION
+  read -p "Configure user namespaces [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+    DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y uidmap
+
+    $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
+
+# allow unprivileged user namespaces
+kernel.unprivileged_userns_clone=1
+EOT
+    echo "options overlay permit_mounts_in_userns=1" | $SUDO_CMD tee /etc/modprobe.d/10-docker.conf
+  fi
+
 fi # MacOS vs. Linux for docker
 
 if $SUDO_CMD docker info >/dev/null 2>&1 ; then
