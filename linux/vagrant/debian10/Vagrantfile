@@ -37,7 +37,7 @@ Vagrant.configure("2") do |config|
       linux-image-$KERNEL_VERSION-amd64 linux-headers-$KERNEL_VERSION-amd64 linux-headers-$KERNEL_VERSION-common \
       dkms build-essential linux-kbuild-5.9 linux-compiler-gcc-8-x86 \
       firmware-linux firmware-linux-nonfree firmware-misc-nonfree uidmap libcap2-bin
-    sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="random.trust_cpu=on elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem systemd.unified_cgroup_hierarchy=1"/' /etc/default/grub
+    sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="random.trust_cpu=on elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem systemd.unified_cgroup_hierarchy=0"/' /etc/default/grub
     ls /dev/disk/by-id/ata-* | grep -v '\\-part' | head -n 1 | xargs -r -l grub-install
     echo "kernel.unprivileged_userns_clone=1" >> /etc/sysctl.conf
     echo "options overlay permit_mounts_in_userns=1" >> /etc/modprobe.d/docker.conf
