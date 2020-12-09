@@ -586,7 +586,7 @@ elif [ $LINUX ]; then
   CONFIRMATION=${CONFIRMATION:-N}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-    DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y uidmap
+    DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y uidmap fuse-overlayfs
 
     $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
 
