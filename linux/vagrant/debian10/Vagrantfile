@@ -20,7 +20,6 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provider "virtualbox" do |vb|
-    # vb.gui = true
     vb.memory = "4096"
     vb.cpus = 2
   end
@@ -37,17 +36,47 @@ Vagrant.configure("2") do |config|
     apt-get -t buster-backports install -y \
       linux-image-$KERNEL_VERSION-amd64 linux-headers-$KERNEL_VERSION-amd64 linux-headers-$KERNEL_VERSION-common \
       dkms build-essential linux-kbuild-5.9 linux-compiler-gcc-8-x86 \
-      firmware-linux firmware-linux-nonfree firmware-misc-nonfree uidmap
-    sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=\).*/\1"random.trust_cpu=on elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem"/' /etc/default/grub
+      firmware-linux firmware-linux-nonfree firmware-misc-nonfree uidmap libcap2-bin
+    sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="random.trust_cpu=on elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem systemd.unified_cgroup_hierarchy=1"/' /etc/default/grub
     ls /dev/disk/by-id/ata-* | grep -v '\\-part' | head -n 1 | xargs -r -l grub-install
     echo "kernel.unprivileged_userns_clone=1" >> /etc/sysctl.conf
     echo "options overlay permit_mounts_in_userns=1" >> /etc/modprobe.d/docker.conf
+    loginctl enable-linger vagrant
   STEP1
   config.vm.provision :reload
 
   config.vm.provision "shell", inline: <<-STEP2
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
-    apt-get -t buster-backports install -y rsync git apt-transport-https ca-certificates curl gnupg2
+    apt-get -t buster-backports install -y rsync git apt-transport-https ca-certificates curl gnupg2 tmux
+    apt-get -y --purge remove *4.19* || true
+    apt-get -y autoremove
+    apt-get clean
   STEP2
+  config.vm.provision :reload
+
+  config.vm.provision "shell", privileged: false, inline: <<-STEP3
+    mkdir -p /home/vagrant/.config/systemd/user /home/vagrant/.local/bin /home/vagrant/bin /home/vagrant/tmp
+    git clone --recursive --single-branch --depth 1 https://github.com/mmguero/config /home/vagrant/.config/mmguero.config
+    rm -f /home/vagrant/.bashrc
+    ln -s -f -r /home/vagrant/.config/mmguero.config/bash/rc /home/vagrant/.bashrc
+    ln -s -f -r /home/vagrant/.config/mmguero.config/bash/rc.d /home/vagrant/.bashrc.d
+    ln -s -f -r /home/vagrant/.config/mmguero.config/bash/aliases /home/vagrant/.bash_aliases
+    ln -s -f -r /home/vagrant/.config/mmguero.config/bash/functions /home/vagrant/.bash_functions
+    ln -s -f -r /home/vagrant/.config/mmguero.config/bash/context-color/context-color /home/vagrant/.local/bin/context-color
+    ln -s -f -r /home/vagrant/.config/mmguero.config/linux/tmux/tmux.conf /home/vagrant/.tmux.conf
+    ln -s -f -r /home/vagrant/.config/mmguero.config/git/gitconfig /home/vagrant/.gitconfig
+    curl -fsSL https://get.docker.com/rootless | bash
+    echo -e "\nexport DOCKER_HOST=unix:///run/user/1000/docker.sock" >> /home/vagrant/.bashrc.d/05_docker.bashrc
+    systemctl --user enable docker
+  STEP3
+
+  config.vm.provision "shell", inline: <<-STEP4
+    setcap cap_net_bind_service=ep /home/vagrant/bin/rootlesskit
+  STEP4
+
+  config.vm.provision "shell", privileged: false, inline: <<-STEP5
+    systemctl --user start docker
+  STEP5
+
 end
