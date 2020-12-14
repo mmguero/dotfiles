@@ -114,7 +114,7 @@
   u = "!bash -c 'echo; gitcheck -v -r; echo; git up; echo; git status -u no; echo; gitcheck -v -r; echo'"
   ch = "!bash -c 'echo; gitcheck -v -r; echo'"
   # find and update all git repositories underneath the current directory
-  upall = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && find . -type d -name '*.git' -exec bash -c 'pushd \"{}\"/.. >/dev/null && echo && printf '=%.0s' {1..60} && echo && pwd && (git up; echo; git status -u no; echo; gitcheck -v -r) | grep -Pv \"(Updating.*remotes|master  up to date|Fetching $RMT|On branch master|Your branch is up-to-date|nothing to commit)\" && popd >/dev/null' ';' ; }; f "
+  upall = "!f() { find . -type d -name .git -print0 | xargs -r -0 -n 1 -I XXX bash -c 'pushd \"XXX\"/../ >/dev/null 2>&1 && echo && printf '=%.0s' {1..60} && echo && pwd && ((git up; echo; git status -u no; echo; gitcheck -vr) | grep -Pv \"(Updating.*remotes|\\S+\\s+up to date|On branch\\s+\\S+|Fetching\\s+\\S+|Your branch is up to date|nothing to commit)\" | grep . ) && popd >/dev/null' ; }; f "
   # unstage
   unstage = reset HEAD --
   # upstream (the non-current remote) integrate
