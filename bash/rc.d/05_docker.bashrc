@@ -61,6 +61,10 @@ function teams() {
   nohup x11docker --gpu --alsa --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" -- mmguero/teams:latest "$@" </dev/null >/dev/null 2>&1 &
 }
 
+function signal() {
+  nohup x11docker --hostuser=$USER --pulseaudio --webcam -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- mmguero/signal:latest </dev/null >/dev/null 2>&1 &
+}
+
 ########################################################################
 # web
 ########################################################################
