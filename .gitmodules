@@ -1,3 +1,4 @@
 [submodule "bash/context-color"]
 	path = bash/context-color
 	url = https://github.com/ramnes/context-color
+	branch = master
