@@ -1377,6 +1377,13 @@ EOT
     cp -f "${TMP_CLONE_DIR}"/croc ~/.local/bin/croc
     chmod 755 ~/.local/bin/croc
     rm -rf "$TMP_CLONE_DIR"
+
+    GRON_RELEASE="$(git_latest_release tomnomnom/gron | sed 's/^v//')"
+    TMP_CLONE_DIR="$(mktemp -d)"
+    curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-amd64-${GRON_RELEASE}.tgz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    cp -f "${TMP_CLONE_DIR}"/gron ~/.local/bin/gron
+    chmod 755 ~/.local/bin/gron
+    rm -rf "$TMP_CLONE_DIR"
   fi
 
   if [[ "$SCRIPT_USER" != "root" ]]; then
