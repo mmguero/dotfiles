@@ -64,6 +64,8 @@ alias entropy='cat /proc/sys/kernel/random/entropy_avail'
 #json/msgpack/xml/etc
 alias jsontool='python3 -mjson.tool'
 alias xml='xmllint --format -'
+alias norg="gron --ungron"
+alias ungron="gron --ungron"
 
 # vpn/tunnel
 alias ov='sudo openvpn'
