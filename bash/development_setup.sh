@@ -1384,6 +1384,13 @@ EOT
     cp -f "${TMP_CLONE_DIR}"/gron ~/.local/bin/gron
     chmod 755 ~/.local/bin/gron
     rm -rf "$TMP_CLONE_DIR"
+
+    STEPCLI_RELEASE="$(git_latest_release smallstep/cli | sed 's/^v//')"
+    TMP_CLONE_DIR="$(mktemp -d)"
+    curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_amd64.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    cp -f "${TMP_CLONE_DIR}/step_${STEPCLI_RELEASE}"/bin/step ~/.local/bin/step
+    chmod 755 ~/.local/bin/step
+    rm -rf "$TMP_CLONE_DIR"
   fi
 
   if [[ "$SCRIPT_USER" != "root" ]]; then
