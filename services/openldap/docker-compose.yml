@@ -5,15 +5,17 @@ services:
     image: osixia/openldap:latest
     container_name: openldap
     environment:
+       - LDAP_OPENLDAP_GID=1000
+       - LDAP_OPENLDAP_UID=1000
        - LDAP_LOG_LEVEL=32768
        - LDAP_ORGANISATION=example.org
        - LDAP_DOMAIN=example.org
        - LDAP_BASE_DN=
-       - LDAP_ADMIN_PASSWORD=XXXXXXXXXXXXXX
-       - LDAP_CONFIG_PASSWORD=XXXXXXXXXXXXXX
+       - LDAP_ADMIN_PASSWORD=xxxxxxxxxxxxxxxx
+       - LDAP_CONFIG_PASSWORD=xxxxxxxxxxxxxxxx
        - LDAP_READONLY_USER=true
        - LDAP_READONLY_USER_USERNAME=binddn
-       - LDAP_READONLY_USER_PASSWORD=XXXXXXXXXXXXXX
+       - LDAP_READONLY_USER_PASSWORD=xxxxxxxx
        - LDAP_RFC2307BIS_SCHEMA=false
        - LDAP_BACKEND=mdb
        - LDAP_TLS=true
@@ -21,8 +23,7 @@ services:
        - LDAP_TLS_KEY_FILENAME=ldap.key
        - LDAP_TLS_CA_CRT_FILENAME=ca.crt
        - LDAP_TLS_ENFORCE=false
-       - LDAP_TLS_CIPHER_SUITE=SECURE256:-VERS-SSL3.0
-       - LDAP_TLS_PROTOCOL_MIN=3.1
+       - LDAP_TLS_PROTOCOL_MIN=3.0
        - LDAP_TLS_VERIFY_CLIENT=allow
        - LDAP_REPLICATION=false
        - KEEP_EXISTING_CONFIG=false
@@ -40,10 +41,6 @@ services:
       - 0.0.0.0:389:389/udp
       - 0.0.0.0:636:636/tcp
       - 0.0.0.0:636:636/udp
-      - 0.0.0.0:3268:3268/tcp
-      - 0.0.0.0:3268:3268/udp
-      - 0.0.0.0:3269:3269/tcp
-      - 0.0.0.0:3269:3269/udp
     domainname: openldap
     hostname: openldap
     restart: unless-stopped
