@@ -6,8 +6,6 @@
 
 set -e
 
-STEP_CA_FINGERPRINT="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
 CERTS_DIR="certs"
 CRT_NAME="openldap.crt"
 KEY_NAME="openldap.key"
@@ -25,7 +23,7 @@ WEB_CA_NAME="ca.crt"
 
 EXPORT_LDIF_NAME="export.ldif"
 EXPORT_WAIT_SECS=60
-LDAP_ADMIN_CN="cn=admin,dc=example,dc=org"
+LDAP_ADMIN_CN="cn=admin,dc=local,dc=lan"
 LDAP_ADMIN_URL="ldap://localhost:389"
 
 # force-navigate to Malcolm base directory (parent of scripts/ directory)
@@ -38,12 +36,6 @@ if ! (type "$REALPATH" && type "$DIRNAME" && type step && type ldapadd) > /dev/n
 fi
 SCRIPT_PATH="$($DIRNAME $($REALPATH -e "${BASH_SOURCE[0]}"))"
 pushd "$SCRIPT_PATH" >/dev/null 2>&1
-
-pushd ./"$CERTS_DIR" >/dev/null 2>&1
-rm -f ./"$CA_NAME"
-step ca root ./"$CA_NAME" --fingerprint "$STEP_CA_FINGERPRINT"
-step ca renew --force "$CRT_NAME" "$KEY_NAME"
-popd >/dev/null 2>&1
 
 docker-compose down || true
 
@@ -65,3 +57,5 @@ if [[ -r "$EXPORT_LDIF_NAME" ]]; then
   sleep $EXPORT_WAIT_SECS
   ldapadd -x -D "$LDAP_ADMIN_CN" -w "$(grep LDAP_ADMIN_PASSWORD docker-compose.yml | sed "s/.*[[:space:]]*=[[:space:]]*//")" -H "$LDAP_ADMIN_URL" -f "$EXPORT_LDIF_NAME"
 fi
+
+
