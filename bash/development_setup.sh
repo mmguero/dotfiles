@@ -1450,7 +1450,7 @@ EOT
       RELEASE_ARCH=x64
     fi
     curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
-    cp -f "${TMP_CLONE_DIR}/termshark_${TERMSHARK_RELEASE}_linux_x64"/termshark ~/.local/bin/termshark
+    cp -f "${TMP_CLONE_DIR}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}"/termshark ~/.local/bin/termshark
     chmod 755 ~/.local/bin/termshark
     rm -rf "$TMP_CLONE_DIR"
   fi
