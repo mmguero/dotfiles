@@ -20,7 +20,7 @@ RUBY_VERSIONS=( )
 GOLANG_VERSIONS=( )
 NODEJS_VERSIONS=( )
 PERL_VERSIONS=( 5.32.0 )
-DOCKER_COMPOSE_INSTALL_VERSION=( 1.27.1 )
+DOCKER_COMPOSE_INSTALL_VERSION=( 1.27.4 )
 
 # add contents of https://raw.githubusercontent.com/mmguero/config/master/bash/rc.d/04_envs.bashrc
 # to .bashrc after running this script (or let this script set up the symlinks for ~/.bashrc.d for you)
@@ -54,6 +54,7 @@ unset LINUX
 unset WINDOWS
 unset LINUX_DISTRO
 unset LINUX_RELEASE
+unset LINUX_ARCH
 
 if [ $(uname -s) = 'Darwin' ]; then
   export MACOS=0
@@ -85,22 +86,25 @@ if [ $MACOS ]; then
   SCRIPT_USER="$(whoami)"
   SUDO_CMD=""
 
-elif [[ $EUID -eq 0 ]]; then
-  SCRIPT_USER="root"
-  SUDO_CMD=""
-
 else
-  SCRIPT_USER="$(whoami)"
-  if [[ "$(sudo whoami)" == "root" ]]; then
-    SUDO_CMD="sudo"
+  if [[ $EUID -eq 0 ]]; then
+    SCRIPT_USER="root"
+    SUDO_CMD=""
+
   else
-    echo "This command must be run as root, or \"sudo\" must be available (in case packages must be installed)"
-    exit 1
+    SCRIPT_USER="$(whoami)"
+    if [[ "$(sudo whoami)" == "root" ]]; then
+      SUDO_CMD="sudo"
+    else
+      echo "This command must be run as root, or \"sudo\" must be available (in case packages must be installed)"
+      exit 1
+    fi
   fi
   if ! dpkg -s apt >/dev/null 2>&1; then
     echo "This command only target Linux distributions that use apt/apt-get"
     exit 1
   fi
+  LINUX_ARCH="$(dpkg --print-architecture)"
 fi
 
 # convenience function for installing git for cloning/downloading
@@ -530,13 +534,18 @@ elif [ $LINUX ]; then
 
       if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
         $SUDO_CMD add-apt-repository \
-           "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-           $(lsb_release -cs) \
+           "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/ubuntu \
+           $LINUX_RELEASE \
+           stable"
+      elif [[ "$LINUX_DISTRO" == "Raspbian" ]]; then
+        $SUDO_CMD add-apt-repository \
+           "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/raspbian \
+           $LINUX_RELEASE \
            stable"
       elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
         $SUDO_CMD add-apt-repository \
-           "deb [arch=amd64] https://download.docker.com/linux/debian \
-           $(lsb_release -cs) \
+           "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/debian \
+           $LINUX_RELEASE \
            stable"
       fi
 
@@ -666,7 +675,7 @@ if [ $MACOS ]; then
     fi # vagrant-manager install confirmation check
   fi
 
-elif [ $LINUX ]; then
+elif [ $LINUX ] && [[ "$LINUX_ARCH" == "amd64" ]]; then
 
   # virtualbox (if not already installed)
   $SUDO_CMD apt-get update -qq >/dev/null 2>&1
@@ -1045,9 +1054,9 @@ EOT
     $SUDO_CMD dpkg-reconfigure --frontend=noninteractive wireshark-common
 
     # veracrypt
-    curl -L -o "/tmp/veracrypt-console-Debian-10-amd64.deb" "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio 'https://.+?veracrypt-console.+?Debian-10-amd64.deb' | sed "s/&#43;/+/" | head -n 1)"
-    $SUDO_CMD dpkg -i "/tmp/veracrypt-console-Debian-10-amd64.deb"
-    rm -f "/tmp/veracrypt-console-Debian-10-amd64.deb"
+    curl -L -o "/tmp/veracrypt-console-Debian-10.deb" "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio "https://.+?veracrypt-console.+?Debian-10-${LINUX_ARCH}.deb" | sed "s/&#43;/+/" | head -n 1)"
+    $SUDO_CMD dpkg -i "/tmp/veracrypt-console-Debian-10.deb"
+    rm -f "/tmp/veracrypt-console-Debian-10.deb"
 
     if ! grep -q mapper /etc/pmount.allow; then
       $SUDO_CMD tee -a /etc/pmount.allow > /dev/null <<'EOT'
@@ -1077,6 +1086,7 @@ EOT
       arandr
       dconf-cli
       fonts-noto-color-emoji
+      fonts-hack-ttf
       ghex
       gparted
       gtk2-engines-murrine
@@ -1204,16 +1214,17 @@ EOT
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
 
-    curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
-    if [ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]; then
-      $SUDO_CMD mkdir -p /opt
-      $SUDO_CMD rm -rvf /opt/firefox
-      $SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C /opt/
-      rm -vf /tmp/firefox.tar.bz2
-      if [[ -f /opt/firefox/firefox ]]; then
-        $SUDO_CMD rm -vf /usr/local/bin/firefox
-        $SUDO_CMD ln -vrs /opt/firefox/firefox /usr/local/bin/firefox
-        $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
+    if [[ "$LINUX_ARCH" == "amd64" ]]; then
+      curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+      if [ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]; then
+        $SUDO_CMD mkdir -p /opt
+        $SUDO_CMD rm -rvf /opt/firefox
+        $SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C /opt/
+        rm -vf /tmp/firefox.tar.bz2
+        if [[ -f /opt/firefox/firefox ]]; then
+          $SUDO_CMD rm -vf /usr/local/bin/firefox
+          $SUDO_CMD ln -vrs /opt/firefox/firefox /usr/local/bin/firefox
+          $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
 [Desktop Entry]
 Name=Firefox
 Comment=Web Browser
@@ -1229,13 +1240,14 @@ MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/vn
 StartupWMClass=Firefox
 StartupNotify=true
 EOT
-        dpkg -s firefox-esr >/dev/null 2>&1 && $SUDO_CMD apt-get -y --purge remove firefox-esr
-      fi
-    fi # /tmp/firefox.tar.bz2 check
+          dpkg -s firefox-esr >/dev/null 2>&1 && $SUDO_CMD apt-get -y --purge remove firefox-esr
+        fi
+      fi # /tmp/firefox.tar.bz2 check
 
-    curl -sSL -o /tmp/synergy_debian_amd64.deb "https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/synergy_debian_amd64.deb"
-    $SUDO_CMD dpkg -i /tmp/synergy_debian_amd64.deb
-    rm -f /tmp/synergy_debian_amd64.deb
+      curl -sSL -o /tmp/synergy_debian_amd64.deb "https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/synergy_debian_amd64.deb"
+      $SUDO_CMD dpkg -i /tmp/synergy_debian_amd64.deb
+      rm -f /tmp/synergy_debian_amd64.deb
+    fi
   fi
 
   unset CONFIRMATION
@@ -1337,18 +1349,6 @@ EOT
     dpkg -s thunar >/dev/null 2>&1 && xdg-mime default Thunar-folder-handler.desktop inode/directory application/x-gnome-saved-search
   fi
 
-  if dpkg -s tilix >/dev/null 2>&1; then
-    unset CONFIRMATION
-    read -p "Configure Tilix [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      TILIX_CONFIG_B64="Wy9dCndhcm4tdnRlLWNvbmZpZy1pc3N1ZT1mYWxzZQpzaWRlYmFyLW9uLXJpZ2h0PXRydWUKCltrZXliaW5kaW5nc10Kd2luLXZpZXctc2lkZWJhcj0nTWVudScKCltwcm9maWxlcy8yYjdjNDA4MC0wZGRkLTQ2YzUtOGYyMy01NjNmZDNiYTc4OWRdCmZvcmVncm91bmQtY29sb3I9JyNGOEY4RjInCnZpc2libGUtbmFtZT0nRGVmYXVsdCcKcGFsZXR0ZT1bJyMyNzI4MjInLCAnI0Y5MjY3MicsICcjQTZFMjJFJywgJyNGNEJGNzUnLCAnIzY2RDlFRicsICcjQUU4MUZGJywgJyNBMUVGRTQnLCAnI0Y4RjhGMicsICcjNzU3MTVFJywgJyNGOTI2NzInLCAnI0E2RTIyRScsICcjRjRCRjc1JywgJyM2NkQ5RUYnLCAnI0FFODFGRicsICcjQTFFRkU0JywgJyNGOUY4RjUnXQpiYWRnZS1jb2xvci1zZXQ9ZmFsc2UKdXNlLXN5c3RlbS1mb250PWZhbHNlCmN1cnNvci1jb2xvcnMtc2V0PWZhbHNlCmhpZ2hsaWdodC1jb2xvcnMtc2V0PWZhbHNlCnVzZS10aGVtZS1jb2xvcnM9ZmFsc2UKYm9sZC1jb2xvci1zZXQ9ZmFsc2UKZm9udD0nSGFjayAxMicKdGVybWluYWwtYmVsbD0nbm9uZScKYmFja2dyb3VuZC1jb2xvcj0nIzI3MjgyMicK"
-      echo "$TILIX_CONFIG_B64" | base64 -d > /tmp/tilixsetup.dconf
-      dconf load /com/gexperts/Tilix/ < /tmp/tilixsetup.dconf
-      rm -f /tmp/tilixsetup.dconf
-    fi
-  fi
-
   unset CONFIRMATION
   read -p "Setup user-dirs.dirs [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
@@ -1366,6 +1366,7 @@ EOT
   fi
 
   unset CONFIRMATION
+  TILIX_FONT="DejaVu Sans Mono Book"
   read -p "Install user-local fonts [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
@@ -1380,6 +1381,22 @@ EOT
     rm -f ~/.local/share/fonts/*Nerd*Windows*.ttf ~/.local/share/fonts/*.zip ~/.local/share/fonts/*Nerd*.otf
     popd >/dev/null 2>&1
     fc-cache -f -v
+    if dpkg -s fonts-hack-ttf >/dev/null 2>&1 ; then
+      $SUDO_CMD apt-get -y --purge remove fonts-hack-ttf
+    fi
+    TILIX_FONT="Hack Nerd Font Regular"
+  fi
+
+  if dpkg -s tilix >/dev/null 2>&1; then
+    unset CONFIRMATION
+    read -p "Configure Tilix [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      TILIX_CONFIG_B64="Wy9dCndhcm4tdnRlLWNvbmZpZy1pc3N1ZT1mYWxzZQpzaWRlYmFyLW9uLXJpZ2h0PXRydWUKCltrZXliaW5kaW5nc10Kd2luLXZpZXctc2lkZWJhcj0nTWVudScKCltwcm9maWxlcy8yYjdjNDA4MC0wZGRkLTQ2YzUtOGYyMy01NjNmZDNiYTc4OWRdCmZvcmVncm91bmQtY29sb3I9JyNGOEY4RjInCnZpc2libGUtbmFtZT0nRGVmYXVsdCcKcGFsZXR0ZT1bJyMyNzI4MjInLCAnI0Y5MjY3MicsICcjQTZFMjJFJywgJyNGNEJGNzUnLCAnIzY2RDlFRicsICcjQUU4MUZGJywgJyNBMUVGRTQnLCAnI0Y4RjhGMicsICcjNzU3MTVFJywgJyNGOTI2NzInLCAnI0E2RTIyRScsICcjRjRCRjc1JywgJyM2NkQ5RUYnLCAnI0FFODFGRicsICcjQTFFRkU0JywgJyNGOUY4RjUnXQpiYWRnZS1jb2xvci1zZXQ9ZmFsc2UKdXNlLXN5c3RlbS1mb250PWZhbHNlCmN1cnNvci1jb2xvcnMtc2V0PWZhbHNlCmhpZ2hsaWdodC1jb2xvcnMtc2V0PWZhbHNlCnVzZS10aGVtZS1jb2xvcnM9ZmFsc2UKYm9sZC1jb2xvci1zZXQ9ZmFsc2UKZm9udD0nSGFjayAxMicKdGVybWluYWwtYmVsbD0nbm9uZScKYmFja2dyb3VuZC1jb2xvcj0nIzI3MjgyMicK"
+      echo "$TILIX_CONFIG_B64" | base64 -d | sed "s/Hack/$TILIX_FONT/g" > /tmp/tilixsetup.dconf
+      dconf load /com/gexperts/Tilix/ < /tmp/tilixsetup.dconf
+      rm -f /tmp/tilixsetup.dconf
+    fi
   fi
 
   unset CONFIRMATION
@@ -1388,34 +1405,51 @@ EOT
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     mkdir -p ~/.local/bin
 
-    PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
-    curl -L "$PCLOUD_URL" > ~/.local/bin/pcloud
-    chmod 755 ~/.local/bin/pcloud
+    if [[ "$LINUX_ARCH" == "amd64" ]]; then
+      PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
+      curl -L "$PCLOUD_URL" > ~/.local/bin/pcloud
+      chmod 755 ~/.local/bin/pcloud
+    fi
 
     CROC_RELEASE="$(git_latest_release schollz/croc | sed 's/^v//')"
     TMP_CLONE_DIR="$(mktemp -d)"
-    curl -L "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-64bit.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    if [[ "$LINUX_ARCH" == "armhf" ]]; then
+      RELEASE_ARCH=ARM
+    else
+      RELEASE_ARCH=64bit
+    fi
+    curl -L "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
     cp -f "${TMP_CLONE_DIR}"/croc ~/.local/bin/croc
     chmod 755 ~/.local/bin/croc
     rm -rf "$TMP_CLONE_DIR"
 
     GRON_RELEASE="$(git_latest_release tomnomnom/gron | sed 's/^v//')"
     TMP_CLONE_DIR="$(mktemp -d)"
-    curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-amd64-${GRON_RELEASE}.tgz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-${LINUX_ARCH}-${GRON_RELEASE}.tgz" | tar xzf - -C "${TMP_CLONE_DIR}"
     cp -f "${TMP_CLONE_DIR}"/gron ~/.local/bin/gron
     chmod 755 ~/.local/bin/gron
     rm -rf "$TMP_CLONE_DIR"
 
     STEPCLI_RELEASE="$(git_latest_release smallstep/cli | sed 's/^v//')"
     TMP_CLONE_DIR="$(mktemp -d)"
-    curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_amd64.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    if [[ "$LINUX_ARCH" == "armhf" ]]; then
+      RELEASE_ARCH=armv7
+    else
+      RELEASE_ARCH=amd64
+    fi
+    curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
     cp -f "${TMP_CLONE_DIR}/step_${STEPCLI_RELEASE}"/bin/step ~/.local/bin/step
     chmod 755 ~/.local/bin/step
     rm -rf "$TMP_CLONE_DIR"
 
     TERMSHARK_RELEASE="$(git_latest_release gcla/termshark | sed 's/^v//')"
     TMP_CLONE_DIR="$(mktemp -d)"
-    curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_x64.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    if [[ "$LINUX_ARCH" == "armhf" ]]; then
+      RELEASE_ARCH=armv6
+    else
+      RELEASE_ARCH=x64
+    fi
+    curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
     cp -f "${TMP_CLONE_DIR}/termshark_${TERMSHARK_RELEASE}_linux_x64"/termshark ~/.local/bin/termshark
     chmod 755 ~/.local/bin/termshark
     rm -rf "$TMP_CLONE_DIR"
