@@ -1156,8 +1156,6 @@ EOT
       apache2-utils
       autossh
       bridge-utils
-      bro
-      bro-aux
       cifs-utils
       cryptcat
       curl
@@ -1390,6 +1388,13 @@ EOT
     curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_amd64.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
     cp -f "${TMP_CLONE_DIR}/step_${STEPCLI_RELEASE}"/bin/step ~/.local/bin/step
     chmod 755 ~/.local/bin/step
+    rm -rf "$TMP_CLONE_DIR"
+
+    TERMSHARK_RELEASE="$(git_latest_release gcla/termshark | sed 's/^v//')"
+    TMP_CLONE_DIR="$(mktemp -d)"
+    curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_x64.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    cp -f "${TMP_CLONE_DIR}/termshark_${TERMSHARK_RELEASE}_linux_x64"/termshark ~/.local/bin/termshark
+    chmod 755 ~/.local/bin/termshark
     rm -rf "$TMP_CLONE_DIR"
   fi
 
