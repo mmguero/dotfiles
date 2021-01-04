@@ -440,6 +440,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     go get -u -v golang.org/x/term
     go get -u -v github.com/nsf/gocode
     go get -u -v filippo.io/age
+    go get -u -v filippo.io/edwards25519
     pushd "$GOPATH/bin" >/dev/null 2>&1
     go build -o . filippo.io/age/cmd/age
     go build -o . filippo.io/age/cmd/age-keygen
