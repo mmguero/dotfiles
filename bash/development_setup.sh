@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
-# my one-stop-shopping Linux box setup.
-# tested in Debian Linux and sort-of on macOS.
-# if you are not me, this might not be what you want.
+# This is my one-stop-shop Linux/*NIX box setup.
+# If you are not me this may not be what you're looking for.
+
+# Tested on:
+# - Debian Linux
+# - Debian on WSL (sort of)
+# - macOS (sort of)
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -59,12 +63,10 @@ unset LINUX_ARCH
 if [ $(uname -s) = 'Darwin' ]; then
   export MACOS=0
 
-elif grep -q Microsoft /proc/version; then
-  export WINDOWS=0
-  echo "Windows is not currently supported by this script."
-  exit 1
-
 else
+  if grep -q Microsoft /proc/version; then
+    export WINDOWS=0
+  fi
   export LINUX=0
   if command -v lsb_release >/dev/null 2>&1 ; then
     LINUX_DISTRO="$(lsb_release -is)"
@@ -510,7 +512,7 @@ if [ $MACOS ]; then
     echo "\"docker-edge\" is already installed!"
   fi # docker-edge install check
 
-elif [ $LINUX ]; then
+elif [ $LINUX ] && [[ -z $WINDOWS ]]; then
 
   # install docker-ce, if needed
   if ! $SUDO_CMD docker info >/dev/null 2>&1 ; then
@@ -675,7 +677,7 @@ if [ $MACOS ]; then
     fi # vagrant-manager install confirmation check
   fi
 
-elif [ $LINUX ] && [[ "$LINUX_ARCH" == "amd64" ]]; then
+elif [ $LINUX ] && [[ -z $WINDOWS ]] && [[ "$LINUX_ARCH" == "amd64" ]]; then
 
   # virtualbox (if not already installed)
   $SUDO_CMD apt-get update -qq >/dev/null 2>&1
@@ -1038,7 +1040,9 @@ EOT
 
     # install the packages
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      if [[ ! $i =~ ^firmware ]] || [[ -z $WINDOWS ]]; then
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      fi
     done
 
     # pre-install configurations
@@ -1076,84 +1080,87 @@ EOT
 
   fi # install common packages confirmation
 
-  unset CONFIRMATION
-  read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
-    DEBIAN_PACKAGE_LIST=(
-      albert
-      arandr
-      dconf-cli
-      fonts-noto-color-emoji
-      fonts-hack-ttf
-      ghex
-      gparted
-      gtk2-engines-murrine
-      gtk2-engines-pixbuf
-      keepassxc
-      meld
-      numix-gtk-theme
-      obsidian-icon-theme
-      pdftk
-      regexxer
-      sublime-text
-      thunar
-      thunar-archive-plugin
-      thunar-volman
-      tilix
-      ttf-mscorefonts-installer
-      xautomation
-      xbindkeys
-      xdiskusage
-      xfdesktop4
-      xxdiff
-      xxdiff-scripts
-      xsel
-    )
-    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
-    done
+  if [[ -z $WINDOWS ]]; then
 
-    if [ ! -d ~/.themes/vimix-dark-laptop-beryl ]; then
-      TMP_CLONE_DIR="$(mktemp -d)"
-      git clone --depth 1 https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
-      pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
-      mkdir -p ~/.themes
-      ./install.sh -d ~/.themes -n vimix -c dark -t beryl -s laptop
-      popd >/dev/null 2>&1
-      rm -rf "$TMP_CLONE_DIR"
+    unset CONFIRMATION
+    read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      DEBIAN_PACKAGE_LIST=(
+        albert
+        arandr
+        dconf-cli
+        fonts-noto-color-emoji
+        fonts-hack-ttf
+        ghex
+        gparted
+        gtk2-engines-murrine
+        gtk2-engines-pixbuf
+        keepassxc
+        meld
+        numix-gtk-theme
+        obsidian-icon-theme
+        pdftk
+        regexxer
+        sublime-text
+        thunar
+        thunar-archive-plugin
+        thunar-volman
+        tilix
+        ttf-mscorefonts-installer
+        xautomation
+        xbindkeys
+        xdiskusage
+        xfdesktop4
+        xxdiff
+        xxdiff-scripts
+        xsel
+      )
+      for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      done
+
+      if [ ! -d ~/.themes/vimix-dark-laptop-beryl ]; then
+        TMP_CLONE_DIR="$(mktemp -d)"
+        git clone --depth 1 https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
+        pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+        mkdir -p ~/.themes
+        ./install.sh -d ~/.themes -n vimix -c dark -t beryl -s laptop
+        popd >/dev/null 2>&1
+        rm -rf "$TMP_CLONE_DIR"
+      fi
     fi
 
-  fi
-
-  unset CONFIRMATION
-  read -p "Install common packages (media) [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
-    DEBIAN_PACKAGE_LIST=(
-      audacious
-      audacity
-      ffmpeg
-      gimp
-      gimp-plugin-registry
-      gimp-texturize
-      gtk-recordmydesktop
-      imagemagick
-      mpv
-      pavucontrol
-      pithos
-      recordmydesktop
-      wodim
-    )
-    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
-    done
-    if pip -V >/dev/null 2>&1 ; then
-      pip install -U youtube-dl
+    unset CONFIRMATION
+    read -p "Install common packages (media) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      DEBIAN_PACKAGE_LIST=(
+        audacious
+        audacity
+        ffmpeg
+        gimp
+        gimp-plugin-registry
+        gimp-texturize
+        gtk-recordmydesktop
+        imagemagick
+        mpv
+        pavucontrol
+        pithos
+        recordmydesktop
+        wodim
+      )
+      for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      done
+      if pip -V >/dev/null 2>&1 ; then
+        pip install -U youtube-dl
+      fi
     fi
-  fi
+
+  fi # not WINDOWS
 
   unset CONFIRMATION
   read -p "Install common packages (networking) [Y/n]? " CONFIRMATION
@@ -1200,31 +1207,33 @@ EOT
     done
   fi
 
-  unset CONFIRMATION
-  read -p "Install common packages (networking, GUI) [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
-    DEBIAN_PACKAGE_LIST=(
-      wireshark
-      x2goclient
-      zenmap
-    )
-    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
-    done
+  if [[ -z $WINDOWS ]]; then
 
-    if [[ "$LINUX_ARCH" == "amd64" ]]; then
-      curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
-      if [ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]; then
-        $SUDO_CMD mkdir -p /opt
-        $SUDO_CMD rm -rvf /opt/firefox
-        $SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C /opt/
-        rm -vf /tmp/firefox.tar.bz2
-        if [[ -f /opt/firefox/firefox ]]; then
-          $SUDO_CMD rm -vf /usr/local/bin/firefox
-          $SUDO_CMD ln -vrs /opt/firefox/firefox /usr/local/bin/firefox
-          $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
+    unset CONFIRMATION
+    read -p "Install common packages (networking, GUI) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      DEBIAN_PACKAGE_LIST=(
+        wireshark
+        x2goclient
+        zenmap
+      )
+      for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      done
+
+      if [[ "$LINUX_ARCH" == "amd64" ]]; then
+        curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+        if [ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]; then
+          $SUDO_CMD mkdir -p /opt
+          $SUDO_CMD rm -rvf /opt/firefox
+          $SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C /opt/
+          rm -vf /tmp/firefox.tar.bz2
+          if [[ -f /opt/firefox/firefox ]]; then
+            $SUDO_CMD rm -vf /usr/local/bin/firefox
+            $SUDO_CMD ln -vrs /opt/firefox/firefox /usr/local/bin/firefox
+            $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
 [Desktop Entry]
 Name=Firefox
 Comment=Web Browser
@@ -1240,15 +1249,16 @@ MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/vn
 StartupWMClass=Firefox
 StartupNotify=true
 EOT
-          dpkg -s firefox-esr >/dev/null 2>&1 && $SUDO_CMD apt-get -y --purge remove firefox-esr
-        fi
-      fi # /tmp/firefox.tar.bz2 check
+            dpkg -s firefox-esr >/dev/null 2>&1 && $SUDO_CMD apt-get -y --purge remove firefox-esr
+          fi
+        fi # /tmp/firefox.tar.bz2 check
 
-      curl -sSL -o /tmp/synergy_debian_amd64.deb "https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/synergy_debian_amd64.deb"
-      $SUDO_CMD dpkg -i /tmp/synergy_debian_amd64.deb
-      rm -f /tmp/synergy_debian_amd64.deb
+        curl -sSL -o /tmp/synergy_debian_amd64.deb "https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/synergy_debian_amd64.deb"
+        $SUDO_CMD dpkg -i /tmp/synergy_debian_amd64.deb
+        rm -f /tmp/synergy_debian_amd64.deb
+      fi
     fi
-  fi
+  fi # not WINDOWS
 
   unset CONFIRMATION
   read -p "Install common packages (forensics/security) [Y/n]? " CONFIRMATION
@@ -1302,21 +1312,23 @@ EOT
     done
   fi
 
-  unset CONFIRMATION
-  read -p "Install common packages (forensics/security, GUI) [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
-    DEBIAN_PACKAGE_LIST=(
-      ettercap-graphical
-      forensics-all
-      guymager
-      hydra-gtk
-    )
-    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
-    done
-  fi
+  if [[ -z $WINDOWS ]]; then
+    unset CONFIRMATION
+    read -p "Install common packages (forensics/security, GUI) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      DEBIAN_PACKAGE_LIST=(
+        ettercap-graphical
+        forensics-all
+        guymager
+        hydra-gtk
+      )
+      for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      done
+    fi
+  fi # not WINDOWS
 
   unset CONFIRMATION
   read -p "Create missing common local config in home [Y/n]? " CONFIRMATION
@@ -1349,11 +1361,12 @@ EOT
     dpkg -s thunar >/dev/null 2>&1 && xdg-mime default Thunar-folder-handler.desktop inode/directory application/x-gnome-saved-search
   fi
 
-  unset CONFIRMATION
-  read -p "Setup user-dirs.dirs [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    cat <<EOT > ~/.config/user-dirs.dirs
+  if [[ -z $WINDOWS ]]; then
+    unset CONFIRMATION
+    read -p "Setup user-dirs.dirs [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      cat <<EOT > ~/.config/user-dirs.dirs
 XDG_DESKTOP_DIR="$HOME/Desktop"
 XDG_DOWNLOAD_DIR="$HOME/download"
 XDG_TEMPLATES_DIR="$HOME/Documents/Templates"
@@ -1363,41 +1376,41 @@ XDG_MUSIC_DIR="$HOME/media/music"
 XDG_PICTURES_DIR="$HOME/media/video"
 XDG_VIDEOS_DIR="$HOME/media/images"
 EOT
-  fi
-
-  unset CONFIRMATION
-  TILIX_FONT="DejaVu Sans Mono Book"
-  read -p "Install user-local fonts [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    mkdir -p ~/.local/share/fonts ~/.config/fontconfig/conf.d
-
-    LATEST_NERDFONT_RELEASE="$(git_latest_release ryanoasis/nerd-fonts)"
-    pushd ~/.local/share/fonts >/dev/null 2>&1
-    for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Incosolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
-      curl -L -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$LATEST_NERDFONT_RELEASE/$NERDFONT.zip"
-      unzip -o ./$NERDFONT.zip
-    done
-    rm -f ~/.local/share/fonts/*Nerd*Windows*.ttf ~/.local/share/fonts/*.zip ~/.local/share/fonts/*Nerd*.otf
-    popd >/dev/null 2>&1
-    fc-cache -f -v
-    if dpkg -s fonts-hack-ttf >/dev/null 2>&1 ; then
-      $SUDO_CMD apt-get -y --purge remove fonts-hack-ttf
     fi
-    TILIX_FONT="Hack Nerd Font Regular"
-  fi
 
-  if dpkg -s tilix >/dev/null 2>&1; then
     unset CONFIRMATION
-    read -p "Configure Tilix [Y/n]? " CONFIRMATION
+    read -p "Install user-local fonts [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      TILIX_CONFIG_B64="Wy9dCndhcm4tdnRlLWNvbmZpZy1pc3N1ZT1mYWxzZQpzaWRlYmFyLW9uLXJpZ2h0PXRydWUKCltrZXliaW5kaW5nc10Kd2luLXZpZXctc2lkZWJhcj0nTWVudScKCltwcm9maWxlcy8yYjdjNDA4MC0wZGRkLTQ2YzUtOGYyMy01NjNmZDNiYTc4OWRdCmZvcmVncm91bmQtY29sb3I9JyNGOEY4RjInCnZpc2libGUtbmFtZT0nRGVmYXVsdCcKcGFsZXR0ZT1bJyMyNzI4MjInLCAnI0Y5MjY3MicsICcjQTZFMjJFJywgJyNGNEJGNzUnLCAnIzY2RDlFRicsICcjQUU4MUZGJywgJyNBMUVGRTQnLCAnI0Y4RjhGMicsICcjNzU3MTVFJywgJyNGOTI2NzInLCAnI0E2RTIyRScsICcjRjRCRjc1JywgJyM2NkQ5RUYnLCAnI0FFODFGRicsICcjQTFFRkU0JywgJyNGOUY4RjUnXQpiYWRnZS1jb2xvci1zZXQ9ZmFsc2UKdXNlLXN5c3RlbS1mb250PWZhbHNlCmN1cnNvci1jb2xvcnMtc2V0PWZhbHNlCmhpZ2hsaWdodC1jb2xvcnMtc2V0PWZhbHNlCnVzZS10aGVtZS1jb2xvcnM9ZmFsc2UKYm9sZC1jb2xvci1zZXQ9ZmFsc2UKZm9udD0nSGFjayAxMicKdGVybWluYWwtYmVsbD0nbm9uZScKYmFja2dyb3VuZC1jb2xvcj0nIzI3MjgyMicK"
-      echo "$TILIX_CONFIG_B64" | base64 -d | sed "s/Hack/$TILIX_FONT/g" > /tmp/tilixsetup.dconf
-      dconf load /com/gexperts/Tilix/ < /tmp/tilixsetup.dconf
-      rm -f /tmp/tilixsetup.dconf
+      mkdir -p ~/.local/share/fonts ~/.config/fontconfig/conf.d
+
+      LATEST_NERDFONT_RELEASE="$(git_latest_release ryanoasis/nerd-fonts)"
+      pushd ~/.local/share/fonts >/dev/null 2>&1
+      for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Incosolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
+        curl -L -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$LATEST_NERDFONT_RELEASE/$NERDFONT.zip"
+        unzip -o ./$NERDFONT.zip
+      done
+      rm -f ~/.local/share/fonts/*Nerd*Windows*.ttf ~/.local/share/fonts/*.zip ~/.local/share/fonts/*Nerd*.otf
+      popd >/dev/null 2>&1
+      fc-cache -f -v
+      if dpkg -s fonts-hack-ttf >/dev/null 2>&1 ; then
+        $SUDO_CMD apt-get -y --purge remove fonts-hack-ttf
+      fi
+      TILIX_FONT="Hack Nerd Font Regular"
     fi
-  fi
+
+    if dpkg -s tilix >/dev/null 2>&1; then
+      unset CONFIRMATION
+      read -p "Configure Tilix [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        TILIX_CONFIG_B64="Wy9dCndhcm4tdnRlLWNvbmZpZy1pc3N1ZT1mYWxzZQpzaWRlYmFyLW9uLXJpZ2h0PXRydWUKCltrZXliaW5kaW5nc10Kd2luLXZpZXctc2lkZWJhcj0nTWVudScKCltwcm9maWxlcy8yYjdjNDA4MC0wZGRkLTQ2YzUtOGYyMy01NjNmZDNiYTc4OWRdCmZvcmVncm91bmQtY29sb3I9JyNGOEY4RjInCnZpc2libGUtbmFtZT0nRGVmYXVsdCcKcGFsZXR0ZT1bJyMyNzI4MjInLCAnI0Y5MjY3MicsICcjQTZFMjJFJywgJyNGNEJGNzUnLCAnIzY2RDlFRicsICcjQUU4MUZGJywgJyNBMUVGRTQnLCAnI0Y4RjhGMicsICcjNzU3MTVFJywgJyNGOTI2NzInLCAnI0E2RTIyRScsICcjRjRCRjc1JywgJyM2NkQ5RUYnLCAnI0FFODFGRicsICcjQTFFRkU0JywgJyNGOUY4RjUnXQpiYWRnZS1jb2xvci1zZXQ9ZmFsc2UKdXNlLXN5c3RlbS1mb250PWZhbHNlCmN1cnNvci1jb2xvcnMtc2V0PWZhbHNlCmhpZ2hsaWdodC1jb2xvcnMtc2V0PWZhbHNlCnVzZS10aGVtZS1jb2xvcnM9ZmFsc2UKYm9sZC1jb2xvci1zZXQ9ZmFsc2UKZm9udD0nSGFjayAxMicKdGVybWluYWwtYmVsbD0nbm9uZScKYmFja2dyb3VuZC1jb2xvcj0nIzI3MjgyMicK"
+        echo "$TILIX_CONFIG_B64" | base64 -d | sed "s/Hack/$TILIX_FONT/g" > /tmp/tilixsetup.dconf
+        dconf load /com/gexperts/Tilix/ < /tmp/tilixsetup.dconf
+        rm -f /tmp/tilixsetup.dconf
+      fi
+    fi
+  fi # not WINDOWS
 
   unset CONFIRMATION
   read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
@@ -1405,7 +1418,7 @@ EOT
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     mkdir -p ~/.local/bin
 
-    if [[ "$LINUX_ARCH" == "amd64" ]]; then
+    if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WINDOWS ]]; then
       PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
       curl -L "$PCLOUD_URL" > ~/.local/bin/pcloud
       chmod 755 ~/.local/bin/pcloud
@@ -1455,43 +1468,45 @@ EOT
     rm -rf "$TMP_CLONE_DIR"
   fi
 
-  if [[ "$SCRIPT_USER" != "root" ]]; then
+  if [[ -z $WINDOWS ]]; then
 
-    # give unlimited, godlike power
-    unset CONFIRMATION
-    read -p "Add $SCRIPT_USER to godlike groups [y/N]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-N}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      POWER_GROUPS=(
-        adm
-        bluetooth
-        audio
-        cdrom
-        cryptkeeper
-        disk
-        docker
-        fuse
-        lpadmin
-        netdev
-        plugdev
-        pulse-access
-        scanner
-        sudo
-        vboxusers
-        video
-      )
-      for i in ${POWER_GROUPS[@]}; do
-        $SUDO_CMD usermod -a -G "$i" "$SCRIPT_USER"
-      done
-    fi # group add confirmation
-  fi # script_user is not root check
+    if [[ "$SCRIPT_USER" != "root" ]]; then
 
-  if [[ ! -f /etc/sudoers.d/power_groups ]]; then
-    unset CONFIRMATION
-    read -p "Setup some additional sudoers stuff for groups [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD tee /etc/sudoers.d/power_groups > /dev/null <<'EOT'
+      # give unlimited, godlike power
+      unset CONFIRMATION
+      read -p "Add $SCRIPT_USER to godlike groups [y/N]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        POWER_GROUPS=(
+          adm
+          bluetooth
+          audio
+          cdrom
+          cryptkeeper
+          disk
+          docker
+          fuse
+          lpadmin
+          netdev
+          plugdev
+          pulse-access
+          scanner
+          sudo
+          vboxusers
+          video
+        )
+        for i in ${POWER_GROUPS[@]}; do
+          $SUDO_CMD usermod -a -G "$i" "$SCRIPT_USER"
+        done
+      fi # group add confirmation
+    fi # script_user is not root check
+
+    if [[ ! -f /etc/sudoers.d/power_groups ]]; then
+      unset CONFIRMATION
+      read -p "Setup some additional sudoers stuff for groups [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD tee /etc/sudoers.d/power_groups > /dev/null <<'EOT'
 %cdrom ALL=(root) NOPASSWD: /usr/bin/readom
 %cdrom ALL=(root) NOPASSWD: /usr/bin/wodim
 %disk ALL=(root) NOPASSWD: /bin/mount
@@ -1501,91 +1516,91 @@ EOT
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 %cryptkeeper ALL=(root) NOPASSWD:/usr/bin/veracrypt
 EOT
-      $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
-    fi # confirmation on group stuff
-  fi # ! -f /etc/sudoers.d/power_groups
+        $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
+      fi # confirmation on group stuff
+    fi # ! -f /etc/sudoers.d/power_groups
 
-  # set capabilities for network capture
-  unset CONFIRMATION
-  read -p "Set capabilities for netdev users to sniff [Y/n]? " CONFIRMATION
-  CONFIRMATION=${CONFIRMATION:-Y}
-  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    EXE_LESS_CAP=(
-      /opt/zeek/bin/capstats
-      /opt/zeek/bin/zeek
-      /sbin/ethtool
-      /usr/bin/bro
-      /usr/bin/capstats
-      /usr/bin/dumpcap
-      /usr/bin/ncat
-      /usr/bin/openssl
-      /usr/bin/socat
-      /usr/bin/stunnel3
-      /usr/bin/stunnel4
-      /usr/bin/tcpcryptd
-      /usr/bin/tcpflow
-      /usr/bin/tcpreplay
-      /usr/sbin/arpspoof
-      /usr/sbin/dnsspoof
-      /usr/sbin/dsniff
-      /usr/sbin/filesnarf
-      /usr/sbin/macof
-      /usr/sbin/mailsnarf
-      /usr/sbin/msgsnarf
-      /usr/sbin/nethogs
-      /usr/sbin/sshmitm
-      /usr/sbin/sshow
-      /usr/sbin/tcpd
-      /usr/sbin/tcpdump
-      /usr/sbin/tcpkill
-      /usr/sbin/tcpnice
-      /usr/sbin/urlsnarf
-      /usr/sbin/webmitm
-      /usr/sbin/webspy
-    )
-    EXE_MORE_CAP=(
-      /usr/sbin/astraceroute
-      /usr/sbin/bpfc
-      /usr/sbin/curvetun
-      /usr/sbin/flowtop
-      /usr/sbin/ifpps
-      /usr/sbin/inetd
-      /usr/sbin/mausezahn
-      /usr/sbin/netsniff-ng
-      /usr/sbin/stenotype
-      /usr/sbin/trafgen
-    )
-    for i in ${EXE_LESS_CAP[@]}; do
-      [[ -e "$i" ]] && \
-      $SUDO_CMD chown root:netdev "$i" && \
-        $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip' "$i"
-    done
-    for i in ${EXE_MORE_CAP[@]}; do
-      [[ -e "$i" ]] && \
-      $SUDO_CMD chown root:netdev "$i" && \
-        $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip CAP_IPC_LOCK+eip CAP_SYS_ADMIN+eip' "$i"
-    done
-  fi # setcap confirmation
-
-  if dpkg -s ufw >/dev/null 2>&1; then
+    # set capabilities for network capture
     unset CONFIRMATION
-    read -p "Enable/configure UFW (uncomplicated firewall) [Y/n]? " CONFIRMATION
+    read -p "Set capabilities for netdev users to sniff [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      EXE_LESS_CAP=(
+        /opt/zeek/bin/capstats
+        /opt/zeek/bin/zeek
+        /sbin/ethtool
+        /usr/bin/bro
+        /usr/bin/capstats
+        /usr/bin/dumpcap
+        /usr/bin/ncat
+        /usr/bin/openssl
+        /usr/bin/socat
+        /usr/bin/stunnel3
+        /usr/bin/stunnel4
+        /usr/bin/tcpcryptd
+        /usr/bin/tcpflow
+        /usr/bin/tcpreplay
+        /usr/sbin/arpspoof
+        /usr/sbin/dnsspoof
+        /usr/sbin/dsniff
+        /usr/sbin/filesnarf
+        /usr/sbin/macof
+        /usr/sbin/mailsnarf
+        /usr/sbin/msgsnarf
+        /usr/sbin/nethogs
+        /usr/sbin/sshmitm
+        /usr/sbin/sshow
+        /usr/sbin/tcpd
+        /usr/sbin/tcpdump
+        /usr/sbin/tcpkill
+        /usr/sbin/tcpnice
+        /usr/sbin/urlsnarf
+        /usr/sbin/webmitm
+        /usr/sbin/webspy
+      )
+      EXE_MORE_CAP=(
+        /usr/sbin/astraceroute
+        /usr/sbin/bpfc
+        /usr/sbin/curvetun
+        /usr/sbin/flowtop
+        /usr/sbin/ifpps
+        /usr/sbin/inetd
+        /usr/sbin/mausezahn
+        /usr/sbin/netsniff-ng
+        /usr/sbin/stenotype
+        /usr/sbin/trafgen
+      )
+      for i in ${EXE_LESS_CAP[@]}; do
+        [[ -e "$i" ]] && \
+        $SUDO_CMD chown root:netdev "$i" && \
+          $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip' "$i"
+      done
+      for i in ${EXE_MORE_CAP[@]}; do
+        [[ -e "$i" ]] && \
+        $SUDO_CMD chown root:netdev "$i" && \
+          $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip CAP_IPC_LOCK+eip CAP_SYS_ADMIN+eip' "$i"
+      done
+    fi # setcap confirmation
 
-      $SUDO_CMD sed -i "s/LOGLEVEL=.*/LOGLEVEL=off/" /etc/ufw/ufw.conf
+    if dpkg -s ufw >/dev/null 2>&1 && [[ -z $WINDOWS ]]; then
+      unset CONFIRMATION
+      read -p "Enable/configure UFW (uncomplicated firewall) [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-      # ufw/docker
-      UFWDOCKER=0
-      if $SUDO_CMD docker info >/dev/null 2>&1 ; then
-        read -p "Configure UFW/docker interaction and docker address pools? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-Y}
-        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD sed -i "s/LOGLEVEL=.*/LOGLEVEL=off/" /etc/ufw/ufw.conf
 
-          $SUDO_CMD sed -i 's/DEFAULT_FORWARD_POLICY=.*/DEFAULT_FORWARD_POLICY="ACCEPT"/' /etc/default/ufw
-          $SUDO_CMD sed -i "s/#net\/ipv4\/ip_forward=1/net\/ipv4\/ip_forward=1/" /etc/ufw/sysctl.conf
+        # ufw/docker
+        UFWDOCKER=0
+        if $SUDO_CMD docker info >/dev/null 2>&1 ; then
+          read -p "Configure UFW/docker interaction and docker address pools? " CONFIRMATION
+          CONFIRMATION=${CONFIRMATION:-Y}
+          if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-          cat <<EOF >> /tmp/docker-nat-rules.cfg
+            $SUDO_CMD sed -i 's/DEFAULT_FORWARD_POLICY=.*/DEFAULT_FORWARD_POLICY="ACCEPT"/' /etc/default/ufw
+            $SUDO_CMD sed -i "s/#net\/ipv4\/ip_forward=1/net\/ipv4\/ip_forward=1/" /etc/ufw/sysctl.conf
+
+            cat <<EOF >> /tmp/docker-nat-rules.cfg
 # NAT table rules
 *nat
 :POSTROUTING ACCEPT [0:0]
@@ -1593,39 +1608,39 @@ EOT
 COMMIT
 
 EOF
-          $SUDO_CMD cat /tmp/docker-nat-rules.cfg /etc/ufw/before.rules | $SUDO_CMD sponge /etc/ufw/before.rules
-          rm -f /tmp/docker-nat-rules.cfg
+            $SUDO_CMD cat /tmp/docker-nat-rules.cfg /etc/ufw/before.rules | $SUDO_CMD sponge /etc/ufw/before.rules
+            rm -f /tmp/docker-nat-rules.cfg
 
-          $SUDO_CMD mkdir -p /etc/docker/
-          (cat /etc/docker/daemon.json 2>/dev/null || echo '{}') | jq '. + { "iptables": false }' | jq '. + { "default-address-pools": [ { "base": "172.27.0.0/16", "size": 24 } ] }' | $SUDO_CMD sponge /etc/docker/daemon.json
+            $SUDO_CMD mkdir -p /etc/docker/
+            (cat /etc/docker/daemon.json 2>/dev/null || echo '{}') | jq '. + { "iptables": false }' | jq '. + { "default-address-pools": [ { "base": "172.27.0.0/16", "size": 24 } ] }' | $SUDO_CMD sponge /etc/docker/daemon.json
 
-          UFWDOCKER=1
-        fi # ufw/docker confirmation
-      fi # ufw/docker check
+            UFWDOCKER=1
+          fi # ufw/docker confirmation
+        fi # ufw/docker check
 
-      # enable firewall, disallow everything in except SSH/NTP
-      $SUDO_CMD ufw enable
-      $SUDO_CMD ufw default deny incoming
-      $SUDO_CMD ufw default allow outgoing
-      UFW_ALLOW_RULES=(
-        ntp
-        ssh
-      )
-      for i in ${UFW_ALLOW_RULES[@]}; do
-        $SUDO_CMD ufw allow "$i"
-      done
+        # enable firewall, disallow everything in except SSH/NTP
+        $SUDO_CMD ufw enable
+        $SUDO_CMD ufw default deny incoming
+        $SUDO_CMD ufw default allow outgoing
+        UFW_ALLOW_RULES=(
+          ntp
+          ssh
+        )
+        for i in ${UFW_ALLOW_RULES[@]}; do
+          $SUDO_CMD ufw allow "$i"
+        done
 
-      (( $UFWDOCKER == 1 )) && ( ( $SUDO_CMD systemctl daemon-reload && $SUDO_CMD systemctl restart docker ) || true )
+        (( $UFWDOCKER == 1 )) && ( ( $SUDO_CMD systemctl daemon-reload && $SUDO_CMD systemctl restart docker ) || true )
 
-    fi # ufw confirmation
-  fi # ufw installed check
+      fi # ufw confirmation
+    fi # ufw installed check
 
-  if [[ -r /etc/sysctl.conf ]] && ! grep -q swappiness /etc/sysctl.conf; then
-    unset CONFIRMATION
-    read -p "Tweak sysctl.conf (swap, NIC buffers, handles, etc.) [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
+    if [[ -r /etc/sysctl.conf ]] && ! grep -q swappiness /etc/sysctl.conf; then
+      unset CONFIRMATION
+      read -p "Tweak sysctl.conf (swap, NIC buffers, handles, etc.) [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
 
 # allow dmg reading
 kernel.dmesg_restrict=0
@@ -1663,33 +1678,33 @@ net.ipv4.tcp_rmem=10240 425984 33554432
 net.ipv4.tcp_wmem=10240 425984 33554432
 net.ipv4.udp_mem=10240 425984 33554432
 EOT
-    fi # sysctl confirmation
-  fi # sysctl check
+      fi # sysctl confirmation
+    fi # sysctl check
 
-  if [[ ! -f /etc/security/limits.d/limits.conf ]]; then
-    unset CONFIRMATION
-    read -p "Increase limits for file handles and memlock [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD tee /etc/security/limits.d/limits.conf > /dev/null <<'EOT'
+    if [[ ! -f /etc/security/limits.d/limits.conf ]]; then
+      unset CONFIRMATION
+      read -p "Increase limits for file handles and memlock [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD tee /etc/security/limits.d/limits.conf > /dev/null <<'EOT'
 * soft nofile 65535
 * hard nofile 65535
 * soft memlock unlimited
 * hard memlock unlimited
 EOT
-    fi # limits.conf confirmation
-  fi # limits.conf check
+      fi # limits.conf confirmation
+    fi # limits.conf check
 
-  if [[ -f /etc/default/grub ]] && ! grep -q deadline /etc/default/grub; then
-    unset CONFIRMATION
-    read -p "Tweak kernel parameters in grub (scheduler, cgroup, etc.) [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=\).*/\1"random.trust_cpu=on elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem"/' /etc/default/grub
-      $SUDO_CMD update-grub
-    fi # grub confirmation
-  fi # grub check
-
+    if [[ -f /etc/default/grub ]] && ! grep -q deadline /etc/default/grub; then
+      unset CONFIRMATION
+      read -p "Tweak kernel parameters in grub (scheduler, cgroup, etc.) [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=\).*/\1"random.trust_cpu=on elevator=deadline cgroup_enable=memory swapaccount=1 cgroup.memory=nokmem"/' /etc/default/grub
+        $SUDO_CMD update-grub
+      fi # grub confirmation
+    fi # grub check
+  fi # not WINDOWS
 fi # linux
 
 if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
