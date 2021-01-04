@@ -1093,8 +1093,6 @@ EOT
       thunar-volman
       tilix
       ttf-mscorefonts-installer
-      wireshark
-      x2goclient
       xautomation
       xbindkeys
       xdiskusage
@@ -1102,7 +1100,6 @@ EOT
       xxdiff
       xxdiff-scripts
       xsel
-      zenmap
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
@@ -1191,6 +1188,21 @@ EOT
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
     done
+  fi
+
+  unset CONFIRMATION
+  read -p "Install common packages (networking, GUI) [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    DEBIAN_PACKAGE_LIST=(
+      wireshark
+      x2goclient
+      zenmap
+    )
+    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+    done
 
     curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
     if [ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]; then
@@ -1232,7 +1244,6 @@ EOT
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
     DEBIAN_PACKAGE_LIST=(
-      forensics-all
       android-tools-adb
       android-tools-fastboot
       autopsy
@@ -1247,7 +1258,6 @@ EOT
       dcfldd
       discover
       disktype
-      ettercap-graphical
       ewf-tools
       exif
       exiftags
@@ -1256,16 +1266,14 @@ EOT
       foremost
       gddrescue
       gpart
-      guymager
       hunt
-      hydra-gtk
+      hydra
       john
       john-data
       knocker
       libafflib0v5
       libewf2
       libguytools2
-      lshw
       nast
       nasty
       nikto
@@ -1274,10 +1282,24 @@ EOT
       rekall-core
       safecat
       scsitools
-      stenographer
-      stenographer-client
       testdisk
       weplab
+    )
+    for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+    done
+  fi
+
+  unset CONFIRMATION
+  read -p "Install common packages (forensics/security, GUI) [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    DEBIAN_PACKAGE_LIST=(
+      ettercap-graphical
+      forensics-all
+      guymager
+      hydra-gtk
     )
     for i in ${DEBIAN_PACKAGE_LIST[@]}; do
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
