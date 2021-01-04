@@ -1046,7 +1046,7 @@ EOT
 
     # veracrypt
     curl -L -o "/tmp/veracrypt-console-Debian-10-amd64.deb" "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio 'https://.+?veracrypt-console.+?Debian-10-amd64.deb' | sed "s/&#43;/+/" | head -n 1)"
-    dpkg -i "/tmp/veracrypt-console-Debian-10-amd64.deb"
+    $SUDO_CMD dpkg -i "/tmp/veracrypt-console-Debian-10-amd64.deb"
     rm -f "/tmp/veracrypt-console-Debian-10-amd64.deb"
 
     if ! grep -q mapper /etc/pmount.allow; then
