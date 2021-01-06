@@ -211,8 +211,9 @@ if [ $MACOS ]; then
     echo "\"brew\" is already installed!"
   fi # brew install check
 
-  brew cask list >/dev/null 2>&1
+  brew list --cask >/dev/null 2>&1
   brew tap homebrew/cask-versions
+  brew tap homebrew/cask-fonts
 
 fi # MacOS check
 
@@ -230,7 +231,7 @@ done
 if [ $MACOS ]; then
 
   for i in ${ENV_LIST[@]}; do
-    if ! brew ls --versions "$i" >/dev/null 2>&1 ; then
+    if ! brew list --versions "$i" >/dev/null 2>&1 ; then
       unset CONFIRMATION
       read -p "\"$i\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
@@ -498,13 +499,13 @@ fi
 if [ $MACOS ]; then
 
   # install docker-edge, if needed
-  if ! brew cask ls --versions docker-edge >/dev/null 2>&1 ; then
+  if ! brew list --cask --versions docker-edge >/dev/null 2>&1 ; then
     unset CONFIRMATION
     read -p "\"docker-edge\" cask is not installed, attempt to install docker-edge via brew [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       echo "Installing Docker Edge..."
-      brew cask install docker-edge
+      brew install --cask docker-edge
       echo "Installed Docker Edge."
       echo "Please modify performance settings as needed"
     fi # docker install confirmation check
@@ -620,8 +621,6 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
       containous/whoami:latest
       debian:stable-slim
       hello-world:latest
-      jrcs/letsencrypt-nginx-proxy-companion:latest
-      jwilder/nginx-proxy:alpine
       nate/dockviz:latest
       nginx:latest
       traefik:latest
@@ -640,13 +639,13 @@ fi # docker is there
 if [ $MACOS ]; then
 
   # install virtualbox, if needed
-  if ! brew cask ls --versions virtualbox >/dev/null 2>&1 ; then
+  if ! brew list --cask --versions virtualbox >/dev/null 2>&1 ; then
     unset CONFIRMATION
     read -p "\"virtualbox\" cask is not installed, attempt to install virtualbox via brew [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       echo "Installing virtualbox..."
-      brew cask install virtualbox
+      brew install --cask virtualbox
       echo "Installed virtualbox."
     fi # virtualbox install confirmation check
   else
@@ -654,25 +653,25 @@ if [ $MACOS ]; then
   fi # virtualbox install check
 
   # install Vagrant only if vagrant is not yet installed and virtualbox is now installed
-  if ! brew cask ls --versions vagrant >/dev/null 2>&1 && brew cask ls --versions virtualbox >/dev/null 2>&1; then
+  if ! brew list --cask --versions vagrant >/dev/null 2>&1 && brew list --cask --versions virtualbox >/dev/null 2>&1; then
     unset CONFIRMATION
     read -p "\"vagrant\" cask is not installed, attempt to install vagrant via brew [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       echo "Installing vagrant..."
-      brew cask install vagrant
+      brew install --cask vagrant
       echo "Installed vagrant."
     fi # vagrant install confirmation check
   fi
 
   # install vagrant-manager only if vagrant is installed
-  if ! brew cask ls --versions vagrant-manager >/dev/null 2>&1 && brew cask ls --versions vagrant >/dev/null 2>&1; then
+  if ! brew list --cask --versions vagrant-manager >/dev/null 2>&1 && brew list --cask --versions vagrant >/dev/null 2>&1; then
     unset CONFIRMATION
     read -p "\"vagrant-manager\" cask is not installed, attempt to install vagrant-manager via brew [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       echo "Installing vagrant-manager..."
-      brew cask install vagrant-manager
+      brew install --cask vagrant-manager
       echo "Installed vagrant-manager."
     fi # vagrant-manager install confirmation check
   fi
@@ -805,8 +804,8 @@ if command -v vagrant >/dev/null 2>&1; then
     VAGRANT_BOXES=(
       bento/centos-8
       bento/debian-10
-      bento/fedora-32
-      bento/ubuntu-20.04
+      bento/fedora-33
+      bento/ubuntu-20.10
       clink15/pxe
       StefanScherer/windows_10
     )
@@ -892,6 +891,7 @@ if [ $MACOS ]; then
     brew install htop
     brew install iproute2mac
     brew install less
+    brew install jq
     brew install openssh
     brew install moreutils
     brew install p7zip
@@ -912,14 +912,16 @@ if [ $MACOS ]; then
   read -p "Install common casks [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-    brew cask install diskwave
-    brew cask install firefox
-    brew cask install homebrew/cask-fonts/font-hack
-    brew cask install iterm2
-    brew cask install keepassxc
-    brew cask install osxfuse
-    brew cask install sublime-text
-    brew cask install wireshark
+    brew install --cask diskwave
+    brew install --cask firefox
+    brew install --cask homebrew/cask-fonts/font-hack
+    brew install --cask iterm2
+    brew install --cask keepassxc
+    brew install --cask libreoffice
+    brew install --cask osxfuse
+    brew install --cask sublime-text
+    brew install --cask veracrypt
+    brew install --cask wireshark
   fi
 
 elif [ $LINUX ]; then
