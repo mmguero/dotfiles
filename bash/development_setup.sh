@@ -618,12 +618,9 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     DOCKER_IMAGES=(
       alpine:latest
-      containous/whoami:latest
       debian:stable-slim
       hello-world:latest
       nate/dockviz:latest
-      nginx:latest
-      traefik:latest
       ubuntu:latest
       wagoodman/dive:latest
     )
@@ -631,6 +628,50 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
       docker pull "$i"
     done
   fi # docker pull images confirmation
+
+  unset CONFIRMATION
+  read -p "Pull common docker images (media) [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    DOCKER_IMAGES=(
+      mwader/static-ffmpeg:latest
+    )
+    for i in ${DOCKER_IMAGES[@]}; do
+      docker pull "$i"
+    done
+  fi # docker pull media images confirmation
+
+  unset CONFIRMATION
+  read -p "Pull common docker images (web) [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    DOCKER_IMAGES=(
+      containous/whoami:latest
+      nginx:latest
+      traefik:latest
+    )
+    for i in ${DOCKER_IMAGES[@]}; do
+      docker pull "$i"
+    done
+  fi # docker pull web images confirmation
+
+  unset CONFIRMATION
+  read -p "Pull common docker images (mmguero) [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    DOCKER_IMAGES=(
+      mmguero/capa:latest
+      mmguero/signal:latest
+      mmguero/teams:latest
+      mmguero/tunneler:latest
+      mmguero/zeek:latest
+      mmguero/zoom:latest
+    )
+    for i in ${DOCKER_IMAGES[@]}; do
+      docker pull "$i"
+    done
+  fi # docker pull mmguero images confirmation
+
 fi # docker is there
 
 ################################################################################

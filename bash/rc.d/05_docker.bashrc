@@ -50,6 +50,11 @@ function spotify() {
   nohup x11docker --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify </dev/null >/dev/null 2>&1 &
 }
 
+function ffmpegd() {
+  DIR="$(pwd)"
+  docker run -i -t --rm -u $UID:$GROUPS -v "$DIR:$DIR:rw" -w "$DIR" mwader/static-ffmpeg:latest "$@"
+}
+
 ########################################################################
 # communications
 ########################################################################
