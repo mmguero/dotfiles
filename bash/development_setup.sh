@@ -635,6 +635,7 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     DOCKER_IMAGES=(
       mwader/static-ffmpeg:latest
+      erichough/kodi:latest
     )
     for i in ${DOCKER_IMAGES[@]}; do
       docker pull "$i"

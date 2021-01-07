@@ -47,6 +47,7 @@ fi
 alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt m4b-tool'
 
 function spotify() {
+  mkdir -p "$HOME/.config/spotify/config" "$HOME/.config/spotify/cache"
   nohup x11docker --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify </dev/null >/dev/null 2>&1 &
 }
 
@@ -67,6 +68,7 @@ function teams() {
 }
 
 function signal() {
+  mkdir -p "$HOME/.config/Signal"
   # --pulseaudio --webcam
   nohup x11docker --hostuser=$USER -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- mmguero/signal:latest </dev/null >/dev/null 2>&1 &
 }
@@ -96,15 +98,17 @@ function x11desktop() {
   nohup x11docker --desktop --sudouser $INITFLAG --pulseaudio -- x11docker/$DESKTOP_PROVIDER "$@" </dev/null >/dev/null 2>&1 &
 }
 
-function dchromium() {
+function chromiumd() {
+  mkdir -p "$HOME/download"
   nohup x11docker --gpu --pulseaudio -- "-v" "$HOME/download:/Downloads" "--tmpfs" "/dev/shm" -- jess/chromium --no-sandbox "$@" </dev/null >/dev/null 2>&1 &
 }
 
-function dfirefox() {
+function firefoxd() {
+  mkdir -p "$HOME/download"
   nohup x11docker --gpu --pulseaudio -- "-v" "$HOME/download:/Downloads" "--tmpfs" "/dev/shm" -- jess/firefox "$@" </dev/null >/dev/null 2>&1 &
 }
 
-function dkodi() {
+function kodi() {
   if [ "$1" ]; then
     MEDIA_FOLDER="$1"
     shift
