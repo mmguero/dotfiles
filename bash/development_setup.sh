@@ -371,15 +371,15 @@ fi
 
 # nodejs
 if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
+  mkdir -p "$(nodenv root)"/plugins/
+  git clone https://github.com/pine/nodenv-yarn-install.git "$(nodenv root)/plugins/nodenv-yarn-install"
   NODE_VER="$(nodenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc|nightly)\d*$" | tail -1)"
   [[ -n $NODE_VER ]] && NODEJS_VERSIONS+=($NODE_VER)
   for ver in "${NODEJS_VERSIONS[@]}"; do
     nodenv install "$ver"
   done
   nodenv global "${NODEJS_VERSIONS[@]}"
-  mkdir -p "$(nodenv root)"/plugins/
   git clone https://github.com/nodenv/nodenv-update.git "$(nodenv root)"/plugins/nodenv-update
-  git clone https://github.com/pine/nodenv-yarn-install.git "$(nodenv root)/plugins/nodenv-yarn-install"
   if [ ! -d "$(nodenv root)"/bin ] && [ -d "$(nodenv root)"/shims ]; then
     pushd "$(nodenv root)"
     ln -s ./shims ./bin
