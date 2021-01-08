@@ -378,7 +378,6 @@ if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
   done
   nodenv global "${NODEJS_VERSIONS[@]}"
   mkdir -p "$(nodenv root)"/plugins/
-  git clone https://github.com/nodenv/node-build.git "$(nodenv root)"/plugins/node-build
   git clone https://github.com/nodenv/nodenv-update.git "$(nodenv root)"/plugins/nodenv-update
   git clone https://github.com/pine/nodenv-yarn-install.git "$(nodenv root)/plugins/nodenv-yarn-install"
   if [ ! -d "$(nodenv root)"/bin ] && [ -d "$(nodenv root)"/shims ]; then
