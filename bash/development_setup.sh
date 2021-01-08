@@ -371,7 +371,7 @@ fi
 
 # nodejs
 if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
-  NODE_VER="$(nodenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc)\d*$" | tail -1)"
+  NODE_VER="$(nodenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc|nightly)\d*$" | tail -1)"
   [[ -n $NODE_VER ]] && NODEJS_VERSIONS+=($NODE_VER)
   for ver in "${NODEJS_VERSIONS[@]}"; do
     nodenv install "$ver"
