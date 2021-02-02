@@ -10,9 +10,8 @@ if [ $MACOS ]; then
   [[ -d "/usr/local/opt/gnu-tar/libexec/gnubin" ]]    && PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
   [[ -d "/usr/local/opt/gnu-which/libexec/gnubin" ]]  && PATH="/usr/local/opt/gnu-which/libexec/gnubin:$PATH"
   [[ -d "/usr/local/opt/grep/libexec/gnubin" ]]       && PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
+  [[ -d "/usr/local/opt/openssl@1.1/bin" ]]           && PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
 fi
-
-[[ -d /opt/bro/bin ]] && PATH="/opt/bro/bin:$PATH"
 
 [[ -d $HOME/bin/devel ]] && PATH="$HOME/bin/devel:$PATH"
 [[ -d $HOME/bin ]] && PATH="$HOME/bin:$PATH"
