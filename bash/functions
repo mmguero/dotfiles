@@ -477,7 +477,7 @@ function worm()
 function crocs()
 {
   if [ -n "$CROC_RELAY" ]; then
-    croc --relay "$CROC_RELAY" "$@"
+    croc --relay "$CROC_RELAY" --pass "$CROC_PASS" "$@"
   else
     croc "$@"
   fi
