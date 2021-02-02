@@ -254,9 +254,9 @@ elif [ $LINUX ]; then
       git clone https://github.com/riywo/anyenv ~/.anyenv
       EnvSetup
       if [ ! -d $HOME/.config/anyenv/anyenv-install ]; then
-        anyenv install --init
+        anyenv install --force-init
       fi
-      mkdir -p $(anyenv root)/plugins
+      mkdir -p "$(anyenv root)"/plugins
       git clone https://github.com/znz/anyenv-update.git "$(anyenv root)"/plugins/anyenv-update
 
     fi # install anyenv confirmation
