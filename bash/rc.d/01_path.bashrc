@@ -13,6 +13,8 @@ if [ $MACOS ]; then
   [[ -d "/usr/local/opt/openssl@1.1/bin" ]]           && PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
 fi
 
+[[ -d /snap/bin ]] && PATH="/snap/bin:$PATH"
+
 [[ -d $HOME/bin/devel ]] && PATH="$HOME/bin/devel:$PATH"
 [[ -d $HOME/bin ]] && PATH="$HOME/bin:$PATH"
 
