@@ -1487,6 +1487,13 @@ EOT
     chmod 755 ~/.local/bin/gron
     rm -rf "$TMP_CLONE_DIR"
 
+    SQ_RELEASE="$(git_latest_release neilotoole/sq | sed 's/^v//')"
+    TMP_CLONE_DIR="$(mktemp -d)"
+    curl -L "https://github.com/neilotoole/sq/releases/download/v${SQ_RELEASE}/sq-linux-${LINUX_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+    cp -f "${TMP_CLONE_DIR}"/sq ~/.local/bin/sq
+    chmod 755 ~/.local/bin/sq
+    rm -rf "$TMP_CLONE_DIR"
+
     STEPCLI_RELEASE="$(git_latest_release smallstep/cli | sed 's/^v//')"
     TMP_CLONE_DIR="$(mktemp -d)"
     if [[ "$LINUX_ARCH" == "armhf" ]]; then
