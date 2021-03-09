@@ -948,6 +948,8 @@ if [ $MACOS ]; then
     brew install watch
     brew install wdiff
     brew install wget
+
+    brew install neilotoole/sq/sq
   fi
 
   unset CONFIRMATION

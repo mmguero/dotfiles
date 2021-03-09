@@ -79,6 +79,8 @@ brew install watch
 brew install wdiff
 brew install wget
 
+brew install neilotoole/sq/sq
+
 brew install cask
 brew tap homebrew/cask-versions
 
