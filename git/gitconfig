@@ -32,7 +32,7 @@
   before = "!f() { BRNCH=$(git rev-parse --abbrev-ref HEAD) && REV=$(git rev-list -n 1 --before=\"$1\" $BRNCH) && echo "checking out $REV on $BRNCH before \"$1\"" && git co $REV; }; f"
   br = branch
   ci = commit
-  cl = clone
+  cl = clone --depth=1 --single-branch --recurse-submodules --shallow-submodules --no-tags
   co = checkout
   ours = checkout --ours
   # branch then checkout
