@@ -116,14 +116,15 @@ def get_pcap_first_time(pcap_file, debug=False):
   return datetime.fromtimestamp(float(out[0].split(',')[-1]))
 
 ###################################################################################################
-def shift_pcap(pcap_file, start_time, in_place=False, debug=False):
+def shift_pcap(pcap_file, base_time, earliest_relative_time, in_place=False, debug=False):
   global editcapBin
 
-  if os.path.isfile(pcap_file) and (start_time is not None):
+  if os.path.isfile(pcap_file) and (base_time is not None):
     inFileParts = os.path.splitext(os.path.basename(pcap_file))
     outFile = os.path.join(os.path.dirname(pcap_file), inFileParts[0] + "_shift" + inFileParts[1])
-
-    err, out = run_process([editcapBin, '-t', str(round((start_time - get_pcap_first_time(pcap_file)).total_seconds())), pcap_file, outFile], debug=debug)
+    pcapTime = get_pcap_first_time(pcap_file)
+    relativeDiff = pcapTime - earliest_relative_time if earliest_relative_time is not None else 0
+    err, out = run_process([editcapBin, '-t', str(round((base_time - pcapTime + relativeDiff).total_seconds())), pcap_file, outFile], debug=debug)
     if (err != 0):
       raise Exception(f'{editcapBin}(pcap_file) failed')
 
@@ -149,6 +150,7 @@ def main():
   parser.add_argument('-d', '--defaults', dest='accept_defaults', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Accept defaults to prompts without user interaction")
   parser.add_argument('-v', '--verbose', dest='debug', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Verbose/debug output")
   parser.add_argument('-t', '--time', dest='startTime', type=str, default=None, required=False, metavar='<string>', help="Start time basis")
+  parser.add_argument('-r', '--relative', dest='relative', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Maintain PCAP files' offsets relative to each other")
   parser.add_argument('-p', '--pcap', dest='pcaps', nargs='*', type=str, default=None, required=True, metavar='<PCAP file(s)>', help="PCAP(s) to shift")
   parser.add_argument('-i', '--in-place', dest='inPlace', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Adjust the PCAP files in-place")
 
@@ -174,13 +176,9 @@ def main():
   if (err != 0):
     raise Exception(f'{script_name} requires editcap')
 
+  earliestTime = min([get_pcap_first_time(pcap) for pcap in args.pcaps] + [datetime.now()])
   if args.startTime is None:
     # if they didn't sepecify a time, default to the earliest packet time
-    earliestTime = datetime.now()
-    for pcap in args.pcaps:
-      pcapTime = get_pcap_first_time(pcap)
-      if pcapTime < earliestTime:
-        earliestTime = pcapTime
     args.startTime = earliestTime
   else:
     # otherwise use whatever time they specified
@@ -194,7 +192,7 @@ def main():
     sys.tracebacklimit = 0
 
   for pcap in args.pcaps:
-    shift_pcap(pcap, args.startTime, args.inPlace, args.debug)
+    shift_pcap(pcap, args.startTime, earliestTime if args.relative else None, args.inPlace, args.debug)
 
 ###################################################################################################
 if __name__ == '__main__':
