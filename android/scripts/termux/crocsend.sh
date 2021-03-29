@@ -20,5 +20,3 @@ for i in "${!sendfiles[@]}"; do
 done
 
 croc --yes send "${sendfiles[@]}"
-
-sleep 10
