@@ -2,7 +2,7 @@
 
 # set -e
 
-export DOWNLOAD_DIR=/data/data/com.termux/files/home/storage/external-download
+export DOWNLOAD_DIR=/storage/DEAD-BEEF/Android/data/com.termux/files/Download
 
 pushd "$DOWNLOAD_DIR"/ >/dev/null 2>&1
 echo 'y' | wormhole --transit-helper tcp:example.org:4001 receive "$@"

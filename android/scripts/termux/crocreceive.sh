@@ -2,9 +2,11 @@
 
 # set -e
 
-export DOWNLOAD_DIR=/data/data/com.termux/files/home/storage/external-download
+export DOWNLOAD_DIR=/storage/DEAD-BEEF/Android/data/com.termux/files/Download
+export CROC_RELAY=example.org:9009
+export CROC_PASS=password
 
 pushd "$DOWNLOAD_DIR"/ >/dev/null 2>&1
-croc --yes --relay "example.org:9009" "$@"
+croc --yes "$@"
 ls -l
 popd >/dev/null 2>&1
