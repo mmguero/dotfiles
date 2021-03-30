@@ -30,7 +30,7 @@
 * [Feeder](https://f-droid.org/en/packages/com.nononsenseapps.feeder/)
 * [Geometric Weather](https://f-droid.org/en/packages/com.mbestavros.geometricweather/)
 * [Irregular Expressions](https://f-droid.org/en/packages/mf.asciitext.lite/)
-* [KeepassDX](https://search.f-droid.org/?q=keepassdx&lang=en)
+* [KeepassDX](https://f-droid.org/en/packages/com.kunzisoft.keepass.libre/)
 * [LLCrop](https://f-droid.org/en/packages/de.k3b.android.lossless_jpg_crop/)
 * [MuPDF mini](https://f-droid.org/en/packages/com.artifex.mupdf.mini.app/)
 * [mpv](https://f-droid.org/en/packages/is.xyz.mpv/)
