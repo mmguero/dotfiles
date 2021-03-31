@@ -106,14 +106,23 @@ def run_process(command, stdout=True, stderr=True, stdin=None, cwd=None, env=Non
   return retcode, output
 
 ###################################################################################################
-def get_pcap_first_time(pcap_file, debug=False):
+def get_pcap_first_time(pcap_file, continueOnError=False, debug=False):
   global capinfosBin
 
-  err, out = run_process([capinfosBin, '-a', '-C', '-M', '-m', '-r', '-S', '-T', pcap_file], debug=debug)
-  if (err != 0) or (out is None) or (len(out) <= 0):
-    raise Exception(f'{capinfosBin}(pcap_file) returned {out}')
+  try:
+    err, out = run_process([capinfosBin, '-a', '-C', '-K', '-M', '-m', '-r', '-S', '-T', pcap_file], stderr=False, debug=debug)
+    if (err not in (0,1)) or (out is None) or (len(out) <= 0):
+      raise Exception(f'{capinfosBin}(pcap_file) returned {err}: {out}')
 
-  return datetime.fromtimestamp(float(out[0].split(',')[-1]))
+    try:
+      return datetime.fromtimestamp(float(out[0].split(',')[-1]))
+    except ValueError as e:
+      return datetime.fromtimestamp(float(out[0].split(',')[-1].split('.')[0]))
+  except Exception as e:
+    if continueOnError:
+      return None
+    else:
+      raise
 
 ###################################################################################################
 def shift_pcap(pcap_file, base_time, earliest_relative_time, in_place=False, debug=False):
@@ -123,7 +132,7 @@ def shift_pcap(pcap_file, base_time, earliest_relative_time, in_place=False, deb
     inFileParts = os.path.splitext(os.path.basename(pcap_file))
     outFile = os.path.join(os.path.dirname(pcap_file), inFileParts[0] + "_shift" + inFileParts[1])
     pcapTime = get_pcap_first_time(pcap_file)
-    relativeDiff = pcapTime - earliest_relative_time if earliest_relative_time is not None else 0
+    relativeDiff = pcapTime - (earliest_relative_time if earliest_relative_time is not None else pcapTime)
     err, out = run_process([editcapBin, '-t', str(round((base_time - pcapTime + relativeDiff).total_seconds())), pcap_file, outFile], debug=debug)
     if (err != 0):
       raise Exception(f'{editcapBin}(pcap_file) failed')
@@ -176,7 +185,7 @@ def main():
   if (err != 0):
     raise Exception(f'{script_name} requires editcap')
 
-  earliestTime = min([get_pcap_first_time(pcap) for pcap in args.pcaps] + [datetime.now()])
+  earliestTime = min([x for x in [get_pcap_first_time(pcap, continueOnError=True, debug=args.debug) for pcap in args.pcaps] if x is not None] + [datetime.now()])
   if args.startTime is None:
     # if they didn't sepecify a time, default to the earliest packet time
     args.startTime = earliestTime
