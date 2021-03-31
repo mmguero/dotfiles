@@ -106,13 +106,13 @@ def run_process(command, stdout=True, stderr=True, stdin=None, cwd=None, env=Non
   return retcode, output
 
 ###################################################################################################
-def get_pcap_first_time(pcap_file, continueOnError=False, debug=False):
+def get_pcap_first_time(pcapFile, continueOnError=False, debug=False):
   global capinfosBin
 
   try:
-    err, out = run_process([capinfosBin, '-a', '-C', '-K', '-M', '-m', '-r', '-S', '-T', pcap_file], stderr=False, debug=debug)
+    err, out = run_process([capinfosBin, '-a', '-C', '-K', '-M', '-m', '-r', '-S', '-T', pcapFile], stderr=False, debug=debug)
     if (err not in (0,1)) or (out is None) or (len(out) <= 0):
-      raise Exception(f'{capinfosBin}(pcap_file) returned {err}: {out}')
+      raise Exception(f'{capinfosBin}(pcapFile) returned {err}: {out}')
 
     try:
       return datetime.fromtimestamp(float(out[0].split(',')[-1]))
@@ -125,22 +125,22 @@ def get_pcap_first_time(pcap_file, continueOnError=False, debug=False):
       raise
 
 ###################################################################################################
-def shift_pcap(pcap_file, base_time, earliest_relative_time, in_place=False, debug=False):
+def shift_pcap(pcapFile, baseTime, earliestRelativeTime, fileFormat='pcap', inPlace=False, debug=False):
   global editcapBin
 
-  if os.path.isfile(pcap_file) and (base_time is not None):
-    inFileParts = os.path.splitext(os.path.basename(pcap_file))
-    outFile = os.path.join(os.path.dirname(pcap_file), inFileParts[0] + "_shift" + inFileParts[1])
-    pcapTime = get_pcap_first_time(pcap_file)
-    relativeDiff = pcapTime - (earliest_relative_time if earliest_relative_time is not None else pcapTime)
-    err, out = run_process([editcapBin, '-t', str(round((base_time - pcapTime + relativeDiff).total_seconds())), pcap_file, outFile], debug=debug)
+  if os.path.isfile(pcapFile) and (baseTime is not None):
+    inFileParts = os.path.splitext(os.path.basename(pcapFile))
+    outFile = os.path.join(os.path.dirname(pcapFile), inFileParts[0] + "_shift" + inFileParts[1])
+    pcapTime = get_pcap_first_time(pcapFile)
+    relativeDiff = pcapTime - (earliestRelativeTime if earliestRelativeTime is not None else pcapTime)
+    err, out = run_process([editcapBin, '-F', fileFormat, '-t', str(round((baseTime - pcapTime + relativeDiff).total_seconds())), pcapFile, outFile], debug=debug)
     if (err != 0):
-      raise Exception(f'{editcapBin}(pcap_file) failed')
+      raise Exception(f'{editcapBin}(pcapFile) failed')
 
-    if in_place:
-      os.remove(pcap_file)
-      shutil.move(outFile, pcap_file)
-      outFile = pcap_file
+    if inPlace:
+      os.remove(pcapFile)
+      shutil.move(outFile, pcapFile)
+      outFile = pcapFile
 
     return outFile
 
@@ -159,6 +159,7 @@ def main():
   parser.add_argument('-d', '--defaults', dest='accept_defaults', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Accept defaults to prompts without user interaction")
   parser.add_argument('-v', '--verbose', dest='debug', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Verbose/debug output")
   parser.add_argument('-t', '--time', dest='startTime', type=str, default=None, required=False, metavar='<string>', help="Start time basis")
+  parser.add_argument('-f', '--format', dest='fileFormat', type=str, default='pcap', required=False, metavar='<string>', help="File format")
   parser.add_argument('-r', '--relative', dest='relative', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Maintain PCAP files' offsets relative to each other")
   parser.add_argument('-p', '--pcap', dest='pcaps', nargs='*', type=str, default=None, required=True, metavar='<PCAP file(s)>', help="PCAP(s) to shift")
   parser.add_argument('-i', '--in-place', dest='inPlace', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Adjust the PCAP files in-place")
@@ -201,7 +202,7 @@ def main():
     sys.tracebacklimit = 0
 
   for pcap in args.pcaps:
-    shift_pcap(pcap, args.startTime, earliestTime if args.relative else None, args.inPlace, args.debug)
+    shift_pcap(pcap, args.startTime, earliestTime if args.relative else None, fileFormat=args.fileFormat, inPlace=args.inPlace, debug=args.debug)
 
 ###################################################################################################
 if __name__ == '__main__':
