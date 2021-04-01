@@ -202,7 +202,10 @@ def main():
     sys.tracebacklimit = 0
 
   for pcap in args.pcaps:
-    shift_pcap(pcap, args.startTime, earliestTime if args.relative else None, fileFormat=args.fileFormat, inPlace=args.inPlace, debug=args.debug)
+    try:
+      shift_pcap(pcap, args.startTime, earliestTime if args.relative else None, fileFormat=args.fileFormat, inPlace=args.inPlace, debug=args.debug)
+    except Exception as e:
+      eprint(f'Exception "{e}" processing {pcap}, skipping')
 
 ###################################################################################################
 if __name__ == '__main__':
