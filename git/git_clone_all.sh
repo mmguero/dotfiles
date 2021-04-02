@@ -15,12 +15,14 @@ API_ENTITY_NAME=
 API_ENTITY_TYPE=
 CLONE_ARCHIVED=false
 MAX_MEGABYTES=50
+DEPTH=2147483647
 
 function print_usage() {
   echo "Usage: $(basename $0)" >&2
   echo -e "\t -v\t(optional)\tverbose bash\t\tdefault FALSE" >&2
   echo -e "\t -e\t(optional)\tfail on first error\tdefault FALSE" >&2
   echo -e "\t -a\t(optional)\tclone archived repos\tdefault FALSE" >&2
+  echo -e "\t -d #\t(optional)\tClone depth\tdefault $DEPTH" >&2
   echo -e "\t -m #\t(optional)\tMaximum repo size (MB)\tdefault $MAX_MEGABYTES" >&2
   echo -e "\t -g\t(optional)\tgit@ vs. https:// clone\tdefault https://" >&2
   echo >&2
@@ -33,7 +35,7 @@ function print_usage() {
   echo -e "\t -p XXX\t(optional)\tupstream remote name\tdefault \"upstream\"" >&2
 }
 
-while getopts 'vaegt:m:o:u:r:p:' OPTION; do
+while getopts 'vaegt:d:m:o:u:r:p:' OPTION; do
   case "$OPTION" in
 
     # enable verbose bash execution tracing
@@ -57,8 +59,13 @@ while getopts 'vaegt:m:o:u:r:p:' OPTION; do
       GIT_CLONE_URL_SUFFIX=".git"
       ;;
 
+    # get repo clone depth
+    d)
+      DEPTH="$OPTARG"
+      ;;
+
     # get maximum megabytes of repo to clone
-    t)
+    m)
       MAX_MEGABYTES="$OPTARG"
       ;;
 
@@ -129,7 +136,7 @@ for REPO_NAME in $(curl -sSL -H "Authorization: token $TOKEN" "$GIT_API_URL_PREF
     if ( [[ "$CLONE_ARCHIVED" == "true" ]] || [[ "$IS_ARCHIVED" != "true" ]] ) && (( $REPO_SIZE_KILOBYTES <= $MAX_KILOBYTES )); then
       # do the clone
       PROJECT_NAME="$(basename "$REPO_NAME")"
-      git clone -o "$REMOTE_NAME" --recursive "${GIT_CLONE_URL_PREFIX}${REPO_NAME}${GIT_CLONE_URL_SUFFIX}" ./"$PROJECT_NAME" || continue
+      git clone --origin "$REMOTE_NAME" --depth $DEPTH --recurse-submodules --shallow-submodules "${GIT_CLONE_URL_PREFIX}${REPO_NAME}${GIT_CLONE_URL_SUFFIX}" ./"$PROJECT_NAME" || continue
       pushd ./"$PROJECT_NAME" >/dev/null 2>&1
 
       # if there is a fork, set up the upstream remote
