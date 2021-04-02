@@ -109,17 +109,20 @@ else
   LINUX_ARCH="$(dpkg --print-architecture)"
 fi
 
-# convenience function for installing git for cloning/downloading
-function InstallCurlAndGit {
-  if curl -V >/dev/null 2>&1 && git --version >/dev/null 2>&1 ; then
-    echo "\"curl\" and \"git\" are already installed!"
+# convenience function for installing curl/git/jq/moreutils for cloning/downloading
+function InstallEssentialPackages {
+  if curl -V >/dev/null 2>&1 && \
+     git --version >/dev/null 2>&1 && \
+     jq --version >/dev/null 2>&1 && \
+     type sponge >/dev/null 2>&1; then
+    echo "\"curl\", \"git\", \"jq\" and \"moreutils\" are already installed!"
   else
-    echo "Installing curl and git..."
+    echo "Installing curl, git, jq and moreutils..."
     if [ $MACOS ]; then
-      brew install git jq # since Jaguar curl is already installed in MacOS
+      brew install git jq moreutils # since Jaguar curl is already installed in MacOS
     elif [ $LINUX ]; then
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
-        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq moreutils
     fi
   fi
 }
@@ -217,7 +220,7 @@ if [ $MACOS ]; then
 
 fi # MacOS check
 
-InstallCurlAndGit
+InstallEssentialPackages
 
 ################################################################################
 # envs (mac via brew, linux via anyenv)
@@ -249,7 +252,7 @@ elif [ $LINUX ]; then
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-      InstallCurlAndGit
+      InstallEssentialPackages
       pushd $HOME
       git clone https://github.com/riywo/anyenv ~/.anyenv
       EnvSetup
@@ -522,7 +525,7 @@ elif [ $LINUX ] && [[ -z $WINDOWS ]]; then
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-      InstallCurlAndGit
+      InstallEssentialPackages
 
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
                                                  apt-transport-https \
@@ -581,7 +584,7 @@ elif [ $LINUX ] && [[ -z $WINDOWS ]]; then
         fi
       else
         echo "Installing Docker Compose via curl to /usr/local/bin..."
-        InstallCurlAndGit
+        InstallEssentialPackages
         $SUDO_CMD curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_INSTALL_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         $SUDO_CMD chmod +x /usr/local/bin/docker-compose
         if ! /usr/local/bin/docker-compose version >/dev/null 2>&1 ; then
