@@ -475,6 +475,13 @@ function portping()
   python <<<"import socket; socket.setdefaulttimeout(1); socket.socket().connect(('$1', $2))" 2> /dev/null && echo OPEN || echo CLOSED;
 }
 
+function tcpbytes()
+{
+  PCAPFILE="$1"
+  FRAME="$2"
+  tshark -r "$PCAPFILE" -e "tcp.payload" -Tfields -Y frame.number=="$FRAME" | sed "s/://g" | xxd -r -p
+}
+
 function worm()
 {
   if [ -n "$WORMHOLE_TRANSIT_HELPER" ]; then
