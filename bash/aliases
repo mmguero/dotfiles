@@ -81,6 +81,4 @@ alias cl='curl -L -J -O'
 
 #media
 alias dexif="exiftool -T -description"
-alias wamcrest="vlc 'rtsp://wamcrest.local.lan:80/cam/realmonitor?channel=1&subtype=0'"
 alias mp='mpv'
-alias shopcam="vlc 'http://shopcam/video.cgi?resolution=SVGA'"
