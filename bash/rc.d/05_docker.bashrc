@@ -80,6 +80,11 @@ function tor() {
   nohup x11docker --hostuser=$USER -- "--tmpfs" "/dev/shm" -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
 }
 
+function cyberchef() {
+  docker run -d --rm -p 8000:8000 --name cyberchef mpepping/cyberchef:latest && \
+    xdg-open http://localhost:8000
+}
+
 ########################################################################
 # desktop
 ########################################################################
