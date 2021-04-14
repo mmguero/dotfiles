@@ -127,6 +127,10 @@ function InstallEssentialPackages {
   fi
 }
 
+function GitClone {
+  git clone --depth=1 --single-branch --recurse-submodules --shallow-submodules --no-tags "$@"
+}
+
 # function to set up paths and init things after env installations
 function EnvSetup {
   if [ -d ~/.anyenv ]; then
@@ -254,13 +258,13 @@ elif [ $LINUX ]; then
 
       InstallEssentialPackages
       pushd $HOME
-      git clone https://github.com/riywo/anyenv ~/.anyenv
+      GitClone https://github.com/riywo/anyenv ~/.anyenv
       EnvSetup
       if [ ! -d $HOME/.config/anyenv/anyenv-install ]; then
         anyenv install --force-init
       fi
       mkdir -p "$(anyenv root)"/plugins
-      git clone https://github.com/znz/anyenv-update.git "$(anyenv root)"/plugins/anyenv-update
+      GitClone https://github.com/znz/anyenv-update.git "$(anyenv root)"/plugins/anyenv-update
 
     fi # install anyenv confirmation
   fi # .anyenv check
@@ -328,8 +332,8 @@ if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
   done
   pyenv global "${PYTHON_VERSIONS[@]}"
   mkdir -p "$(pyenv root)"/plugins/
-  git clone https://github.com/pyenv/pyenv-update.git "$(pyenv root)"/plugins/pyenv-update
-  git clone https://github.com/pyenv/pyenv-virtualenv.git "$(pyenv root)"/plugins/pyenv-virtualenv
+  GitClone https://github.com/pyenv/pyenv-update.git "$(pyenv root)"/plugins/pyenv-update
+  GitClone https://github.com/pyenv/pyenv-virtualenv.git "$(pyenv root)"/plugins/pyenv-virtualenv
   if [ ! -d "$(pyenv root)"/bin ] && [ -d "$(pyenv root)"/shims ]; then
     pushd "$(pyenv root)"
     ln -s ./shims ./bin
@@ -346,8 +350,8 @@ if [ -n $RBENV_ROOT ] && [ ${ENVS_INSTALLED[rbenv]} = 'true' ]; then
   done
   rbenv global "${RUBY_VERSIONS[@]}"
   mkdir -p "$(rbenv root)"/plugins/
-  git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
-  git clone https://github.com/rkh/rbenv-update.git "$(rbenv root)"/plugins/rbenv-update
+  GitClone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
+  GitClone https://github.com/rkh/rbenv-update.git "$(rbenv root)"/plugins/rbenv-update
   if [ ! -d "$(rbenv root)"/bin ] && [ -d "$(rbenv root)"/shims ]; then
     pushd "$(rbenv root)"
     ln -s ./shims ./bin
@@ -364,7 +368,7 @@ if [ -n $GOENV_ROOT ] && [ ${ENVS_INSTALLED[goenv]} = 'true' ]; then
   done
   goenv global "${GOLANG_VERSIONS[@]}"
   mkdir -p "$(goenv root)"/plugins/
-  git clone https://github.com/trafficgate/goenv-install-glide.git "$(goenv root)"/plugins/goenv-install-glide
+  GitClone https://github.com/trafficgate/goenv-install-glide.git "$(goenv root)"/plugins/goenv-install-glide
   if [ ! -d "$(goenv root)"/bin ] && [ -d "$(goenv root)"/shims ]; then
     pushd "$(goenv root)"
     ln -s ./shims ./bin
@@ -375,14 +379,14 @@ fi
 # nodejs
 if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
   mkdir -p "$(nodenv root)"/plugins/
-  git clone https://github.com/pine/nodenv-yarn-install.git "$(nodenv root)/plugins/nodenv-yarn-install"
+  GitClone https://github.com/pine/nodenv-yarn-install.git "$(nodenv root)/plugins/nodenv-yarn-install"
   NODE_VER="$(nodenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc|nightly)\d*$" | tail -1)"
   [[ -n $NODE_VER ]] && NODEJS_VERSIONS+=($NODE_VER)
   for ver in "${NODEJS_VERSIONS[@]}"; do
     nodenv install "$ver"
   done
   nodenv global "${NODEJS_VERSIONS[@]}"
-  git clone https://github.com/nodenv/nodenv-update.git "$(nodenv root)"/plugins/nodenv-update
+  GitClone https://github.com/nodenv/nodenv-update.git "$(nodenv root)"/plugins/nodenv-update
   if [ ! -d "$(nodenv root)"/bin ] && [ -d "$(nodenv root)"/shims ]; then
     pushd "$(nodenv root)"
     ln -s ./shims ./bin
@@ -418,6 +422,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
   if pip -V >/dev/null 2>&1; then
     pip install -U \
       beautifulsoup4 \
+      chepy[extras] \
       colorama \
       colored \
       cryptography \
@@ -441,6 +446,8 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       scapy \
       urllib3 \
       magic-wormhole
+
+    [[ ! -d ~/.config/chepy_plugins ]] && GitClone https://github.com/securisec/chepy_plugins ~/.config/chepy_plugins
   fi
 
   if go version >/dev/null 2>&1; then
@@ -621,11 +628,9 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     DOCKER_IMAGES=(
       alpine:latest
+      amazonlinux:2
       debian:stable-slim
-      hello-world:latest
-      nate/dockviz:latest
       ubuntu:latest
-      wagoodman/dive:latest
     )
     for i in ${DOCKER_IMAGES[@]}; do
       docker pull "$i"
@@ -637,8 +642,8 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   CONFIRMATION=${CONFIRMATION:-N}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     DOCKER_IMAGES=(
-      mwader/static-ffmpeg:latest
       erichough/kodi:latest
+      mwader/static-ffmpeg:latest
     )
     for i in ${DOCKER_IMAGES[@]}; do
       docker pull "$i"
@@ -660,15 +665,41 @@ if $SUDO_CMD docker info >/dev/null 2>&1 ; then
   fi # docker pull web images confirmation
 
   unset CONFIRMATION
-  read -p "Pull common docker images (mmguero) [y/N]? " CONFIRMATION
+  read -p "Pull common docker images (forensics) [y/N]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-N}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     DOCKER_IMAGES=(
       mmguero/capa:latest
+      mmguero/zeek:latest
+      mpepping/cyberchef:latest
+    )
+    for i in ${DOCKER_IMAGES[@]}; do
+      docker pull "$i"
+    done
+  fi # docker pull forensics images confirmation
+
+  unset CONFIRMATION
+  read -p "Pull common docker images (docker) [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    DOCKER_IMAGES=(
+      hello-world:latest
+      nate/dockviz:latest
+      wagoodman/dive:latest
+    )
+    for i in ${DOCKER_IMAGES[@]}; do
+      docker pull "$i"
+    done
+  fi # docker pull docker images confirmation
+
+  unset CONFIRMATION
+  read -p "Pull common docker images (mmguero) [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    DOCKER_IMAGES=(
       mmguero/signal:latest
       mmguero/teams:latest
       mmguero/tunneler:latest
-      mmguero/zeek:latest
       mmguero/zoom:latest
     )
     for i in ${DOCKER_IMAGES[@]}; do
@@ -1172,7 +1203,7 @@ EOT
 
       if [ ! -d ~/.themes/vimix-dark-laptop-beryl ]; then
         TMP_CLONE_DIR="$(mktemp -d)"
-        git clone --depth 1 https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
+        GitClone https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
         pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
         mkdir -p ~/.themes
         ./install.sh -d ~/.themes -n vimix -c dark -t beryl -s laptop
@@ -1810,7 +1841,7 @@ if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d "$GUERO_GITHUB_PATH" ]]; then
     [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p ~/.config/gdb && rm -vf ~/.config/gdb/hexdump.py && \
       ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py ~/.config/gdb/hexdump.py
 
-    [[ ! -d ~/.config/gdb/peda ]] && git clone --recursive https://github.com/longld/peda.git ~/.config/gdb/peda
+    [[ ! -d ~/.config/gdb/peda ]] && GitClone https://github.com/longld/peda.git ~/.config/gdb/peda
 
     if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
       while IFS= read -d $'\0' -r CONFDIR; do
