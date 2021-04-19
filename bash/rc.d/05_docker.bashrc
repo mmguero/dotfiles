@@ -60,7 +60,13 @@ function ffmpegd() {
 # communications
 ########################################################################
 function zoom() {
-  nohup x11docker --gpu --pulseaudio --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" -- mmguero/zoom:latest "$@" </dev/null >/dev/null 2>&1 &
+  # https://hub.docker.com/r/mdouchement/zoom-us
+  if ! type zoom-us-wrapper >/dev/null 2>&1; then
+    mkdir -p "$HOME"/.local/bin
+    docker pull mdouchement/zoom-us:latest
+    docker run -it --rm -u $(id -u):$(id -g) --volume "$HOME"/.local/bin:/target mdouchement/zoom-us:latest install
+  fi
+  zoom-us-wrapper zoom
 }
 
 function teams() {
