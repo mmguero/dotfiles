@@ -440,6 +440,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       pythondialog \
       python-magic \
       pyshark \
+      python-dateutil \
       pyunpack \
       pyyaml \
       requests\[security\] \
