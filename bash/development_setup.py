@@ -28,11 +28,6 @@ except ImportError:
 from mmguero_common import *
 
 ###################################################################################################
-
-DEB_GPG_KEY_FINGERPRINT = '0EBFCD88' # used to verify GPG key for Docker Debian repository
-
-
-###################################################################################################
 ScriptName = os.path.basename(__file__)
 origPath = os.getcwd()
 
@@ -64,6 +59,8 @@ class Installer(object):
 
     self.platform = platform.system()
     self.scriptUser = getpass.getuser()
+    self.arch = platform.machine()
+    self.archPkg = self.arch
 
     self.homePath = str(Path.home())
     self.configPath = None
@@ -253,9 +250,9 @@ class LinuxInstaller(Installer):
     if not self.codename: self.codename = self.distro
 
     # determine packages required by Malcolm itself (not docker, those will be done later)
-    if (self.distro == PLATFORM_LINUX_UBUNTU) or (self.distro == PLATFORM_LINUX_DEBIAN):
+    if self.distro in (PLATFORM_LINUX_UBUNTU, PLATFORM_LINUX_DEBIAN, PLATFORM_LINUX_RASPBIAN):
       self.requiredPackages.extend(['curl', 'git', 'moreutils', 'jq'])
-    elif (self.distro == PLATFORM_LINUX_FEDORA) or (self.distro == PLATFORM_LINUX_CENTOS):
+    elif self.distro in (PLATFORM_LINUX_FEDORA, PLATFORM_LINUX_CENTOS):
       # todo: check this
       self.requiredPackages.extend(['curl', 'git', 'moreutils', 'jq'])
 
@@ -273,6 +270,9 @@ class LinuxInstaller(Installer):
     if Which('dpkg', debug=self.debug):
       os.environ["DEBIAN_FRONTEND"] = "noninteractive"
       self.checkPackageCmds.append(['dpkg', '-s'])
+      err, out = self.run_process(['dpkg', '--print-architecture'])
+      if (err == 0) and (len(out) == 1):
+        self.archPkg = out[0]
     elif Which('rpm', debug=self.debug):
       self.checkPackageCmds.append(['rpm', '-q'])
     elif Which('dnf', debug=self.debug):
@@ -327,6 +327,7 @@ class LinuxInstaller(Installer):
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   def setup_sources(self):
+    # TODO:
     pass
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -346,7 +347,7 @@ class LinuxInstaller(Installer):
         # install required packages for repo-based install
         if self.distro == PLATFORM_LINUX_UBUNTU:
           requiredRepoPackages = ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg-agent', 'software-properties-common']
-        elif self.distro == PLATFORM_LINUX_DEBIAN:
+        elif self.distro in (PLATFORM_LINUX_DEBIAN, PLATFORM_LINUX_RASPBIAN):
           requiredRepoPackages = ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg2', 'software-properties-common']
         elif self.distro == PLATFORM_LINUX_FEDORA:
           requiredRepoPackages = ['dnf-plugins-core']
@@ -361,7 +362,7 @@ class LinuxInstaller(Installer):
 
         # install docker via repo if possible
         dockerPackages = []
-        if ((self.distro == PLATFORM_LINUX_UBUNTU) or (self.distro == PLATFORM_LINUX_DEBIAN)) and self.codename:
+        if self.distro in (PLATFORM_LINUX_UBUNTU, PLATFORM_LINUX_DEBIAN, PLATFORM_LINUX_RASPBIAN) and self.codename:
 
           # for debian/ubuntu, add docker GPG key and check its fingerprint
           if self.debug:
@@ -375,8 +376,8 @@ class LinuxInstaller(Installer):
           if (err == 0):
             if self.debug:
               eprint("Adding docker repository")
-            err, out = self.run_process(['add-apt-repository', '-y', '-r', f'deb [arch=amd64] https://download.docker.com/linux/{self.distro} {self.codename} stable'], privileged=True)
-            err, out = self.run_process(['add-apt-repository', '-y', '-u', f'deb [arch=amd64] https://download.docker.com/linux/{self.distro} {self.codename} stable'], privileged=True)
+            err, out = self.run_process(['add-apt-repository', '-y', '-r', f'deb [arch={self.archPkg}] https://download.docker.com/linux/{self.distro} {self.codename} stable'], privileged=True)
+            err, out = self.run_process(['add-apt-repository', '-y', '-u', f'deb [arch={self.archPkg}] https://download.docker.com/linux/{self.distro} {self.codename} stable'], privileged=True)
 
           # docker packages to install
           if (err == 0):

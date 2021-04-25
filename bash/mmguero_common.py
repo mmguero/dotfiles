@@ -41,6 +41,7 @@ PLATFORM_LINUX_CENTOS = 'centos'
 PLATFORM_LINUX_DEBIAN = 'debian'
 PLATFORM_LINUX_FEDORA = 'fedora'
 PLATFORM_LINUX_UBUNTU = 'ubuntu'
+PLATFORM_LINUX_RASPBIAN = 'raspbian'
 
 # URLS for figuring things out if something goes wrong
 DOCKER_INSTALL_URLS = defaultdict(lambda: 'https://docs.docker.com/install/')
@@ -50,9 +51,13 @@ DOCKER_INSTALL_URLS[PLATFORM_LINUX_UBUNTU] = 'https://docs.docker.com/install/li
 DOCKER_INSTALL_URLS[PLATFORM_LINUX_DEBIAN] = 'https://docs.docker.com/install/linux/docker-ce/debian/'
 DOCKER_INSTALL_URLS[PLATFORM_LINUX_CENTOS] = 'https://docs.docker.com/install/linux/docker-ce/centos/'
 DOCKER_INSTALL_URLS[PLATFORM_LINUX_FEDORA] = 'https://docs.docker.com/install/linux/docker-ce/fedora/'
+DOCKER_INSTALL_URLS[PLATFORM_LINUX_RASPBIAN] = 'https://docs.docker.com/install/linux/docker-ce/debian/'
 DOCKER_INSTALL_URLS[PLATFORM_MAC] =  ['https://www.code2bits.com/how-to-install-docker-on-macos-using-homebrew/',
                                         'https://docs.docker.com/docker-for-mac/install/']
 DOCKER_COMPOSE_INSTALL_URLS = defaultdict(lambda: 'https://docs.docker.com/compose/install/')
+
+DEB_GPG_KEY_FINGERPRINT = '0EBFCD88' # used to verify GPG key for Docker Debian repository
+
 HOMEBREW_INSTALL_URLS = defaultdict(lambda: 'https://brew.sh/')
 
 ###################################################################################################
