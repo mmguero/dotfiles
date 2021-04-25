@@ -508,19 +508,10 @@ class LinuxInstaller(Installer):
           else:
             eprint(f"Downloading {dockerComposeUrl} to {tempFileName} failed")
 
-      elif InstallerYesOrNo('Install docker-compose via pip (privileged)?', default=False):
-        # install docker-compose via pip (as root)
-        err, out = self.run_process([self.pipCmd, 'install', dockerComposeCmd], privileged=True)
+      elif InstallerYesOrNo('Install docker-compose via pip?', default=True):
+        err, out = self.run_process(self.installPipPackageCmds + ['docker-compose'])
         if (err == 0):
-          eprint("Installation of docker-compose apparently succeeded")
-        else:
-          eprint(f"Install docker-compose via pip failed with {err}, {out}")
-
-      elif InstallerYesOrNo('Install docker-compose via pip (user)?', default=True):
-        # install docker-compose via pip (regular user)
-        err, out = self.run_process([self.pipCmd, 'install', dockerComposeCmd], privileged=False)
-        if (err == 0):
-          eprint("Installation of docker-compose apparently succeeded")
+          eprint(f"Installation of docker-compose apparently succeeded")
         else:
           eprint(f"Install docker-compose via pip failed with {err}, {out}")
 
@@ -814,7 +805,7 @@ def main():
     if hasattr(installer, 'install_docker'): success = installer.install_docker()
     if hasattr(installer, 'install_docker_compose'): success = installer.install_docker_compose()
 
-  if (hasattr(installer, 'install_pip_packages') and InstallerYesOrNo('Install common pip packages?', default=True)):
+  if (hasattr(installer, 'install_pip_packages') and InstallerYesOrNo('Install common pip packages?', default=False)):
     success = installer.install_pip_packages()
 
 if __name__ == '__main__':
