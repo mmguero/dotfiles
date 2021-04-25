@@ -78,7 +78,30 @@ class Installer(object):
     self.pipCmd = [self.pyExec, '-m', 'pip']
     self.installPipPackageCmds = []
 
-    self.pipPackages = []
+    # default pip packages
+    self.pipPackages = ['beautifulsoup4',
+                        'chepy[extras]',
+                        'colorama',
+                        'colored',
+                        'cryptography',
+                        'entrypoint2',
+                        'git+git://github.com/badele/gitcheck.git',
+                        'git-up',
+                        'humanhash3',
+                        'magic-wormhole',
+                        'patool',
+                        'Pillow',
+                        'py-cui',
+                        'pyinotify',
+                        'pythondialog',
+                        'python-magic',
+                        'pyshark',
+                        'pyunpack',
+                        'pyyaml',
+                        'requests[security]',
+                        'scapy',
+                        'urllib3',
+                        'magic-wormhole']
 
     self.totalMemoryGigs = 0.0
     self.totalCores = 0
@@ -300,32 +323,11 @@ class LinuxInstaller(Installer):
       # python is owned by system, so make sure to pass the --user flag
       self.installPipPackageCmds = self.pipCmd ['install', '--user']
 
-    # define pip/etc. packages we'd want to install
-    self.pipPackages.extend(['beautifulsoup4',
-                              'chepy[extras]',
-                              'colorama',
-                              'colored',
-                              'cryptography',
-                              'Cython',
-                              'entrypoint2',
-                              'git+git://github.com/badele/gitcheck.git',
-                              'git-up',
-                              'humanhash3',
-                              'magic-wormhole',
-                              'patool',
-                              'Pillow',
-                              'psutil',
-                              'py-cui',
-                              'pyinotify',
-                              'pythondialog',
-                              'python-magic',
-                              'pyshark',
-                              'pyunpack',
-                              'pyyaml',
-                              'requests[security]',
-                              'scapy',
-                              'urllib3',
-                              'magic-wormhole'])
+    self.pipPackages.extend(['Cython', 'psutil'])
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  def setup_sources(self):
+    pass
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   def install_docker(self):
@@ -619,6 +621,8 @@ class MacInstaller(Installer):
       # python is owned by system, so make sure to pass the --user flag
       self.installPipPackageCmds = [self.pipCmd, 'install', '--user']
 
+    self.pipPackages.extend(['Cython', 'psutil'])
+
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   def install_docker(self):
     result = False
@@ -802,6 +806,7 @@ def main():
 
   if (not args.configOnly):
     if hasattr(installer, 'install_required_packages'): success = installer.install_required_packages()
+    if hasattr(installer, 'setup_sources'): success = installer.setup_sources()
     if hasattr(installer, 'install_docker'): success = installer.install_docker()
     if hasattr(installer, 'install_docker_compose'): success = installer.install_docker_compose()
 
