@@ -321,7 +321,7 @@ class LinuxInstaller(Installer):
       self.installPipPackageCmds = self.pipCmd + ['install']
     else:
       # python is owned by system, so make sure to pass the --user flag
-      self.installPipPackageCmds = self.pipCmd ['install', '--user']
+      self.installPipPackageCmds = self.pipCmd + ['install', '--user']
 
     self.pipPackages.extend(['Cython', 'psutil'])
 
@@ -545,6 +545,10 @@ class MacInstaller(Installer):
 
     self.sudoCmd = []
 
+    self.configPath = os.getenv('XDG_CONFIG_HOME')
+    if not self.configPath:
+      self.configPath = os.path.join(self.homePath, '.config')
+
     # first see if brew is already installed and runnable
     err, out = self.run_process(['brew', 'info'])
     brewInstalled = (err == 0)
@@ -616,10 +620,10 @@ class MacInstaller(Installer):
 
     if self.pyExecUserOwned:
       # we're running a user-owned python, regular pip should work
-      self.installPipPackageCmds = [self.pipCmd, 'install']
+      self.installPipPackageCmds = self.pipCmd + ['install']
     else:
       # python is owned by system, so make sure to pass the --user flag
-      self.installPipPackageCmds = [self.pipCmd, 'install', '--user']
+      self.installPipPackageCmds = self.pipCmd + ['install', '--user']
 
     self.pipPackages.extend(['Cython', 'psutil'])
 
