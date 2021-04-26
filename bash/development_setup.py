@@ -76,29 +76,7 @@ class Installer(object):
     self.installPipPackageCmds = []
 
     # default pip packages
-    self.pipPackages = ['beautifulsoup4',
-                        'chepy[extras]',
-                        'colorama',
-                        'colored',
-                        'cryptography',
-                        'entrypoint2',
-                        'git+git://github.com/badele/gitcheck.git',
-                        'git-up',
-                        'humanhash3',
-                        'magic-wormhole',
-                        'patool',
-                        'Pillow',
-                        'py-cui',
-                        'pyinotify',
-                        'pythondialog',
-                        'python-magic',
-                        'pyshark',
-                        'pyunpack',
-                        'pyyaml',
-                        'requests[security]',
-                        'scapy',
-                        'urllib3',
-                        'magic-wormhole']
+    self.pipPackages = []
 
     self.totalMemoryGigs = 0.0
     self.totalCores = 0
@@ -249,7 +227,6 @@ class LinuxInstaller(Installer):
 
     if not self.codename: self.codename = self.distro
 
-    # determine packages required by Malcolm itself (not docker, those will be done later)
     if self.distro in (PLATFORM_LINUX_UBUNTU, PLATFORM_LINUX_DEBIAN, PLATFORM_LINUX_RASPBIAN):
       self.requiredPackages.extend(['curl', 'git', 'moreutils', 'jq'])
     elif self.distro in (PLATFORM_LINUX_FEDORA, PLATFORM_LINUX_CENTOS):
@@ -323,210 +300,6 @@ class LinuxInstaller(Installer):
       # python is owned by system, so make sure to pass the --user flag
       self.installPipPackageCmds = self.pipCmd + ['install', '--user']
 
-    self.pipPackages.extend(['Cython', 'psutil'])
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  def setup_sources(self):
-    # TODO:
-    pass
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  def install_docker(self):
-    result = False
-
-    # first see if docker is already installed and runnable
-    err, out = self.run_process(['docker', 'info'], privileged=True)
-
-    if (err == 0):
-      result = True
-
-    elif InstallerYesOrNo('"docker info" failed, attempt to install Docker?', default=False):
-
-      if InstallerYesOrNo('Attempt to install Docker using official repositories?', default=True):
-
-        # install required packages for repo-based install
-        if self.distro == PLATFORM_LINUX_UBUNTU:
-          requiredRepoPackages = ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg-agent', 'software-properties-common']
-        elif self.distro in (PLATFORM_LINUX_DEBIAN, PLATFORM_LINUX_RASPBIAN):
-          requiredRepoPackages = ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg2', 'software-properties-common']
-        elif self.distro == PLATFORM_LINUX_FEDORA:
-          requiredRepoPackages = ['dnf-plugins-core']
-        elif self.distro == PLATFORM_LINUX_CENTOS:
-          requiredRepoPackages = ['yum-utils', 'device-mapper-persistent-data', 'lvm2']
-        else:
-          requiredRepoPackages = []
-
-        if len(requiredRepoPackages) > 0:
-          eprint(f"Installing required packages: {requiredRepoPackages}")
-          self.install_package(requiredRepoPackages)
-
-        # install docker via repo if possible
-        dockerPackages = []
-        if self.distro in (PLATFORM_LINUX_UBUNTU, PLATFORM_LINUX_DEBIAN, PLATFORM_LINUX_RASPBIAN) and self.codename:
-
-          # for debian/ubuntu, add docker GPG key and check its fingerprint
-          if self.debug:
-            eprint("Requesting docker GPG key for package signing")
-          dockerGpgKey = requests.get(f'https://download.docker.com/linux/{self.distro}/gpg', allow_redirects=True)
-          err, out = self.run_process(['apt-key', 'add'], stdin=dockerGpgKey.content.decode(sys.getdefaultencoding()), privileged=True, stderr=False)
-          if (err == 0):
-            err, out = self.run_process(['apt-key', 'fingerprint', DEB_GPG_KEY_FINGERPRINT], privileged=True, stderr=False)
-
-          # add docker .deb repository
-          if (err == 0):
-            if self.debug:
-              eprint("Adding docker repository")
-            err, out = self.run_process(['add-apt-repository', '-y', '-r', f'deb [arch={self.archPkg}] https://download.docker.com/linux/{self.distro} {self.codename} stable'], privileged=True)
-            err, out = self.run_process(['add-apt-repository', '-y', '-u', f'deb [arch={self.archPkg}] https://download.docker.com/linux/{self.distro} {self.codename} stable'], privileged=True)
-
-          # docker packages to install
-          if (err == 0):
-            dockerPackages.extend(['docker-ce', 'docker-ce-cli', 'containerd.io'])
-
-        elif self.distro == PLATFORM_LINUX_FEDORA:
-
-          # add docker fedora repository
-          if self.debug:
-            eprint("Adding docker repository")
-          err, out = self.run_process(['dnf', 'config-manager', '-y', '--add-repo', 'https://download.docker.com/linux/fedora/docker-ce.repo'], privileged=True)
-
-          # docker packages to install
-          if (err == 0):
-            dockerPackages.extend(['docker-ce', 'docker-ce-cli', 'containerd.io'])
-
-        elif self.distro == PLATFORM_LINUX_CENTOS:
-          # add docker centos repository
-          if self.debug:
-            eprint("Adding docker repository")
-          err, out = self.run_process(['yum-config-manager', '-y', '--add-repo', 'https://download.docker.com/linux/centos/docker-ce.repo'], privileged=True)
-
-          # docker packages to install
-          if (err == 0):
-            dockerPackages.extend(['docker-ce', 'docker-ce-cli', 'containerd.io'])
-
-        else:
-          err, out = None, None
-
-        if len(dockerPackages) > 0:
-          eprint(f"Installing docker packages: {dockerPackages}")
-          if self.install_package(dockerPackages):
-            eprint("Installation of docker packages apparently succeeded")
-            result = True
-          else:
-            eprint("Installation of docker packages failed")
-
-      # the user either chose not to use the official repos, the official repo installation failed, or there are not official repos available
-      # see if we want to attempt using the convenience script at https://get.docker.com (see https://github.com/docker/docker-install)
-      if not result and InstallerYesOrNo('Docker not installed via official repositories. Attempt to install Docker via convenience script (please read https://github.com/docker/docker-install)?', default=False):
-        tempFileName = os.path.join(self.tempDirName, 'docker-install.sh')
-        if DownloadToFile("https://get.docker.com/", tempFileName, debug=self.debug):
-          os.chmod(tempFileName, 493) # 493 = 0o755
-          err, out = self.run_process(([tempFileName]), privileged=True)
-          if (err == 0):
-            eprint("Installation of docker apparently succeeded")
-            result = True
-          else:
-            eprint(f"Installation of docker failed: {out}")
-        else:
-          eprint(f"Downloading {dockerComposeUrl} to {tempFileName} failed")
-
-    if result and ((self.distro == PLATFORM_LINUX_FEDORA) or (self.distro == PLATFORM_LINUX_CENTOS)):
-      # centos/fedora don't automatically start/enable the daemon, so do so now
-      err, out = self.run_process(['systemctl', 'start', 'docker'], privileged=True)
-      if (err == 0):
-        err, out = self.run_process(['systemctl', 'enable', 'docker'], privileged=True)
-        if (err != 0):
-          eprint(f"Enabling docker service failed: {out}")
-      else:
-        eprint(f"Starting docker service failed: {out}")
-
-    # at this point we either have installed docker successfully or we have to give up, as we've tried all we could
-    err, out = self.run_process(['docker', 'info'], privileged=True, retry=6, retrySleepSec=5)
-    if result and (err == 0):
-      if self.debug:
-        eprint('"docker info" succeeded')
-
-      # add non-root user to docker group if required
-      usersToAdd = []
-      if self.scriptUser == 'root':
-        while InstallerYesOrNo(f"Add {'a' if len(usersToAdd) == 0 else 'another'} non-root user to the \"docker\" group?"):
-          tmpUser = InstallerAskForString('Enter user account')
-          if (len(tmpUser) > 0): usersToAdd.append(tmpUser)
-      else:
-        usersToAdd.append(self.scriptUser)
-
-      for user in usersToAdd:
-        err, out = self.run_process(['usermod', '-a', '-G', 'docker', user], privileged=True)
-        if (err == 0):
-          if self.debug:
-            eprint(f'Adding {user} to "docker" group succeeded')
-        else:
-          eprint(f'Adding {user} to "docker" group failed')
-
-    elif (err != 0):
-      result = False
-
-    return result
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  def install_docker_compose(self):
-    result = False
-
-    dockerComposeCmd = 'docker-compose'
-    if not Which(dockerComposeCmd, debug=self.debug) and os.path.isfile('/usr/local/bin/docker-compose'):
-      dockerComposeCmd = '/usr/local/bin/docker-compose'
-
-    # first see if docker-compose is already installed and runnable (try non-root and root)
-    err, out = self.run_process([dockerComposeCmd, 'version'], privileged=False)
-    if (err != 0):
-      err, out = self.run_process([dockerComposeCmd, 'version'], privileged=True)
-
-    if (err != 0) and InstallerYesOrNo('"docker-compose version" failed, attempt to install docker-compose?', default=False):
-
-      if InstallerYesOrNo('Install docker-compose directly from docker github?', default=False):
-        # download docker-compose from github and put it in /usr/local/bin
-
-        # need to know some linux platform info
-        unames = []
-        err, out = self.run_process((['uname', '-s']))
-        if (err == 0) and (len(out) > 0): unames.append(out[0])
-        err, out = self.run_process((['uname', '-m']))
-        if (err == 0) and (len(out) > 0): unames.append(out[0])
-        if len(unames) == 2:
-          # download docker-compose from github and save it to a temporary file
-          tempFileName = os.path.join(self.tempDirName, dockerComposeCmd)
-          dockerComposeUrl = f"https://github.com/docker/compose/releases/download/{dockerComposeInstallVersion}/docker-compose-{unames[0]}-{unames[1]}"
-          if DownloadToFile(dockerComposeUrl, tempFileName, debug=self.debug):
-            os.chmod(tempFileName, 493) # 493 = 0o755, mark as executable
-            # put docker-compose into /usr/local/bin
-            err, out = self.run_process((['cp', '-f', tempFileName, '/usr/local/bin/docker-compose']), privileged=True)
-            if (err == 0):
-              eprint("Download and installation of docker-compose apparently succeeded")
-              dockerComposeCmd = '/usr/local/bin/docker-compose'
-            else:
-              raise Exception(f'Error copying {tempFileName} to /usr/local/bin: {out}')
-
-          else:
-            eprint(f"Downloading {dockerComposeUrl} to {tempFileName} failed")
-
-      elif InstallerYesOrNo('Install docker-compose via pip?', default=True):
-        err, out = self.run_process(self.installPipPackageCmds + ['docker-compose'])
-        if (err == 0):
-          eprint(f"Installation of docker-compose apparently succeeded")
-        else:
-          eprint(f"Install docker-compose via pip failed with {err}, {out}")
-
-    # see if docker-compose is now installed and runnable (try non-root and root)
-    err, out = self.run_process([dockerComposeCmd, 'version'], privileged=False)
-    if (err != 0):
-      err, out = self.run_process([dockerComposeCmd, 'version'], privileged=True)
-
-    if (err == 0):
-      result = True
-      if self.debug:
-        eprint('"docker-compose version" succeeded')
-
-    return result
 
 ###################################################################################################
 class MacInstaller(Installer):
@@ -550,7 +323,6 @@ class MacInstaller(Installer):
 
     else:
       self.useBrew = False
-      eprint('Docker can be installed and maintained with Homebrew, or manually.')
       if (not brewInstalled) and (not InstallerYesOrNo('Homebrew is not installed: continue with manual installation?', default=False)):
         raise Exception(f'Follow the steps at {HOMEBREW_INSTALL_URLS[self.platform]} to install Homebrew, then re-run {ScriptName}')
 
@@ -607,9 +379,6 @@ class MacInstaller(Installer):
       if (err == 0) and (len(out) > 0):
         self.totalCores = int(out[0])
 
-    self.macBrewDockerPackage = 'docker-edge'
-    self.macBrewDockerSettingsFile = '/Users/{}/Library/Group Containers/group.com.docker/settings.json'
-
     if self.pyExecUserOwned:
       # we're running a user-owned python, regular pip should work
       self.installPipPackageCmds = self.pipCmd + ['install']
@@ -618,137 +387,6 @@ class MacInstaller(Installer):
       self.installPipPackageCmds = self.pipCmd + ['install', '--user']
 
     self.pipPackages.extend(['Cython', 'psutil'])
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  def install_docker(self):
-    result = False
-
-    # first see if docker is already installed/runnable
-    err, out = self.run_process(['docker', 'info'])
-
-    if (err != 0) and self.useBrew and self.package_is_installed(self.macBrewDockerPackage):
-      # if docker is installed via brew, but not running, prompt them to start it
-      eprint(f'{self.macBrewDockerPackage} appears to be installed via Homebrew, but "docker info" failed')
-      while True:
-        response = InstallerAskForString('Starting Docker the first time may require user interaction. Please find and start Docker in the Applications folder, then return here and type YES').lower()
-        if (response == 'yes'):
-          break
-      err, out = self.run_process(['docker', 'info'], retry=12, retrySleepSec=5)
-
-    # did docker info work?
-    if (err == 0):
-      result = True
-
-    elif InstallerYesOrNo('"docker info" failed, attempt to install Docker?', default=False):
-
-      if self.useBrew:
-        # install docker via brew cask (requires user interaction)
-        dockerPackages = [self.macBrewDockerPackage]
-        eprint(f"Installing docker packages: {dockerPackages}")
-        if self.install_package(dockerPackages):
-          eprint("Installation of docker packages apparently succeeded")
-          while True:
-            response = InstallerAskForString('Starting Docker the first time may require user interaction. Please find and start Docker in the Applications folder, then return here and type YES').lower()
-            if (response == 'yes'):
-              break
-        else:
-          eprint("Installation of docker packages failed")
-
-      else:
-        # install docker via downloaded dmg file (requires user interaction)
-        dlDirName = f'/Users/{self.scriptUser}/Downloads'
-        if os.path.isdir(dlDirName):
-          tempFileName = os.path.join(dlDirName, 'Docker.dmg')
-        else:
-          tempFileName = os.path.join(self.tempDirName, 'Docker.dmg')
-        if DownloadToFile('https://download.docker.com/mac/edge/Docker.dmg', tempFileName, debug=self.debug):
-          while True:
-            response = InstallerAskForString(f'Installing and starting Docker the first time may require user interaction. Please open Finder and install {tempFileName}, start Docker from the Applications folder, then return here and type YES').lower()
-            if (response == 'yes'):
-              break
-
-      # at this point we either have installed docker successfully or we have to give up, as we've tried all we could
-      err, out = self.run_process(['docker', 'info'], retry=12, retrySleepSec=5)
-      if (err == 0):
-        result = True
-        if self.debug:
-          eprint('"docker info" succeeded')
-
-      elif (err != 0):
-        raise Exception(f'{ScriptName} requires docker edge, please see {DOCKER_INSTALL_URLS[self.platform]}')
-
-    elif (err != 0):
-      raise Exception(f'{ScriptName} requires docker edge, please see {DOCKER_INSTALL_URLS[self.platform]}')
-
-    # tweak CPU/RAM usage for Docker in Mac
-    settingsFile = self.macBrewDockerSettingsFile.format(self.scriptUser)
-    if result and os.path.isfile(settingsFile) and InstallerYesOrNo(f'Configure Docker resource usage in {settingsFile}?', default=True):
-
-      # adjust CPU and RAM based on system resources
-      if self.totalCores >= 16:
-        newCpus = 12
-      elif self.totalCores >= 12:
-        newCpus = 8
-      elif self.totalCores >= 8:
-        newCpus = 6
-      elif self.totalCores >= 4:
-        newCpus = 4
-      else:
-        newCpus = 2
-
-      if self.totalMemoryGigs >= 64.0:
-        newMemoryGiB = 32
-      elif self.totalMemoryGigs >= 32.0:
-        newMemoryGiB = 24
-      elif self.totalMemoryGigs >= 24.0:
-        newMemoryGiB = 16
-      elif self.totalMemoryGigs >= 16.0:
-        newMemoryGiB = 12
-      elif self.totalMemoryGigs >= 8.0:
-        newMemoryGiB = 8
-      elif self.totalMemoryGigs >= 4.0:
-        newMemoryGiB = 4
-      else:
-        newMemoryGiB = 2
-
-      while not InstallerYesOrNo(f"Setting {newCpus if newCpus else '(unchanged)'} for CPU cores and {newMemoryGiB if newMemoryGiB else '(unchanged)'} GiB for RAM. Is this OK?", default=True):
-        newCpus = InstallerAskForString('Enter Docker CPU cores (e.g., 4, 8, 16)')
-        newMemoryGiB = InstallerAskForString('Enter Docker RAM MiB (e.g., 8, 16, etc.)')
-
-      if newCpus or newMemoryMiB:
-        with open(settingsFile, 'r+') as f:
-          data = json.load(f)
-          if newCpus: data['cpus'] = int(newCpus)
-          if newMemoryGiB: data['memoryMiB'] = int(newMemoryGiB)*1024
-          f.seek(0)
-          json.dump(data, f, indent=2)
-          f.truncate()
-
-        # at this point we need to essentially update our system memory stats because we're running inside docker
-        # and don't have the whole banana at our disposal
-        self.totalMemoryGigs = newMemoryGiB
-
-        eprint("Docker resource settings adjusted, attempting restart...")
-
-        err, out = self.run_process(['osascript', '-e', 'quit app "Docker"'])
-        if (err == 0):
-          time.sleep(5)
-          err, out = self.run_process(['open', '-a', 'Docker'])
-
-        if (err == 0):
-          err, out = self.run_process(['docker', 'info'], retry=12, retrySleepSec=5)
-          if (err == 0):
-            if self.debug:
-              eprint('"docker info" succeeded')
-
-        else:
-          eprint(f"Restarting Docker automatically failed: {out}")
-          while True:
-            response = InstallerAskForString('Please restart Docker via the system taskbar, then return here and type YES').lower()
-            if (response == 'yes'):
-              break
-
-    return result
 
 ###################################################################################################
 # main
@@ -802,11 +440,8 @@ def main():
 
   if (not args.configOnly):
     if hasattr(installer, 'install_required_packages'): success = installer.install_required_packages()
-    if hasattr(installer, 'setup_sources'): success = installer.setup_sources()
-    if hasattr(installer, 'install_docker'): success = installer.install_docker()
-    if hasattr(installer, 'install_docker_compose'): success = installer.install_docker_compose()
 
-  if (hasattr(installer, 'install_pip_packages') and InstallerYesOrNo('Install common pip packages?', default=False)):
+  if (hasattr(installer, 'install_pip_packages') and InstallerYesOrNo('Install pip packages?', default=False)):
     success = installer.install_pip_packages()
 
 if __name__ == '__main__':
