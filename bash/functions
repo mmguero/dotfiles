@@ -774,7 +774,7 @@ function screen() {
 # things I want to nohup
 ########################################################################
 function sublime() {
-  nohup "/opt/sublime_text/sublime_text" "$@" </dev/null >/dev/null 2>&1 &
+  nohup "$(which subl)" "$@" </dev/null >/dev/null 2>&1 &
 }
 
 function subl() {
@@ -782,31 +782,27 @@ function subl() {
 }
 
 function rdp() {
-  nohup /usr/bin/rdesktop -g 1600x1024 -z -x m -P -r sound:off -0 $@ </dev/null >/dev/null 2>&1 &
+  nohup "$(which rdesktop)" -g 1600x1024 -z -x m -P -r sound:off -0 $@ </dev/null >/dev/null 2>&1 &
 }
 
 function regexxer() {
-  nohup /usr/bin/regexxer $@ </dev/null >/dev/null 2>&1 &
-}
-
-function laz() {
-  nohup /usr/bin/startlazarus $@ </dev/null >/dev/null 2>&1 &
+  nohup "$(which regexxer)" $@ </dev/null >/dev/null 2>&1 &
 }
 
 function spice() {
-  nohup /usr/bin/remote-viewer $(virsh -c qemu:///system domdisplay $1) </dev/null >/dev/null 2>&1 &
+  nohup "$(which remote-viewer)" $(virsh -c qemu:///system domdisplay $1) </dev/null >/dev/null 2>&1 &
 }
 
 function spiceport() {
-  nohup /usr/bin/remote-viewer "spice://127.0.0.1?port=$1" </dev/null >/dev/null 2>&1 &
+  nohup "$(which remote-viewer)" "spice://127.0.0.1?port=$1" </dev/null >/dev/null 2>&1 &
 }
 
 function wireshark() {
-  nohup /usr/bin/wireshark "$@" </dev/null >/dev/null 2>&1 &
+  nohup "$(which wireshark)" "$@" </dev/null >/dev/null 2>&1 &
 }
 
 function pithos() {
-  nohup /usr/bin/pithos "$@" </dev/null >/dev/null 2>&1 &
+  nohup "$(which wireshark)" "$@" </dev/null >/dev/null 2>&1 &
 }
 
 ####

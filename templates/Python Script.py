@@ -15,6 +15,17 @@ script_path = os.path.dirname(os.path.realpath(__file__))
 orig_path = os.getcwd()
 
 ###################################################################################################
+# chdir to directory as context manager, returning automatically
+@contextlib.contextmanager
+def pushd(directory):
+  prevDir = os.getcwd()
+  os.chdir(directory)
+  try:
+    yield
+  finally:
+    os.chdir(prevDir)
+
+###################################################################################################
 # print to stderr
 def eprint(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
@@ -104,15 +115,15 @@ def check_output_input(*popenargs, **kwargs):
   if 'input' in kwargs and kwargs['input']:
     if 'stdin' in kwargs:
       raise ValueError('stdin and input arguments may not both be used')
-    input_data = kwargs['input']
+    inputdata = kwargs['input']
     kwargs['stdin'] = PIPE
   else:
-    input_data = None
+    inputdata = None
   kwargs.pop('input', None)
 
   process = Popen(*popenargs, stdout=PIPE, stderr=PIPE, **kwargs)
   try:
-    output, errput = process.communicate(input_data)
+    output, errput = process.communicate(inputdata)
   except:
     process.kill()
     process.wait()
@@ -123,15 +134,15 @@ def check_output_input(*popenargs, **kwargs):
   return retcode, output, errput
 
 ###################################################################################################
-# run command with arguments and return its exit code and output
-def run_process(command, stdout=True, stderr=True, stdin=None, cwd=None, env=None, debug=False):
+# run command with arguments and return its exit code, stdout, and stderr
+def run_process(command, stdout=True, stderr=True, stdin=None, retry=0, retrySleepSec=5, cwd=None, env=None, debug=False):
 
   retcode = -1
   output = []
 
   try:
     # run the command
-    retcode, cmdout, cmderr = check_output_input(command, input=stdin.encode() if stdin else None, cwd=cwd, env=env)
+    retcode, cmdout, cmderr = check_output_input(command, input=stdin.encode() if stdin else stdin, cwd=cwd, env=env)
 
     # split the output on newlines to return a list
     if stderr and (len(cmderr) > 0): output.extend(cmderr.decode(sys.getdefaultencoding()).split('\n'))
@@ -139,12 +150,17 @@ def run_process(command, stdout=True, stderr=True, stdin=None, cwd=None, env=Non
 
   except (FileNotFoundError, OSError, IOError) as e:
     if stderr:
-      output.append("Command {} not found or unable to execute".format(command))
+      output.append(f"Command {command} not found or unable to execute")
 
   if debug:
-    eprint("{}{} returned {}: {}".format(command, "({})".format(stdin[:80] + bool(stdin[80:]) * '...' if stdin else ""), retcode, output))
+    eprint(f"{command}({stdin[:80] + bool(stdin[80:]) * '...' if stdin else ''}) returned {retcode}: {output}")
 
-  return retcode, output
+  if (retcode != 0) and retry and (retry > 0):
+    # sleep then retry
+    time.sleep(retrySleepSec)
+    return run_process(command, stdout, stderr, stdin, retry-1, retrySleepSec, cwd, env, debug)
+  else:
+    return retcode, output
 
 ###################################################################################################
 # main
