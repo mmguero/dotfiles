@@ -11,7 +11,7 @@ PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1
 PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
 if [ -f /.dockerenv ]; then
-  PS1='🐳  \u \[\e[1;36m\]\h \[\e[1;34m\]\W\[\e[0;35m\] \[\e[1;36m\]# \[\e[0m\]'
+  PS1='🐳\[ \]\[ \]\u\[ \]\[\e[1;36m\]\h\[ \]\[\e[1;34m\]\W\[\e[0;35m\]\[ \]\[\e[1;36m\]#\[ \]\[\e[0m\]'
 
 else
   unset HASHER
