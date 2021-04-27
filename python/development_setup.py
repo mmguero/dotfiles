@@ -25,9 +25,11 @@ try:
 except ImportError:
   getpwuid = None
 
-from mmguero_common import *
+from mmguero import eprint, str2bool
+import mmguero
 
 ###################################################################################################
+ScriptPath = os.path.dirname(os.path.realpath(__file__))
 ScriptName = os.path.basename(__file__)
 origPath = os.getcwd()
 
@@ -38,13 +40,13 @@ args = None
 # get interactive user response to Y/N question
 def InstallerYesOrNo(question, default=None, forceInteraction=False):
   global args
-  return YesOrNo(question, default=default, forceInteraction=forceInteraction, acceptDefault=args.acceptDefaults)
+  return mmguero.YesOrNo(question, default=default, forceInteraction=forceInteraction, acceptDefault=args.acceptDefaults)
 
 ###################################################################################################
 # get interactive user response
 def InstallerAskForString(question, default=None, forceInteraction=False):
   global args
-  return AskForString(question, default=default, forceInteraction=forceInteraction, acceptDefault=args.acceptDefaults)
+  return mmguero.AskForString(question, default=default, forceInteraction=forceInteraction, acceptDefault=args.acceptDefaults)
 
 def TrueOrFalseQuote(expression):
   return "'{}'".format('true' if expression else 'false')
@@ -92,7 +94,7 @@ class Installer(object):
     if privileged and (len(self.sudoCmd) > 0):
       command = self.sudoCmd + command
 
-    return run_process(command, stdout=stdout, stderr=stderr, stdin=stdin, retry=retry, retrySleepSec=retrySleepSec, debug=self.debug)
+    return mmguero.RunProcess(command, stdout=stdout, stderr=stderr, stdin=stdin, retry=retry, retrySleepSec=retrySleepSec, debug=self.debug)
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   def package_is_installed(self, package):
@@ -227,9 +229,9 @@ class LinuxInstaller(Installer):
 
     if not self.codename: self.codename = self.distro
 
-    if self.distro in (PLATFORM_LINUX_UBUNTU, PLATFORM_LINUX_DEBIAN, PLATFORM_LINUX_RASPBIAN):
+    if self.distro in (mmguero.PLATFORM_LINUX_UBUNTU, mmguero.PLATFORM_LINUX_DEBIAN, mmguero.PLATFORM_LINUX_RASPBIAN):
       self.requiredPackages.extend(['curl', 'git', 'moreutils', 'jq'])
-    elif self.distro in (PLATFORM_LINUX_FEDORA, PLATFORM_LINUX_CENTOS):
+    elif self.distro in (mmguero.PLATFORM_LINUX_FEDORA, mmguero.PLATFORM_LINUX_CENTOS):
       # todo: check this
       self.requiredPackages.extend(['curl', 'git', 'moreutils', 'jq'])
 
@@ -244,27 +246,27 @@ class LinuxInstaller(Installer):
         raise Exception(f'{ScriptName} must be run as root, or {self.sudoCmd} must be available')
 
     # determine command to use to query if a package is installed
-    if Which('dpkg', debug=self.debug):
+    if mmguero.Which('dpkg', debug=self.debug):
       os.environ["DEBIAN_FRONTEND"] = "noninteractive"
       self.checkPackageCmds.append(['dpkg', '-s'])
       err, out = self.run_process(['dpkg', '--print-architecture'])
       if (err == 0) and (len(out) == 1):
         self.archPkg = out[0]
-    elif Which('rpm', debug=self.debug):
+    elif mmguero.Which('rpm', debug=self.debug):
       self.checkPackageCmds.append(['rpm', '-q'])
-    elif Which('dnf', debug=self.debug):
+    elif mmguero.Which('dnf', debug=self.debug):
       self.checkPackageCmds.append(['dnf', 'list', 'installed'])
-    elif Which('yum', debug=self.debug):
+    elif mmguero.Which('yum', debug=self.debug):
       self.checkPackageCmds.append(['yum', 'list', 'installed'])
 
     # determine command to install a package from the distro's repos
-    if Which('apt-get', debug=self.debug):
+    if mmguero.Which('apt-get', debug=self.debug):
       self.installPackageCmds.append(['apt-get', 'install', '-y', '-qq'])
-    elif Which('apt', debug=self.debug):
+    elif mmguero.Which('apt', debug=self.debug):
       self.installPackageCmds.append(['apt', 'install', '-y', '-qq'])
-    elif Which('dnf', debug=self.debug):
+    elif mmguero.Which('dnf', debug=self.debug):
       self.installPackageCmds.append(['dnf', '-y', 'install', '--nobest'])
-    elif Which('yum', debug=self.debug):
+    elif mmguero.Which('yum', debug=self.debug):
       self.installPackageCmds.append(['yum', '-y', 'install'])
 
     # determine total system memory
@@ -417,9 +419,9 @@ def main():
   else:
     sys.tracebacklimit = 0
 
-  if not DoDynamicImport('requests', 'requests', debug=args.debug):
+  if not mmguero.DoDynamicImport('requests', 'requests', debug=args.debug):
     exit(2)
-  if not DoDynamicImport('git', 'GitPython', debug=args.debug):
+  if not mmguero.DoDynamicImport('git', 'GitPython', debug=args.debug):
     exit(2)
 
   if args.debug:
@@ -427,11 +429,11 @@ def main():
       eprint("Only doing configuration, not installation")
 
   installerPlatform = platform.system()
-  if installerPlatform == PLATFORM_LINUX:
+  if installerPlatform == mmguero.PLATFORM_LINUX:
     installer = LinuxInstaller(debug=args.debug, configOnly=args.configOnly)
-  elif installerPlatform == PLATFORM_MAC:
+  elif installerPlatform == mmguero.PLATFORM_MAC:
     installer = MacInstaller(debug=args.debug, configOnly=args.configOnly)
-  elif installerPlatform == PLATFORM_WINDOWS:
+  elif installerPlatform == mmguero.PLATFORM_WINDOWS:
     raise Exception(f'{ScriptName} is not yet supported on {installerPlatform}')
     installer = WindowsInstaller(debug=args.debug, configOnly=args.configOnly)
 

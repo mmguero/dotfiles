@@ -5,7 +5,7 @@ import argparse
 import os
 import sys
 
-from subprocess import (PIPE, Popen)
+import mmguero
 
 ###################################################################################################
 args = None
@@ -15,162 +15,14 @@ script_path = os.path.dirname(os.path.realpath(__file__))
 orig_path = os.getcwd()
 
 ###################################################################################################
-# chdir to directory as context manager, returning automatically
-@contextlib.contextmanager
-def pushd(directory):
-  prevDir = os.getcwd()
-  os.chdir(directory)
-  try:
-    yield
-  finally:
-    os.chdir(prevDir)
-
-###################################################################################################
-# print to stderr
-def eprint(*args, **kwargs):
-  print(*args, file=sys.stderr, **kwargs)
-  sys.stderr.flush()
-
-###################################################################################################
-# convenient boolean argument parsing
-def str2bool(v):
-  if v.lower() in ('yes', 'true', 't', 'y', '1'):
-    return True
-  elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-    return False
-  else:
-    raise argparse.ArgumentTypeError('Boolean value expected.')
-
-###################################################################################################
-# get interactive user response to Y/N question
-def yes_or_no(question, default=None, force_interaction=False):
-  global args
-
-  if default == True:
-    question_str = "\n{} (Y/n): ".format(question)
-  elif default == False:
-    question_str = "\n{} (y/N): ".format(question)
-  else:
-    question_str = "\n{} (y/n): ".format(question)
-
-  if args.accept_defaults and (default is not None) and (not force_interaction):
-    reply = ''
-  else:
-    while True:
-      reply = str(input(question_str)).lower().strip()
-      if (len(reply) > 0) or (default is not None):
-        break
-
-  if (len(reply) == 0):
-    reply = 'y' if default else 'n'
-
-  if reply[0] == 'y':
-    return True
-  elif reply[0] == 'n':
-    return False
-  else:
-    return yes_or_no(question, default=default)
-
-###################################################################################################
-# get interactive user response
-def ask_for_string(question, default=None, force_interaction=False):
-  global args
-
-  if args.accept_defaults and (default is not None) and (not force_interaction):
-    reply = default
-  else:
-    reply = str(input('\n{}: '.format(question))).strip()
-
-  return reply
-
-###################################################################################################
-# nice human-readable file sizes
-def sizeof_fmt(num, suffix='B'):
-  for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
-    if abs(num) < 1024.0:
-      return "%3.1f%s%s" % (num, unit, suffix)
-    num /= 1024.0
-  return "%.1f%s%s" % (num, 'Yi', suffix)
-
-###################################################################################################
-# test if a remote port is open
-def test_socket(host, port):
-  with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
-    sock.settimeout(10)
-    if sock.connect_ex((host, port)) == 0:
-      return True
-    else:
-      return False
-
-###################################################################################################
-# run command with arguments and return its exit code, stdout, and stderr
-def check_output_input(*popenargs, **kwargs):
-
-  if 'stdout' in kwargs:
-    raise ValueError('stdout argument not allowed, it will be overridden')
-
-  if 'stderr' in kwargs:
-    raise ValueError('stderr argument not allowed, it will be overridden')
-
-  if 'input' in kwargs and kwargs['input']:
-    if 'stdin' in kwargs:
-      raise ValueError('stdin and input arguments may not both be used')
-    inputdata = kwargs['input']
-    kwargs['stdin'] = PIPE
-  else:
-    inputdata = None
-  kwargs.pop('input', None)
-
-  process = Popen(*popenargs, stdout=PIPE, stderr=PIPE, **kwargs)
-  try:
-    output, errput = process.communicate(inputdata)
-  except:
-    process.kill()
-    process.wait()
-    raise
-
-  retcode = process.poll()
-
-  return retcode, output, errput
-
-###################################################################################################
-# run command with arguments and return its exit code, stdout, and stderr
-def run_process(command, stdout=True, stderr=True, stdin=None, retry=0, retrySleepSec=5, cwd=None, env=None, debug=False):
-
-  retcode = -1
-  output = []
-
-  try:
-    # run the command
-    retcode, cmdout, cmderr = check_output_input(command, input=stdin.encode() if stdin else stdin, cwd=cwd, env=env)
-
-    # split the output on newlines to return a list
-    if stderr and (len(cmderr) > 0): output.extend(cmderr.decode(sys.getdefaultencoding()).split('\n'))
-    if stdout and (len(cmdout) > 0): output.extend(cmdout.decode(sys.getdefaultencoding()).split('\n'))
-
-  except (FileNotFoundError, OSError, IOError) as e:
-    if stderr:
-      output.append(f"Command {command} not found or unable to execute")
-
-  if debug:
-    eprint(f"{command}({stdin[:80] + bool(stdin[80:]) * '...' if stdin else ''}) returned {retcode}: {output}")
-
-  if (retcode != 0) and retry and (retry > 0):
-    # sleep then retry
-    time.sleep(retrySleepSec)
-    return run_process(command, stdout, stderr, stdin, retry-1, retrySleepSec, cwd, env, debug)
-  else:
-    return retcode, output
-
-###################################################################################################
 # main
 def main():
   global args
   global debug
 
   parser = argparse.ArgumentParser(description=script_name, add_help=False, usage='{} <arguments>'.format(script_name))
-  parser.add_argument('-d', '--defaults', dest='accept_defaults', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Accept defaults to prompts without user interaction")
-  parser.add_argument('-v', '--verbose', dest='debug', type=str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Verbose/debug output")
+  parser.add_argument('-d', '--defaults', dest='accept_defaults', type=mmguero.str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Accept defaults to prompts without user interaction")
+  parser.add_argument('-v', '--verbose', dest='debug', type=mmguero.str2bool, nargs='?', const=True, default=False, metavar='true|false', help="Verbose/debug output")
   parser.add_argument('-i', '--input', dest='input', type=str, default=None, required=False, metavar='<string>', help="Input")
   try:
     parser.error = parser.exit
@@ -188,7 +40,7 @@ def main():
     sys.tracebacklimit = 0
 
   if args.input is not None:
-    cmd_code, cmd_output = run_process(args.input)
+    cmd_code, cmd_output = mmguero.RunProcess(args.input)
     print(f"{cmd_code}: {cmd_output}")
 
 ###################################################################################################
