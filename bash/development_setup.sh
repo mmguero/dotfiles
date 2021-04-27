@@ -429,6 +429,7 @@ if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       Cython \
       entrypoint2 \
       git+git://github.com/badele/gitcheck.git \
+      git+git://github.com/mmguero/python-mmguero.git \
       git-up \
       humanhash3 \
       magic-wormhole \
