@@ -28,6 +28,7 @@ if ! (type "$REALPATH" && type "$DIRNAME") > /dev/null; then
   exit 1
 fi
 SCRIPT_PATH="$($DIRNAME $($REALPATH -e "${BASH_SOURCE[0]}"))"
+SCRIPT_NAME="$(basename $($REALPATH -e "${BASH_SOURCE[0]}"))"
 
 # see if this has been cloned from github.com/mmguero/config
 # (so we can assume other stuff might be here for symlinking)
@@ -1901,6 +1902,9 @@ function GueroSymlinks {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
       mkdir -p ~/.local/bin
+
+      [[ -r "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" ]] && rm -vf ~/.local/bin/"$SCRIPT_NAME" && \
+        ln -vrs "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" ~/.local/bin/"$SCRIPT_NAME"
 
       [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf ~/.bashrc && \
         ln -vrs "$GUERO_GITHUB_PATH"/bash/rc ~/.bashrc
