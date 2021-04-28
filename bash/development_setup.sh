@@ -30,6 +30,10 @@ fi
 SCRIPT_PATH="$($DIRNAME $($REALPATH -e "${BASH_SOURCE[0]}"))"
 SCRIPT_NAME="$(basename $($REALPATH -e "${BASH_SOURCE[0]}"))"
 
+LOCAL_DATA_PATH=${XDG_DATA_HOME:-$HOME/.local/share}
+LOCAL_BIN_PATH=$HOME/.local/bin
+LOCAL_CONFIG_PATH=${XDG_CONFIG_HOME:-$HOME/.config}
+
 # see if this has been cloned from github.com/mmguero/config
 # (so we can assume other stuff might be here for symlinking)
 unset GUERO_GITHUB_PATH
@@ -460,7 +464,7 @@ function InstallEnvPackages {
         urllib3 \
         magic-wormhole
 
-      [[ ! -d ~/.config/chepy_plugins ]] && _GitClone https://github.com/securisec/chepy_plugins ~/.config/chepy_plugins
+      [[ ! -d "$LOCAL_CONFIG_PATH"/chepy_plugins ]] && _GitClone https://github.com/securisec/chepy_plugins "$LOCAL_CONFIG_PATH"/chepy_plugins
     fi
 
     if go version >/dev/null 2>&1; then
@@ -1485,7 +1489,14 @@ function CreateCommonLinuxConfig {
 
       touch ~/.hushlogin
 
-      mkdir -p "$HOME/Desktop" "$HOME/download" "$HOME/media/music" "$HOME/media/images" "$HOME/media/video" "$HOME/tmp" "$HOME/.local/bin"
+      mkdir -p "$HOME/Desktop" \
+               "$HOME/download" \
+               "$HOME/media/music" \
+               "$HOME/media/images" \
+               "$HOME/media/video" \
+               "$HOME/tmp" \
+               "$LOCAL_BIN_PATH" \
+               "$LOCAL_DATA_PATH"/bash-completion
 
       [ ! -f ~/.vimrc ] && echo "set nocompatible" > ~/.vimrc
 
@@ -1514,7 +1525,7 @@ EOT
       read -p "Setup user-dirs.dirs [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        cat <<EOX > ~/.config/user-dirs.dirs
+        cat <<EOX > "$LOCAL_CONFIG_PATH"/user-dirs.dirs
 XDG_DESKTOP_DIR="$HOME/Desktop"
 XDG_DOWNLOAD_DIR="$HOME/download"
 XDG_TEMPLATES_DIR="$HOME/Documents/Templates"
@@ -1548,15 +1559,15 @@ function InstallUserLocalFonts {
     read -p "Install user-local fonts [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      mkdir -p ~/.local/share/fonts ~/.config/fontconfig/conf.d
+      mkdir -p "$LOCAL_DATA_PATH"/fonts "$LOCAL_CONFIG_PATH"/fontconfig/conf.d
 
       LATEST_NERDFONT_RELEASE="$(_GitLatestRelease ryanoasis/nerd-fonts)"
-      pushd ~/.local/share/fonts >/dev/null 2>&1
+      pushd "$LOCAL_DATA_PATH"/fonts >/dev/null 2>&1
       for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Incosolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
         curl -L -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$LATEST_NERDFONT_RELEASE/$NERDFONT.zip"
         unzip -o ./$NERDFONT.zip
       done
-      rm -f ~/.local/share/fonts/*Nerd*Windows*.ttf ~/.local/share/fonts/*.zip ~/.local/share/fonts/*Nerd*.otf
+      rm -f "$LOCAL_DATA_PATH"/fonts/*Nerd*Windows*.ttf "$LOCAL_DATA_PATH"/fonts/*.zip "$LOCAL_DATA_PATH"/fonts/*Nerd*.otf
       popd >/dev/null 2>&1
       fc-cache -f -v
       if dpkg -s fonts-hack-ttf >/dev/null 2>&1 ; then
@@ -1574,12 +1585,12 @@ function InstallUserLocalBinaries {
     read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      mkdir -p ~/.local/bin
+      mkdir -p "$LOCAL_BIN_PATH"
 
       if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WINDOWS ]]; then
         PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
-        curl -L "$PCLOUD_URL" > ~/.local/bin/pcloud
-        chmod 755 ~/.local/bin/pcloud
+        curl -L "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud
+        chmod 755 "$LOCAL_BIN_PATH"/pcloud
       fi
 
       CROC_RELEASE="$(_GitLatestRelease schollz/croc | sed 's/^v//')"
@@ -1590,22 +1601,22 @@ function InstallUserLocalBinaries {
         RELEASE_ARCH=64bit
       fi
       curl -L "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
-      cp -f "${TMP_CLONE_DIR}"/croc ~/.local/bin/croc
-      chmod 755 ~/.local/bin/croc
+      cp -f "${TMP_CLONE_DIR}"/croc "$LOCAL_BIN_PATH"/croc
+      chmod 755 "$LOCAL_BIN_PATH"/croc
       rm -rf "$TMP_CLONE_DIR"
 
       GRON_RELEASE="$(_GitLatestRelease tomnomnom/gron | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
       curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-${LINUX_ARCH}-${GRON_RELEASE}.tgz" | tar xzf - -C "${TMP_CLONE_DIR}"
-      cp -f "${TMP_CLONE_DIR}"/gron ~/.local/bin/gron
-      chmod 755 ~/.local/bin/gron
+      cp -f "${TMP_CLONE_DIR}"/gron "$LOCAL_BIN_PATH"/gron
+      chmod 755 "$LOCAL_BIN_PATH"/gron
       rm -rf "$TMP_CLONE_DIR"
 
       SQ_RELEASE="$(_GitLatestRelease neilotoole/sq | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
       curl -L "https://github.com/neilotoole/sq/releases/download/v${SQ_RELEASE}/sq-linux-${LINUX_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
-      cp -f "${TMP_CLONE_DIR}"/sq ~/.local/bin/sq
-      chmod 755 ~/.local/bin/sq
+      cp -f "${TMP_CLONE_DIR}"/sq "$LOCAL_BIN_PATH"/sq
+      chmod 755 "$LOCAL_BIN_PATH"/sq
       rm -rf "$TMP_CLONE_DIR"
 
       STEPCLI_RELEASE="$(_GitLatestRelease smallstep/cli | sed 's/^v//')"
@@ -1615,9 +1626,9 @@ function InstallUserLocalBinaries {
       else
         RELEASE_ARCH=amd64
       fi
-      curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
-      cp -f "${TMP_CLONE_DIR}/step_${STEPCLI_RELEASE}"/bin/step ~/.local/bin/step
-      chmod 755 ~/.local/bin/step
+      curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      cp -f "${TMP_CLONE_DIR}"/bin/step "$LOCAL_BIN_PATH"/step
+      chmod 755 "$LOCAL_BIN_PATH"/step
       rm -rf "$TMP_CLONE_DIR"
 
       TERMSHARK_RELEASE="$(_GitLatestRelease gcla/termshark | sed 's/^v//')"
@@ -1627,9 +1638,23 @@ function InstallUserLocalBinaries {
       else
         RELEASE_ARCH=x64
       fi
-      curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
-      cp -f "${TMP_CLONE_DIR}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}"/termshark ~/.local/bin/termshark
-      chmod 755 ~/.local/bin/termshark
+      curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      cp -f "${TMP_CLONE_DIR}"/termshark "$LOCAL_BIN_PATH"/termshark
+      chmod 755 "$LOCAL_BIN_PATH"/termshark
+      rm -rf "$TMP_CLONE_DIR"
+
+      mkdir -p "$LOCAL_DATA_PATH"/bash-completion
+      RIPGREP_RELEASE="$(_GitLatestRelease BurntSushi/ripgrep | sed 's/^v//')"
+      TMP_CLONE_DIR="$(mktemp -d)"
+      if [[ "$LINUX_ARCH" == "armhf" ]]; then
+        RIPGREP_URL="https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_RELEASE}/ripgrep-${RIPGREP_RELEASE}-arm-unknown-linux-gnueabihf.tar.gz"
+      else
+        RIPGREP_URL="https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_RELEASE}/ripgrep-${RIPGREP_RELEASE}-x86_64-unknown-linux-musl.tar.gz"
+      fi
+      curl -L "${RIPGREP_URL}" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      cp -f "${TMP_CLONE_DIR}"/rg "$LOCAL_BIN_PATH"/rg
+      cp -f "${TMP_CLONE_DIR}"/complete/*.bash "$LOCAL_DATA_PATH"/bash-completion
+      chmod 755 "$LOCAL_BIN_PATH"/rg
       rm -rf "$TMP_CLONE_DIR"
     fi
   fi
@@ -1901,10 +1926,10 @@ function GueroSymlinks {
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-      mkdir -p ~/.local/bin
+      mkdir -p "$LOCAL_BIN_PATH"
 
-      [[ -r "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" ]] && rm -vf ~/.local/bin/"$SCRIPT_NAME" && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" ~/.local/bin/"$SCRIPT_NAME"
+      [[ -r "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" ]] && rm -vf "$LOCAL_BIN_PATH"/"$SCRIPT_NAME" && \
+        ln -vrs "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" "$LOCAL_BIN_PATH"/"$SCRIPT_NAME"
 
       [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf ~/.bashrc && \
         ln -vrs "$GUERO_GITHUB_PATH"/bash/rc ~/.bashrc
@@ -1924,8 +1949,8 @@ function GueroSymlinks {
       [[ -r "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && \
         ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global ~/.gitignore_global
 
-      [[ -r "$GUERO_GITHUB_PATH"/git/git_clone_all.sh ]] && rm -vf ~/.local/bin/git_clone_all.sh && \
-        ln -vrs "$GUERO_GITHUB_PATH"/git/git_clone_all.sh ~/.local/bin/git_clone_all.sh
+      [[ -r "$GUERO_GITHUB_PATH"/git/git_clone_all.sh ]] && rm -vf "$LOCAL_BIN_PATH"/git_clone_all.sh && \
+        ln -vrs "$GUERO_GITHUB_PATH"/git/git_clone_all.sh "$LOCAL_BIN_PATH"/git_clone_all.sh
 
       [[ $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && \
         ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
@@ -1942,29 +1967,29 @@ function GueroSymlinks {
       [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p ~/.cgdb && rm -vf ~/.cgdb/cgdbrc && \
         ln -vrs "$GUERO_GITHUB_PATH"/gdb/cgdbrc ~/.cgdb/cgdbrc
 
-      [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p ~/.config/gdb && rm -vf ~/.config/gdb/hexdump.py && \
-        ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py ~/.config/gdb/hexdump.py
+      [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p "$LOCAL_CONFIG_PATH"/gdb && rm -vf "$LOCAL_CONFIG_PATH"/gdb/hexdump.py && \
+        ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py "$LOCAL_CONFIG_PATH"/gdb/hexdump.py
 
-      [[ ! -d ~/.config/gdb/peda ]] && _GitClone https://github.com/longld/peda.git ~/.config/gdb/peda
+      [[ ! -d "$LOCAL_CONFIG_PATH"/gdb/peda ]] && _GitClone https://github.com/longld/peda.git "$LOCAL_CONFIG_PATH"/gdb/peda
 
       if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
         while IFS= read -d $'\0' -r CONFDIR; do
           DIRNAME="$(basename "$CONFDIR")"
-          rm -vf ~/.config/"$DIRNAME" && ln -vrs "$CONFDIR" ~/.config/"$DIRNAME"
+          rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln -vrs "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
         done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
       fi
 
       if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/sublime ]]; then
-        mkdir -p ~/.config/sublime-text-3/Packages/User
+        mkdir -p "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User
         while IFS= read -d $'\0' -r CONFFILE; do
           FNAME="$(basename "$CONFFILE")"
-          rm -vf ~/.config/sublime-text-3/Packages/User/"$FNAME" && ln -vrs "$CONFFILE" ~/.config/sublime-text-3/Packages/User/"$FNAME"
+          rm -vf "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User/"$FNAME" && ln -vrs "$CONFFILE" "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User/"$FNAME"
         done < <(find "$GUERO_GITHUB_PATH"/sublime -mindepth 1 -maxdepth 1 -type f -print0)
       fi
 
-      [[ $LINUX ]] && dpkg -s albert >/dev/null 2>&1 && mkdir -p ~/.config/autostart && \
-        rm -vf ~/.config/autostart/albert.desktop && \
-        ln -vrs /usr/share/applications/albert.desktop ~/.config/autostart/albert.desktop
+      [[ $LINUX ]] && dpkg -s albert >/dev/null 2>&1 && mkdir -p "$LOCAL_CONFIG_PATH"/autostart && \
+        rm -vf "$LOCAL_CONFIG_PATH"/autostart/albert.desktop && \
+        ln -vrs /usr/share/applications/albert.desktop "$LOCAL_CONFIG_PATH"/autostart/albert.desktop
 
       LINKED_SCRIPTS=(
         clarence-0.4.4
@@ -1983,11 +2008,11 @@ function GueroSymlinks {
         windems.sh
       )
       for i in ${LINKED_SCRIPTS[@]}; do
-        rm -vf ~/.local/bin/"$i" && ln -vrs "$GUERO_GITHUB_PATH"/scripts/"$i" ~/.local/bin/
+        rm -vf "$LOCAL_BIN_PATH"/"$i" && ln -vrs "$GUERO_GITHUB_PATH"/scripts/"$i" "$LOCAL_BIN_PATH"/
       done
 
-      [[ -r "$GUERO_GITHUB_PATH"/bash/context-color/context-color ]] && rm -vf ~/.local/bin/context-color && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/context-color/context-color ~/.local/bin/context-color
+      [[ -r "$GUERO_GITHUB_PATH"/bash/context-color/context-color ]] && rm -vf "$LOCAL_BIN_PATH"/context-color && \
+        ln -vrs "$GUERO_GITHUB_PATH"/bash/context-color/context-color "$LOCAL_BIN_PATH"/context-color
 
     fi # dotfiles setup confirmation
   fi # dotfiles check for github checkout
