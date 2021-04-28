@@ -1585,7 +1585,7 @@ function InstallUserLocalBinaries {
     read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      mkdir -p "$LOCAL_BIN_PATH"
+      mkdir -p "$LOCAL_BIN_PATH" "$LOCAL_DATA_PATH"/bash-completion
 
       if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WINDOWS ]]; then
         PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
@@ -1600,21 +1600,22 @@ function InstallUserLocalBinaries {
       else
         RELEASE_ARCH=64bit
       fi
-      curl -L "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+      curl -L "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
       cp -f "${TMP_CLONE_DIR}"/croc "$LOCAL_BIN_PATH"/croc
+      cp -f "${TMP_CLONE_DIR}"/bash_autocomplete "$LOCAL_DATA_PATH"/bash-completion/croc.bash
       chmod 755 "$LOCAL_BIN_PATH"/croc
       rm -rf "$TMP_CLONE_DIR"
 
       GRON_RELEASE="$(_GitLatestRelease tomnomnom/gron | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-${LINUX_ARCH}-${GRON_RELEASE}.tgz" | tar xzf - -C "${TMP_CLONE_DIR}"
+      curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-${LINUX_ARCH}-${GRON_RELEASE}.tgz" | tar xvzf - -C "${TMP_CLONE_DIR}"
       cp -f "${TMP_CLONE_DIR}"/gron "$LOCAL_BIN_PATH"/gron
       chmod 755 "$LOCAL_BIN_PATH"/gron
       rm -rf "$TMP_CLONE_DIR"
 
       SQ_RELEASE="$(_GitLatestRelease neilotoole/sq | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      curl -L "https://github.com/neilotoole/sq/releases/download/v${SQ_RELEASE}/sq-linux-${LINUX_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}"
+      curl -L "https://github.com/neilotoole/sq/releases/download/v${SQ_RELEASE}/sq-linux-${LINUX_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
       cp -f "${TMP_CLONE_DIR}"/sq "$LOCAL_BIN_PATH"/sq
       chmod 755 "$LOCAL_BIN_PATH"/sq
       rm -rf "$TMP_CLONE_DIR"
@@ -1626,8 +1627,9 @@ function InstallUserLocalBinaries {
       else
         RELEASE_ARCH=amd64
       fi
-      curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
       cp -f "${TMP_CLONE_DIR}"/bin/step "$LOCAL_BIN_PATH"/step
+      cp -f "${TMP_CLONE_DIR}"/autocomplete/bash_autocomplete "$LOCAL_DATA_PATH"/bash-completion/step.bash
       chmod 755 "$LOCAL_BIN_PATH"/step
       rm -rf "$TMP_CLONE_DIR"
 
@@ -1638,12 +1640,11 @@ function InstallUserLocalBinaries {
       else
         RELEASE_ARCH=x64
       fi
-      curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
       cp -f "${TMP_CLONE_DIR}"/termshark "$LOCAL_BIN_PATH"/termshark
       chmod 755 "$LOCAL_BIN_PATH"/termshark
       rm -rf "$TMP_CLONE_DIR"
 
-      mkdir -p "$LOCAL_DATA_PATH"/bash-completion
       RIPGREP_RELEASE="$(_GitLatestRelease BurntSushi/ripgrep | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
       if [[ "$LINUX_ARCH" == "armhf" ]]; then
@@ -1651,9 +1652,9 @@ function InstallUserLocalBinaries {
       else
         RIPGREP_URL="https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_RELEASE}/ripgrep-${RIPGREP_RELEASE}-x86_64-unknown-linux-musl.tar.gz"
       fi
-      curl -L "${RIPGREP_URL}" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      curl -L "${RIPGREP_URL}" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
       cp -f "${TMP_CLONE_DIR}"/rg "$LOCAL_BIN_PATH"/rg
-      cp -f "${TMP_CLONE_DIR}"/complete/*.bash "$LOCAL_DATA_PATH"/bash-completion
+      cp -f "${TMP_CLONE_DIR}"/complete/rg.bash "$LOCAL_DATA_PATH"/bash-completion/
       chmod 755 "$LOCAL_BIN_PATH"/rg
       rm -rf "$TMP_CLONE_DIR"
     fi
