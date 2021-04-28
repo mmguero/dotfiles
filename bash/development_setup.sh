@@ -1654,7 +1654,7 @@ function InstallUserLocalBinaries {
       fi
       curl -L "${RIPGREP_URL}" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
       cp -f "${TMP_CLONE_DIR}"/rg "$LOCAL_BIN_PATH"/rg
-      cp -f "${TMP_CLONE_DIR}"/complete/rg.bash "$LOCAL_DATA_PATH"/bash-completion/
+      cp -f "${TMP_CLONE_DIR}"/complete/rg.bash "$LOCAL_DATA_PATH"/bash-completion/completions/
       chmod 755 "$LOCAL_BIN_PATH"/rg
       rm -rf "$TMP_CLONE_DIR"
     fi
