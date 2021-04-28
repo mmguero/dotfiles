@@ -1496,7 +1496,7 @@ function CreateCommonLinuxConfig {
                "$HOME/media/video" \
                "$HOME/tmp" \
                "$LOCAL_BIN_PATH" \
-               "$LOCAL_DATA_PATH"/bash-completion
+               "$LOCAL_DATA_PATH"/bash-completion/completions
 
       [ ! -f ~/.vimrc ] && echo "set nocompatible" > ~/.vimrc
 
@@ -1585,7 +1585,7 @@ function InstallUserLocalBinaries {
     read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      mkdir -p "$LOCAL_BIN_PATH" "$LOCAL_DATA_PATH"/bash-completion
+      mkdir -p "$LOCAL_BIN_PATH" "$LOCAL_DATA_PATH"/bash-completion/completions
 
       if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WINDOWS ]]; then
         PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
@@ -1602,7 +1602,7 @@ function InstallUserLocalBinaries {
       fi
       curl -L "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
       cp -f "${TMP_CLONE_DIR}"/croc "$LOCAL_BIN_PATH"/croc
-      cp -f "${TMP_CLONE_DIR}"/bash_autocomplete "$LOCAL_DATA_PATH"/bash-completion/croc.bash
+      cp -f "${TMP_CLONE_DIR}"/bash_autocomplete "$LOCAL_DATA_PATH"/bash-completion/completions/croc.bash
       chmod 755 "$LOCAL_BIN_PATH"/croc
       rm -rf "$TMP_CLONE_DIR"
 
@@ -1629,7 +1629,7 @@ function InstallUserLocalBinaries {
       fi
       curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
       cp -f "${TMP_CLONE_DIR}"/bin/step "$LOCAL_BIN_PATH"/step
-      cp -f "${TMP_CLONE_DIR}"/autocomplete/bash_autocomplete "$LOCAL_DATA_PATH"/bash-completion/step.bash
+      cp -f "${TMP_CLONE_DIR}"/autocomplete/bash_autocomplete "$LOCAL_DATA_PATH"/bash-completion/completions/step.bash
       chmod 755 "$LOCAL_BIN_PATH"/step
       rm -rf "$TMP_CLONE_DIR"
 
