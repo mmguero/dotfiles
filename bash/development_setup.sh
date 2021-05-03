@@ -720,7 +720,7 @@ function DockerPullImages {
         mmguero/signal:latest
         mmguero/teams:latest
         mmguero/tunneler:latest
-        mmguero/zoom:latest
+        mdouchement/zoom-us:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         docker pull "$i"
@@ -899,10 +899,11 @@ function InstallVBoxAndVagrant {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       VAGRANT_BOXES=(
-        bento/centos-8
+        bento/almalinux-8
         bento/debian-10
         bento/fedora-33
-        bento/ubuntu-20.10
+        bento/ubuntu-21.04
+        gbailey/amzn2
         clink15/pxe
         StefanScherer/windows_10
       )
