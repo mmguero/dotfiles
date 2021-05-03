@@ -496,12 +496,12 @@ function worm()
 ########################################################################
 function current_git_branch ()
 {
-  (git symbolic-ref --short HEAD 2>/dev/null) | sed 's/development/dvl/' | sed 's/origin/org/' | sed 's/patch/pat/' | sed 's/tpc/tpc/' | sed 's/master/mas/'
+  (git symbolic-ref --short HEAD 2>/dev/null) | sed 's/development/dvl/' | sed 's/upstream/ups/' | sed 's/origin/org/' | sed 's/patch/pat/' | sed 's/topic/tpc/' | sed 's/feature/fea/' | sed 's/master/mas/'
 }
 
 function parse_git_remote_info ()
 {
-  (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null) | sed 's/development/dvl/' | sed 's/origin/org/' | sed 's/patch/pat/' | sed 's/topic/tpc/' | sed 's/master/mas/'
+  (git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null) | sed 's/development/dvl/' | sed 's/upstream/ups/' | sed 's/origin/org/' | sed 's/patch/pat/' | sed 's/topic/tpc/' | sed 's/feature/fea/' | sed 's/master/mas/'
 }
 
 function parse_git_branch ()
@@ -510,9 +510,9 @@ function parse_git_branch ()
   if [ ! -z "$GIT_BRANCH" ]; then
     GIT_REMOTE=$(parse_git_remote_info)
     if [ ! -z "$GIT_REMOTE" ]; then
-      echo "[$GIT_BRANCH ▶ $GIT_REMOTE] "
+      echo "[$GIT_BRANCH:$GIT_REMOTE]"
     else
-      echo "($GIT_BRANCH) "
+      echo "($GIT_BRANCH)"
     fi
   fi
 }

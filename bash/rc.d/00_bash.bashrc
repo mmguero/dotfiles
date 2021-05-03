@@ -15,6 +15,9 @@ shopt -s histverify
 shopt -s histappend
 shopt -u progcomp
 
+# Configuration for the command line tool "hh" (history searcher to replace ctrl-r, brew install hh)
+export HH_CONFIG=hicolor,rawhistory,favorites   # get more colors
+
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize

@@ -68,6 +68,7 @@ alias jsontool='python3 -mjson.tool'
 alias xml='xmllint --format -'
 alias norg="gron --ungron"
 alias ungron="gron --ungron"
+alias rg='rg --ignore-case --max-columns 200'
 
 # vpn/tunnel
 alias ov='sudo openvpn'
