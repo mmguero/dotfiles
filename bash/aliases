@@ -83,3 +83,4 @@ alias cl='curl -L -J -O'
 #media
 alias dexif="exiftool -T -description"
 alias mp='mpv'
+alias feh='feh --scale-down --auto-zoom'
