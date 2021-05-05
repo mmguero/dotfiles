@@ -510,9 +510,9 @@ function parse_git_branch ()
   if [ ! -z "$GIT_BRANCH" ]; then
     GIT_REMOTE=$(parse_git_remote_info)
     if [ ! -z "$GIT_REMOTE" ]; then
-      echo "[$GIT_BRANCH:$GIT_REMOTE]"
+      echo "[$GIT_BRANCH:$GIT_REMOTE] "
     else
-      echo "($GIT_BRANCH)"
+      echo "($GIT_BRANCH) "
     fi
   fi
 }
