@@ -41,6 +41,6 @@ else
   for i in ${HASHERS[@]}; do command -v "$i" >/dev/null 2>&1 && HASHER="$i" && break; done
   PROMPT_STRING="$(((timeout 5 hostname -A || hostname) | xargs -n1 | sort -u | xargs ; echo $PRIMARY_IP ; whoami ; lsb_release -s -d) 2>/dev/null | tr -d "\n" | tr -d " ")"
   PROMPT_SEED="$(echo "$PROMPT_STRING" | $HASHER | awk '{print $1}')"
-  PS1="\u\$(${ERROR_TEST})@\[$COLOR_RESET\]$(/usr/bin/env bash context-color -c "echo $PROMPT_SEED" -p 2>/dev/null)\h \[$COLOR_CYAN\]\W \[$COLOR_DARK_BLUE\]\$(parse_git_branch 2>/dev/null)\[$COLOR_RESET\]> "
+  PS1="\u\[\$(${ERROR_TEST})\]@\[$COLOR_RESET\]$(/usr/bin/env bash context-color -c "echo $PROMPT_SEED" -p 2>/dev/null)\h \[$COLOR_CYAN\]\W \[$COLOR_DARK_BLUE\]\$(parse_git_branch 2>/dev/null)\[$COLOR_RESET\]› "
   [ $WINDOWS10 ] && cd ~
 fi
