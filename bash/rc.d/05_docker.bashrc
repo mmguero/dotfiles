@@ -54,7 +54,25 @@ function spotify() {
 
 function ffmpegd() {
   DIR="$(pwd)"
-  docker run -i -t --rm -u $UID:$GROUPS -v "$DIR:$DIR:rw" -w "$DIR" mwader/static-ffmpeg:latest "$@"
+
+  if docker images 2>/dev/null | grep -q ^mwader/static-ffmpeg >/dev/null 2>&1; then
+    docker run -i -t --rm \
+      -u $UID:$GROUPS \
+      -v "$DIR:$DIR:rw" \
+      -w "$DIR" \
+      mwader/static-ffmpeg:latest "$@"
+
+  elif docker images 2>/dev/null | grep -q ^linuxserver/ffmpeg >/dev/null 2>&1; then
+    docker run -i -t --rm \
+      -e PUID=$(id -u) \
+      -e PGID=$(id -g) \
+      -v "$DIR:$DIR:rw" \
+      -w "$DIR" \
+      linuxserver/ffmpeg:latest "$@"
+
+  else
+    echo "Please pull either mwader/static-ffmpeg or linuxserver/ffmpeg" >&2
+  fi
 }
 
 ########################################################################
