@@ -11,6 +11,7 @@ fi
 if [ -z "$PYENV_ROOT" ] && [ -d ~/.pyenv ]; then
   export PYENV_ROOT="$HOME/.pyenv"
   [[ -d $PYENV_ROOT/bin ]] && PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init --path)"
   eval "$(pyenv init -)"
 fi
 
