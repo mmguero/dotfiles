@@ -429,6 +429,94 @@ function pipup() {
 }
 
 ########################################################################
+# cert management
+########################################################################
+
+# Prior to using a step ca-issued SSH key, determine if it has expired
+# and, if it has, attempt to re-issue a new key. Then proceed to
+# execute "ssh" with the specified parameters.
+function sshi () {
+
+  # is the step CLI program available?
+  if type step >/dev/null 2>&1; then
+
+    # if command-line parameters were specified, treat the first one
+    # as the name of the SSH key (e.g., id_ecdsa) only if it exists
+    # and is readable, otherwise assume they are arguments for SSH.
+    if [[ "$1" ]] && ( [[ -r "$1" ]] || [[ -r ~/.ssh/"$1" ]] ); then
+      SSHKEYARG="$1"
+      shift
+    else
+      SSHKEYARG="id_ecdsa"
+    fi
+
+    if [[ -n "$SSHKEYARG" ]]; then
+
+      # either the key is in the current directory, or assume ~/.ssh/
+      if [[ -r "$SSHKEYARG" ]]; then
+        SSHKEY="$SSHKEYARG"
+      elif [[ -r ~/.ssh/"$SSHKEYARG" ]]; then
+        SSHKEY="$(realpath ~/.ssh/"$SSHKEYARG")"
+      else
+        SSHKEY=""
+        echo "SSH key not found">&2
+      fi
+
+      # the SSH key public certificate is xxxx-cert.pub
+      SSHCERT="${SSHKEY}-cert.pub"
+      if [[ -r "$SSHCERT" ]]; then
+
+        # determine the expiration date of the certificate and the current time, both in UTC seconds
+        SSHEXPIRES="$(cat "$SSHCERT" 2>/dev/null | step ssh inspect 2>/dev/null | grep -P "^\s*Valid:" | sed "s/.* to //")"
+        if [[ -n "$SSHEXPIRES" ]]; then
+          SSHTIL="$(date -u -d "$SSHEXPIRES" +"%s")"
+          NOWTIME="$(date -u +"%s")"
+
+          # has the key expired?
+          if (( $NOWTIME > $SSHTIL )); then
+
+            # navigate to home of SSH key
+            pushd "$(dirname "$SSHKEY")" >/dev/null 2>&1
+
+            # extract Key ID and principals for reuse issuing a new key
+            KEYID="$(cat "$SSHCERT" 2>/dev/null | step ssh inspect 2>/dev/null | grep -P "^\s*Key ID:" | cut -d: -f2 | sed 's/^[[:space:]]*"//g' | sed 's/"[[:space:]]*$//g')"
+            if [[ -z $KEYID ]]; then
+              KEYID="${USER}@$(hostname -A)"
+            fi
+            PRINCIPALS=()
+            while IFS=  read -r -d $'\n'; do
+              PRINCIPALS+=("--principal=$REPLY")
+            done < <(cat "$SSHCERT" 2>/dev/null | step ssh inspect 2>/dev/null | sed -n "/^[[:space:]]*Principals:/,/Critical Options:/p" | sed '1d;$d' | sed 's/^[[:space:]]*//g')
+
+            if (( ${#PRINCIPALS[*]} > 0 )); then
+              # attempt to reissue the new SSH key from the CA and return to the previous location
+              step ssh certificate ${PRINCIPALS[*]} "$KEYID" "$(basename "$SSHKEY")"
+            else
+              echo "could not determine SSH certificate principals">&2
+            fi
+            popd >/dev/null 2>&1
+
+          fi # key expired check
+        else
+          echo "could not determine SSH certificate expiration">&2
+        fi # expiration string exists check
+      else
+        echo "SSH certificate not found">&2
+      fi # xxxx-cert.pub exists check
+    else
+      echo "No SSH key specified">&2
+    fi # SSH key specified (or default) check
+  else
+    echo "The step CLI tool is not available">&2
+  fi # step CLI tool available check
+
+  # if there are further arguments, pass them along to ssh
+  if (( $# > 0 )); then
+    ssh "$@"
+  fi
+}
+
+########################################################################
 # network
 ########################################################################
 function lport () {
