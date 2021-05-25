@@ -169,7 +169,18 @@ function _EnvSetup {
       done
     fi
   fi
+
   export PYTHONDONTWRITEBYTECODE=1
+
+  if [[ -n $ASDF_DIR ]]; then
+    if asdf plugin list | grep -q golang; then
+      [[ -z $GOROOT ]] && go version >/dev/null 2>&1 && export GOROOT="$(go env GOROOT)"
+      [[ -z $GOPATH ]] && go version >/dev/null 2>&1 && export GOPATH="$(go env GOPATH)"
+    fi
+    if (asdf plugin list | grep -q rust) && (asdf current rust >/dev/null 2>&1); then
+      . "$ASDF_DIR"/installs/rust/"$(asdf current rust | awk '{print $2}')"/env
+    fi
+  fi
 }
 
 ################################################################################
