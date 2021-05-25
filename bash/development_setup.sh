@@ -827,6 +827,7 @@ function InstallCommonPackages {
 
       brew install gawk
       brew install git
+      brew install gpg
 
       # GNU "indent" has been installed as "gindent".
       # If you need to use it as "indent", you can add a "gnubin" directory
