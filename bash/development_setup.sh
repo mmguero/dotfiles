@@ -48,20 +48,19 @@ fi
 ###################################################################################
 # variables for env development environments
 
+# TODO: some tools (tmux, jq, ripgrep, cmake, etc.) can be managed this way too.
+# would this be better? probably?
+
 ENV_LIST=(
-  pyenv
-  rbenv
-  goenv
-  nodenv
-  plenv
+  python
+  ruby
+  golang
+  nodejs
+  yarn
+  perl
+  rust
 )
 
-# empty arrays will be populated with most recent available versions at runtime
-PYTHON_VERSIONS=( )
-RUBY_VERSIONS=( )
-GOLANG_VERSIONS=( )
-NODEJS_VERSIONS=( )
-PERL_VERSIONS=( 5.32.0 )
 DOCKER_COMPOSE_INSTALL_VERSION=( 1.27.4 )
 
 ###################################################################################
@@ -161,60 +160,16 @@ function _GitLatestRelease {
 ###################################################################################
 # function to set up paths and init things after env installations
 function _EnvSetup {
-  if [ -d ~/.anyenv ]; then
-    export ANYENV_ROOT="$HOME/.anyenv"
-    [[ -d $ANYENV_ROOT/bin ]] && PATH="$ANYENV_ROOT/bin:$PATH"
-    eval "$(anyenv init -)"
+  if [ -d "${ASDF_DIR:-$HOME/.asdf}" ]; then
+    . "${ASDF_DIR:-$HOME/.asdf}"/asdf.sh
+    if [ -n $ASDF_DIR ]; then
+      . "${ASDF_DIR:-$HOME/.asdf}"/completions/asdf.bash
+      for i in ${ENV_LIST[@]}; do
+        asdf reshim "$i" >/dev/null 2>&1 || true
+      done
+    fi
   fi
-
-  # alternately they may be set up individually
-
-  if [ -z "$PYENV_ROOT" ] && [ -d ~/.pyenv ]; then
-    export PYENV_ROOT="$HOME/.pyenv"
-    [[ -d $PYENV_ROOT/bin ]] && PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$(pyenv init -)"
-  fi
-
-  if [ -z "$RBENV_ROOT" ] && [ -d ~/.rbenv ]; then
-    export RBENV_ROOT="$HOME/.rbenv"
-    [[ -d $RBENV_ROOT/bin ]] && PATH="$RBENV_ROOT/bin:$PATH"
-    eval "$(rbenv init -)"
-  fi
-
-  if [ -z "$GOENV_ROOT" ] && [ -d ~/.goenv ]; then
-    export GOENV_ROOT="$HOME/.goenv"
-    [[ -d $GOENV_ROOT/bin ]] && PATH="$GOENV_ROOT/bin:$PATH"
-    eval "$(goenv init -)"
-  fi
-
-  if [ -z "$NODENV_ROOT" ] && [ -d ~/.nodenv ]; then
-    export NODENV_ROOT="$HOME/.nodenv"
-    [[ -d $NODENV_ROOT/bin ]] && PATH="$NODENV_ROOT/bin:$PATH"
-    eval "$(nodenv init -)"
-  fi
-
-  if [ -z "$PLENV_ROOT" ] && [ -d ~/.plenv ]; then
-    export PLENV_ROOT="$HOME/.plenv"
-    [[ -d $PLENV_ROOT/bin ]] && PATH="$PLENV_ROOT/bin:$PATH"
-    eval "$(plenv init -)"
-  fi
-
-  # once we've sourced things for paths, set up any other custom stuf the envs need
-
-  if [ $PYENV_ROOT ]; then
-    [[ -r $PYENV_ROOT/completions/pyenv.bash ]] && . $PYENV_ROOT/completions/pyenv.bash
-    [[ -d $PYENV_ROOT/plugins/pyenv-virtualenv ]] && eval "$(pyenv virtualenv-init -)"
-    export PYTHONDONTWRITEBYTECODE=1
-  fi
-
-  if [ $GOENV_ROOT ]; then
-    export GOROOT="$(goenv prefix)"
-    [[ -d "$GOROOT"/bin ]] && PATH="$GOROOT/bin:$PATH"
-  fi
-  if [ -z "$GOPATH" ]; then
-    export GOPATH="$HOME/go"
-  fi
-  [[ -d "$GOPATH"/bin ]] && PATH="$GOPATH/bin:$PATH"
+  export PYTHONDONTWRITEBYTECODE=1
 }
 
 ################################################################################
@@ -244,58 +199,37 @@ function SetupMacOSBrew {
 }
 
 ################################################################################
-# envs (mac via brew, linux via anyenv)
+# envs (via asdf)
 function InstallEnvs {
   declare -A ENVS_INSTALLED
   for i in ${ENV_LIST[@]}; do
     ENVS_INSTALLED[$i]=false
   done
 
-  # install env manager(s)
-  if [ $MACOS ]; then
+  if ([[ -n $ASDF_DIR ]] && [[ ! -d "$ASDF_DIR" ]]) || ([[ -z $ASDF_DIR ]] && [[ ! -d "$HOME"/.asdf ]]) ; then
+    ASDF_DIR="${ASDF_DIR:-$HOME/.asdf}"
+    unset CONFIRMATION
+    read -p "\"asdf\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      git clone --recurse-submodules --shallow-submodules https://github.com/asdf-vm/asdf.git "$ASDF_DIR"
+      pushd "$ASDF_DIR" >/dev/null 2>&1
+      git checkout "$(git describe --abbrev=0 --tags)"
+      popd >/dev/null 2>&1
+    fi
+  fi
 
-    for i in ${ENV_LIST[@]}; do
-      if ! brew list --versions "$i" >/dev/null 2>&1 ; then
-        unset CONFIRMATION
-        read -p "\"$i\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-Y}
-        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          brew install $i && ENVS_INSTALLED[$i]=true
-        fi
-      fi
-    done
-
-  elif [ $LINUX ]; then
-
-    if [ -z $ANYENV_ROOT ]; then
-      unset CONFIRMATION
-      read -p "\"anyenv\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-
-        InstallEssentialPackages
-        pushd $HOME
-        _GitClone https://github.com/riywo/anyenv ~/.anyenv
-        _EnvSetup
-        if [ ! -d $HOME/.config/anyenv/anyenv-install ]; then
-          anyenv install --force-init
-        fi
-        mkdir -p "$(anyenv root)"/plugins
-        _GitClone https://github.com/znz/anyenv-update.git "$(anyenv root)"/plugins/anyenv-update
-
-      fi # install anyenv confirmation
-    fi # .anyenv check
-
+  if [ -d "${ASDF_DIR:-$HOME/.asdf}" ]; then
     _EnvSetup
-    if [ -n $ANYENV_ROOT ]; then
-      anyenv update
+    if [ -n $ASDF_DIR ]; then
+      asdf update
       for i in ${ENV_LIST[@]}; do
-        if ! ( anyenv envs | grep -q "$i" ) >/dev/null 2>&1 ; then
+        if ! ( asdf plugin list | grep -q "$i" ) >/dev/null 2>&1 ; then
           unset CONFIRMATION
           read -p "\"$i\" is not installed, attempt to install it [y/N]? " CONFIRMATION
           CONFIRMATION=${CONFIRMATION:-N}
           if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-            anyenv install "$i" && ENVS_INSTALLED[$i]=true
+            asdf plugin add "$i" && ENVS_INSTALLED[$i]=true
           fi
         else
           unset CONFIRMATION
@@ -307,13 +241,13 @@ function InstallEnvs {
         fi
       done
     fi
-  fi
-  _EnvSetup
+    _EnvSetup
+  fi # .asdf check
 
   # install versions of the tools and plugins
 
-  # python
-  if [ -n $PYENV_ROOT ] && [ ${ENVS_INSTALLED[pyenv]} = 'true' ]; then
+  # python (build deps)
+  if [[ ${ENVS_INSTALLED[python]} = 'true' ]]; then
     if [ $LINUX ]; then
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
         build-essential \
@@ -339,91 +273,17 @@ function InstallEnvs {
         xz-utils \
         zlib1g-dev
     fi
-    # make the second 3 to 2 for py2  V
-    for MAJOR_VER in $(seq -s' ' 3 -1 3); do
-      PY_VER="$(pyenv install --list | awk '{print $1}' | grep ^$MAJOR_VER | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc)\d*$" | tail -1)"
-      [[ -n $PY_VER ]] && PYTHON_VERSIONS+=($PY_VER)
-    done
-    for ver in "${PYTHON_VERSIONS[@]}"; do
-      pyenv install "$ver"
-    done
-    pyenv global "${PYTHON_VERSIONS[@]}"
-    mkdir -p "$(pyenv root)"/plugins/
-    _GitClone https://github.com/pyenv/pyenv-update.git "$(pyenv root)"/plugins/pyenv-update
-    _GitClone https://github.com/pyenv/pyenv-virtualenv.git "$(pyenv root)"/plugins/pyenv-virtualenv
-    if [ ! -d "$(pyenv root)"/bin ] && [ -d "$(pyenv root)"/shims ]; then
-      pushd "$(pyenv root)"
-      ln -s ./shims ./bin
-      popd
-    fi
   fi
 
-  # ruby
-  if [ -n $RBENV_ROOT ] && [ ${ENVS_INSTALLED[rbenv]} = 'true' ]; then
-    RB_VER="$(rbenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc)\d*$" | tail -1)"
-    [[ -n $RB_VER ]] && RUBY_VERSIONS+=($RB_VER)
-    for ver in "${RUBY_VERSIONS[@]}"; do
-      rbenv install "$ver"
-    done
-    rbenv global "${RUBY_VERSIONS[@]}"
-    mkdir -p "$(rbenv root)"/plugins/
-    _GitClone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
-    _GitClone https://github.com/rkh/rbenv-update.git "$(rbenv root)"/plugins/rbenv-update
-    if [ ! -d "$(rbenv root)"/bin ] && [ -d "$(rbenv root)"/shims ]; then
-      pushd "$(rbenv root)"
-      ln -s ./shims ./bin
-      popd
+  for i in ${ENV_LIST[@]}; do
+    if [[ ${ENVS_INSTALLED[$i]} = 'true' ]]; then
+      asdf plugin update $i
+      asdf install $i latest
+      asdf global $i latest
+      asdf reshim $i
     fi
-  fi
-
-  # golang
-  if [ -n $GOENV_ROOT ] && [ ${ENVS_INSTALLED[goenv]} = 'true' ]; then
-    GO_VER="$(goenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc)\d*$" | tail -1)"
-    [[ -n $GO_VER ]] && GOLANG_VERSIONS+=($GO_VER)
-    for ver in "${GOLANG_VERSIONS[@]}"; do
-      goenv install "$ver"
-    done
-    goenv global "${GOLANG_VERSIONS[@]}"
-    mkdir -p "$(goenv root)"/plugins/
-    _GitClone https://github.com/trafficgate/goenv-install-glide.git "$(goenv root)"/plugins/goenv-install-glide
-    if [ ! -d "$(goenv root)"/bin ] && [ -d "$(goenv root)"/shims ]; then
-      pushd "$(goenv root)"
-      ln -s ./shims ./bin
-      popd
-    fi
-  fi
-
-  # nodejs
-  if [ -n $NODENV_ROOT ] && [ ${ENVS_INSTALLED[nodenv]} = 'true' ]; then
-    mkdir -p "$(nodenv root)"/plugins/
-    _GitClone https://github.com/pine/nodenv-yarn-install.git "$(nodenv root)/plugins/nodenv-yarn-install"
-    NODE_VER="$(nodenv install --list | awk '{print $1}' | grep -v - | grep -Pv "(b(eta)?|a(lpha)?|rc|nightly)\d*$" | tail -1)"
-    [[ -n $NODE_VER ]] && NODEJS_VERSIONS+=($NODE_VER)
-    for ver in "${NODEJS_VERSIONS[@]}"; do
-      nodenv install "$ver"
-    done
-    nodenv global "${NODEJS_VERSIONS[@]}"
-    _GitClone https://github.com/nodenv/nodenv-update.git "$(nodenv root)"/plugins/nodenv-update
-    if [ ! -d "$(nodenv root)"/bin ] && [ -d "$(nodenv root)"/shims ]; then
-      pushd "$(nodenv root)"
-      ln -s ./shims ./bin
-      popd
-    fi
-  fi
-
-  # perl
-  if [ -n $PLENV_ROOT ] && [ ${ENVS_INSTALLED[plenv]} = 'true' ]; then
-    for ver in "${PERL_VERSIONS[@]}"; do
-      plenv install "$ver"
-    done
-    plenv global "${PERL_VERSIONS[@]}"
-    mkdir -p "$(plenv root)"/plugins/
-    if [ ! -d "$(plenv root)"/bin ] && [ -d "$(plenv root)"/shims ]; then
-      pushd "$(plenv root)"
-      ln -s ./shims ./bin
-      popd
-    fi
-  fi
+  done
+  _EnvSetup
 }
 
 ################################################################################
@@ -433,6 +293,7 @@ function InstallEnvPackages {
   read -p "Install common pip/go/etc. packages [Y/n]? " CONFIRMATION
   CONFIRMATION=${CONFIRMATION:-Y}
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    _EnvSetup
 
     if pip -V >/dev/null 2>&1; then
       pip install -U \
@@ -481,6 +342,8 @@ function InstallEnvPackages {
       popd >/dev/null 2>&1
     fi
   fi
+
+  _EnvSetup
 }
 
 ################################################################################
