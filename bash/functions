@@ -440,6 +440,11 @@ function sshi () {
   # is the step CLI program available?
   if type step >/dev/null 2>&1; then
 
+    PROVISIONER_ARG=
+    if [ -n "$STEP_SSH_PROVISIONER" ]; then
+      PROVISIONER_ARG="--provisioner=$STEP_SSH_PROVISIONER"
+    fi
+
     # if command-line parameters were specified, treat the first one
     # as the name of the SSH key (e.g., id_ecdsa) only if it exists
     # and is readable, otherwise assume they are arguments for SSH.
@@ -490,7 +495,7 @@ function sshi () {
 
             if (( ${#PRINCIPALS[*]} > 0 )); then
               # attempt to reissue the new SSH key from the CA and return to the previous location
-              step ssh certificate ${PRINCIPALS[*]} "$KEYID" "$(basename "$SSHKEY")"
+              step ssh certificate $PROVISIONER_ARG ${PRINCIPALS[*]} "$KEYID" "$(basename "$SSHKEY")"
             else
               echo "could not determine SSH certificate principals">&2
             fi
