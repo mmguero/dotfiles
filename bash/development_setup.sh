@@ -1533,6 +1533,30 @@ function InstallUserLocalBinaries {
       cp -f "${TMP_CLONE_DIR}"/complete/rg.bash "$LOCAL_DATA_PATH"/bash-completion/completions/
       chmod 755 "$LOCAL_BIN_PATH"/rg
       rm -rf "$TMP_CLONE_DIR"
+
+      BAT_RELEASE="$(_GitLatestRelease sharkdp/bat | sed 's/^v//')"
+      TMP_CLONE_DIR="$(mktemp -d)"
+      if [[ "$LINUX_ARCH" == "armhf" ]]; then
+        BAT_URL="https://github.com/sharkdp/bat/releases/download/v${BAT_RELEASE}/bat-v${BAT_RELEASE}-arm-unknown-linux-gnueabihf.tar.gz"
+      else
+        BAT_URL="https://github.com/sharkdp/bat/releases/download/v${BAT_RELEASE}/bat-v${BAT_RELEASE}-x86_64-unknown-linux-gnu.tar.gz"
+      fi
+      curl -L "${BAT_URL}" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      cp -f "${TMP_CLONE_DIR}"/bat "$LOCAL_BIN_PATH"/bat
+      chmod 755 "$LOCAL_BIN_PATH"/bat
+      rm -rf "$TMP_CLONE_DIR"
+
+      FD_RELEASE="$(_GitLatestRelease sharkdp/fd | sed 's/^v//')"
+      TMP_CLONE_DIR="$(mktemp -d)"
+      if [[ "$LINUX_ARCH" == "armhf" ]]; then
+        FD_URL="https://github.com/sharkdp/fd/releases/download/v${FD_RELEASE}/fd-v${FD_RELEASE}-arm-unknown-linux-gnueabihf.tar.gz"
+      else
+        FD_URL="https://github.com/sharkdp/fd/releases/download/v${FD_RELEASE}/fd-v${FD_RELEASE}-x86_64-unknown-linux-gnu.tar.gz"
+      fi
+      curl -L "${FD_URL}" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      cp -f "${TMP_CLONE_DIR}"/fd "$LOCAL_BIN_PATH"/fd
+      chmod 755 "$LOCAL_BIN_PATH"/fd
+      rm -rf "$TMP_CLONE_DIR"
     fi
   fi
 }
