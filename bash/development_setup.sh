@@ -46,7 +46,7 @@ if [ $(basename "$SCRIPT_PATH") = 'bash' ]; then
 fi
 
 ###################################################################################
-# variables for env development environments
+# variables for env development environments and tools
 
 # TODO: some tools (tmux, jq, ripgrep, cmake, etc.) can be managed this way too.
 # would this be better? probably?
@@ -59,6 +59,11 @@ ENV_LIST=(
   yarn
   perl
   rust
+  bat
+  fd
+  ripgrep
+  tmux
+  watchexec
 )
 
 DOCKER_COMPOSE_INSTALL_VERSION=( 1.27.4 )
@@ -1519,43 +1524,6 @@ function InstallUserLocalBinaries {
       curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
       cp -f "${TMP_CLONE_DIR}"/termshark "$LOCAL_BIN_PATH"/termshark
       chmod 755 "$LOCAL_BIN_PATH"/termshark
-      rm -rf "$TMP_CLONE_DIR"
-
-      RIPGREP_RELEASE="$(_GitLatestRelease BurntSushi/ripgrep | sed 's/^v//')"
-      TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" == "armhf" ]]; then
-        RIPGREP_URL="https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_RELEASE}/ripgrep-${RIPGREP_RELEASE}-arm-unknown-linux-gnueabihf.tar.gz"
-      else
-        RIPGREP_URL="https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_RELEASE}/ripgrep-${RIPGREP_RELEASE}-x86_64-unknown-linux-musl.tar.gz"
-      fi
-      curl -L "${RIPGREP_URL}" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
-      cp -f "${TMP_CLONE_DIR}"/rg "$LOCAL_BIN_PATH"/rg
-      cp -f "${TMP_CLONE_DIR}"/complete/rg.bash "$LOCAL_DATA_PATH"/bash-completion/completions/
-      chmod 755 "$LOCAL_BIN_PATH"/rg
-      rm -rf "$TMP_CLONE_DIR"
-
-      BAT_RELEASE="$(_GitLatestRelease sharkdp/bat | sed 's/^v//')"
-      TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" == "armhf" ]]; then
-        BAT_URL="https://github.com/sharkdp/bat/releases/download/v${BAT_RELEASE}/bat-v${BAT_RELEASE}-arm-unknown-linux-gnueabihf.tar.gz"
-      else
-        BAT_URL="https://github.com/sharkdp/bat/releases/download/v${BAT_RELEASE}/bat-v${BAT_RELEASE}-x86_64-unknown-linux-gnu.tar.gz"
-      fi
-      curl -L "${BAT_URL}" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
-      cp -f "${TMP_CLONE_DIR}"/bat "$LOCAL_BIN_PATH"/bat
-      chmod 755 "$LOCAL_BIN_PATH"/bat
-      rm -rf "$TMP_CLONE_DIR"
-
-      FD_RELEASE="$(_GitLatestRelease sharkdp/fd | sed 's/^v//')"
-      TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" == "armhf" ]]; then
-        FD_URL="https://github.com/sharkdp/fd/releases/download/v${FD_RELEASE}/fd-v${FD_RELEASE}-arm-unknown-linux-gnueabihf.tar.gz"
-      else
-        FD_URL="https://github.com/sharkdp/fd/releases/download/v${FD_RELEASE}/fd-v${FD_RELEASE}-x86_64-unknown-linux-gnu.tar.gz"
-      fi
-      curl -L "${FD_URL}" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
-      cp -f "${TMP_CLONE_DIR}"/fd "$LOCAL_BIN_PATH"/fd
-      chmod 755 "$LOCAL_BIN_PATH"/fd
       rm -rf "$TMP_CLONE_DIR"
     fi
   fi
