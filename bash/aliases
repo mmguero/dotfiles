@@ -80,6 +80,7 @@ alias delblanks='sed -i "/^\s*$/d"'
 alias extip='type dig >/dev/null 2>&1 && dig +short myip.opendns.com @resolver1.opendns.com || ( curl -sSLH "Cache-Control: no-cache" https://ifconfig.co/?$(date +%s) 2>/dev/null || wget -qO- --no-cache https://ifconfig.co/?$(date +%s) 2>/dev/null )'
 alias cl='curl -L -J -O'
 alias cat='bat'
+alias at='as-tree'
 
 #media
 alias dexif="exiftool -T -description"
