@@ -1093,6 +1093,7 @@ function InstallCommonPackagesGUI {
           obsidian-icon-theme
           pdftk
           regexxer
+          rofi
           sublime-text
           thunar
           thunar-archive-plugin
