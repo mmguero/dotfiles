@@ -1526,6 +1526,18 @@ function InstallUserLocalBinaries {
       cp -f "${TMP_CLONE_DIR}"/termshark "$LOCAL_BIN_PATH"/termshark
       chmod 755 "$LOCAL_BIN_PATH"/termshark
       rm -rf "$TMP_CLONE_DIR"
+
+      if [[ "$LINUX_ARCH" == "amd64" ]]; then
+        ASTREE_RELEASE="$(_GitLatestRelease jez/as-tree | sed 's/^v//')"
+        TMP_CLONE_DIR="$(mktemp -d)"
+        curl -o "${TMP_CLONE_DIR}"/as-tree.zip -L "https://github.com/jez/as-tree/releases/download/${ASTREE_RELEASE}/as-tree-${ASTREE_RELEASE}-linux.zip"
+        pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+        unzip ./as-tree.zip
+        chmod 755 ./as-tree
+        cp -f ./as-tree "$LOCAL_BIN_PATH"/as-tree
+        popd >/dev/null 2>&1
+        rm -rf "$TMP_CLONE_DIR"
+      fi
     fi
   fi
 }
