@@ -81,15 +81,18 @@ brew install wget
 
 brew install neilotoole/sq/sq
 
-brew install cask
 brew tap homebrew/cask-versions
+brew tap homebrew/cask-fonts
 
 # brew cask install docker-edge
-brew cask install diskwave
-brew cask install firefox
-brew cask install homebrew/cask-fonts/font-hack
-brew cask install iterm2
-brew cask install keepassxc
-brew cask install osxfuse
-brew cask install sublime-text
-brew cask install wireshark
+brew install --cask diskwave
+brew install --cask firefox
+brew install --cask homebrew/cask-fonts/font-hack
+brew install --cask iterm2
+brew install --cask keepassxc
+brew install --cask libreoffice
+brew install --cask ngrok
+brew install --cask osxfuse
+brew install --cask sublime-text
+brew install --cask veracrypt
+brew install --cask wireshark

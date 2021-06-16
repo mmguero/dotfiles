@@ -1063,6 +1063,7 @@ function InstallCommonPackagesGUI {
       brew install --cask iterm2
       brew install --cask keepassxc
       brew install --cask libreoffice
+      brew install --cask ngrok
       brew install --cask osxfuse
       brew install --cask sublime-text
       brew install --cask veracrypt
