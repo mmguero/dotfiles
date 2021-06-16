@@ -1527,6 +1527,23 @@ function InstallUserLocalBinaries {
       chmod 755 "$LOCAL_BIN_PATH"/termshark
       rm -rf "$TMP_CLONE_DIR"
 
+
+      TMP_CLONE_DIR="$(mktemp -d)"
+      if [[ "$LINUX_ARCH" == "armhf" ]]; then
+        RELEASE_ARCH=arm
+      elif [[ "$LINUX_ARCH" == "arm64" ]]; then
+        RELEASE_ARCH=arm64
+      else
+        RELEASE_ARCH=amd64
+      fi
+      curl -o "${TMP_CLONE_DIR}"/ngrok.zip -L "https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-${RELEASE_ARCH}.zip"
+      pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+      unzip ./ngrok.zip
+      chmod 755 ./ngrok
+      cp -f ./ngrok "$LOCAL_BIN_PATH"/ngrok
+      popd >/dev/null 2>&1
+      rm -rf "$TMP_CLONE_DIR"
+
       if [[ "$LINUX_ARCH" == "amd64" ]]; then
         ASTREE_RELEASE="$(_GitLatestRelease jez/as-tree | sed 's/^v//')"
         TMP_CLONE_DIR="$(mktemp -d)"
