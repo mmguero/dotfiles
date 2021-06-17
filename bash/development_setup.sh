@@ -320,8 +320,8 @@ function InstallEnvPackages {
         cryptography \
         Cython \
         entrypoint2 \
-        git+git://github.com/badele/gitcheck.git \
-        git+git://github.com/mmguero/python-mmguero.git \
+        git+https://github.com/badele/gitcheck.git \
+        git+https://github.com/mmguero/python-mmguero.git \
         git-up \
         humanhash3 \
         magic-wormhole \
