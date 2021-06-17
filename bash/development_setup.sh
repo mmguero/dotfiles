@@ -950,6 +950,9 @@ function InstallCommonPackages {
         jq
         less
         libcap2-bin
+        libsecret-1-0
+        libsecret-1-dev
+        libsecret-tools
         libsquashfuse0
         linux-headers-$(uname -r)
         localepurge
@@ -1012,7 +1015,9 @@ EOT
         fi
       done
 
-      # pre-install configurations
+      # post-install configurations
+      $SUDO_CMD make --directory=/usr/share/doc/git/contrib/credential/libsecret
+
       $SUDO_CMD groupadd fuse
       $SUDO_CMD groupadd cryptkeeper
 
@@ -1095,6 +1100,7 @@ function InstallCommonPackagesGUI {
           pdftk
           regexxer
           rofi
+          seahorse
           sublime-text
           thunar
           thunar-archive-plugin
