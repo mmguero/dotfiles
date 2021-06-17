@@ -921,6 +921,7 @@ function InstallCommonPackages {
         cryptsetup
         dialog
         diffutils
+        dirmngr
         eject
         exfat-fuse
         exfat-utils
@@ -1392,18 +1393,6 @@ function CreateCommonLinuxConfig {
       if [ ! -d ~/.ssh ]; then
         mkdir ~/.ssh
         chmod 700 ~/.ssh
-      fi
-
-      if [ ! -e ~/.ssh/config ]; then
-        mkdir -p ~/.ssh/cm_socket
-        chmod 700 ~/.ssh/cm_socket
-        cat <<EOT >> ~/.ssh/config
-# defaults
-Host *
-  ServerAliveInterval 120
-  ControlMaster auto
-  ControlPath ~/.ssh/cm_socket/%r@%h:%p
-EOT
       fi
 
       dpkg -s thunar >/dev/null 2>&1 && xdg-mime default Thunar-folder-handler.desktop inode/directory application/x-gnome-saved-search
