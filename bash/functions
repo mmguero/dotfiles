@@ -495,7 +495,7 @@ function sshi () {
 
             if (( ${#PRINCIPALS[*]} > 0 )); then
               # attempt to reissue the new SSH key from the CA and return to the previous location
-              step ssh certificate $PROVISIONER_ARG ${PRINCIPALS[*]} "$KEYID" "$(basename "$SSHKEY")"
+              step ssh certificate --force $PROVISIONER_ARG ${PRINCIPALS[*]} "$KEYID" "$(basename "$SSHKEY")"
             else
               echo "could not determine SSH certificate principals">&2
             fi
