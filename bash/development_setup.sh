@@ -564,6 +564,23 @@ function DockerPullImages {
     fi # docker pull web images confirmation
 
     unset CONFIRMATION
+    read -p "Pull common docker images (communication) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      DOCKER_IMAGES=(
+        mmguero/signal:latest
+        mmguero/teams:latest
+        mmguero/mirotalk:latest
+        mmguero/mattermost-server:latest
+        mmguero/postgres:latest
+        mdouchement/zoom-us:latest
+      )
+      for i in ${DOCKER_IMAGES[@]}; do
+        docker pull "$i"
+      done
+    fi # docker pull communication images confirmation
+
+    unset CONFIRMATION
     read -p "Pull common docker images (forensics) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
@@ -596,10 +613,8 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        mmguero/signal:latest
-        mmguero/teams:latest
         mmguero/tunneler:latest
-        mdouchement/zoom-us:latest
+        mmguero/montag:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         docker pull "$i"
@@ -778,12 +793,12 @@ function InstallVBoxAndVagrant {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       VAGRANT_BOXES=(
-        bento/almalinux-8
         bento/debian-10
-        bento/fedora-33
+        bento/fedora-34
+        bento/rockylinux-8
         bento/ubuntu-21.04
-        gbailey/amzn2
         clink15/pxe
+        gbailey/amzn2
         StefanScherer/windows_10
       )
       for i in ${VAGRANT_BOXES[@]}; do
