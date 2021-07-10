@@ -1490,7 +1490,7 @@ function InstallUserLocalBinaries {
 
       CROC_RELEASE="$(_GitLatestRelease schollz/croc | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ "^arm" ]]; then
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
         if [[ "$LINUX_CPU" == "aarch64" ]]; then
           RELEASE_ARCH=ARM64
         else
@@ -1521,7 +1521,7 @@ function InstallUserLocalBinaries {
 
       STEPCLI_RELEASE="$(_GitLatestRelease smallstep/cli | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ "^arm" ]]; then
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
         if [[ "$LINUX_CPU" == "aarch64" ]]; then
           RELEASE_ARCH=arm64
         elif [[ "$LINUX_CPU" == "armv6l" ]]; then
@@ -1540,7 +1540,7 @@ function InstallUserLocalBinaries {
 
       TERMSHARK_RELEASE="$(_GitLatestRelease gcla/termshark | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ "^arm" ]]; then
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
         if [[ "$LINUX_CPU" == "aarch64" ]]; then
           RELEASE_ARCH=arm64
         else
@@ -1556,7 +1556,7 @@ function InstallUserLocalBinaries {
 
 
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ "^arm" ]]; then
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
         if [[ "$LINUX_CPU" == "aarch64" ]]; then
           RELEASE_ARCH=arm64
         else
