@@ -76,6 +76,7 @@ unset WINDOWS
 unset LINUX_DISTRO
 unset LINUX_RELEASE
 unset LINUX_ARCH
+unset LINUX_CPU
 
 if [ $(uname -s) = 'Darwin' ]; then
   export MACOS=0
@@ -124,6 +125,7 @@ else
     exit 1
   fi
   LINUX_ARCH="$(dpkg --print-architecture)"
+  LINUX_CPU="$(uname -m)"
 fi
 
 
@@ -667,7 +669,7 @@ function InstallVBoxAndVagrant {
       fi # vagrant-manager install confirmation check
     fi
 
-  elif [ $LINUX ] && [[ -z $WINDOWS ]] && [[ "$LINUX_ARCH" == "amd64" ]]; then
+  elif [ $LINUX ] && [[ -z $WINDOWS ]] && [[ "$LINUX_CPU" == "x86_64" ]]; then
 
     # virtualbox (if not already installed)
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
@@ -1488,8 +1490,12 @@ function InstallUserLocalBinaries {
 
       CROC_RELEASE="$(_GitLatestRelease schollz/croc | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" == "armhf" ]]; then
-        RELEASE_ARCH=ARM
+      if [[ "$LINUX_ARCH" =~ "^arm" ]]; then
+        if [[ "$LINUX_CPU" == "aarch64" ]]; then
+          RELEASE_ARCH=ARM64
+        else
+          RELEASE_ARCH=ARM
+        fi
       else
         RELEASE_ARCH=64bit
       fi
@@ -1515,8 +1521,14 @@ function InstallUserLocalBinaries {
 
       STEPCLI_RELEASE="$(_GitLatestRelease smallstep/cli | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" == "armhf" ]]; then
-        RELEASE_ARCH=armv7
+      if [[ "$LINUX_ARCH" =~ "^arm" ]]; then
+        if [[ "$LINUX_CPU" == "aarch64" ]]; then
+          RELEASE_ARCH=arm64
+        elif [[ "$LINUX_CPU" == "armv6l" ]]; then
+          RELEASE_ARCH=armv6
+        else
+          RELEASE_ARCH=armv7
+        fi
       else
         RELEASE_ARCH=amd64
       fi
@@ -1528,8 +1540,12 @@ function InstallUserLocalBinaries {
 
       TERMSHARK_RELEASE="$(_GitLatestRelease gcla/termshark | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" == "armhf" ]]; then
-        RELEASE_ARCH=armv6
+      if [[ "$LINUX_ARCH" =~ "^arm" ]]; then
+        if [[ "$LINUX_CPU" == "aarch64" ]]; then
+          RELEASE_ARCH=arm64
+        else
+          RELEASE_ARCH=armv6
+        fi
       else
         RELEASE_ARCH=x64
       fi
@@ -1540,10 +1556,12 @@ function InstallUserLocalBinaries {
 
 
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" == "armhf" ]]; then
-        RELEASE_ARCH=arm
-      elif [[ "$LINUX_ARCH" == "arm64" ]]; then
-        RELEASE_ARCH=arm64
+      if [[ "$LINUX_ARCH" =~ "^arm" ]]; then
+        if [[ "$LINUX_CPU" == "aarch64" ]]; then
+          RELEASE_ARCH=arm64
+        else
+          RELEASE_ARCH=arm
+        fi
       else
         RELEASE_ARCH=amd64
       fi
