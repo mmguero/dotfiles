@@ -1507,17 +1507,28 @@ function InstallUserLocalBinaries {
 
       GRON_RELEASE="$(_GitLatestRelease tomnomnom/gron | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
-      curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-${LINUX_ARCH}-${GRON_RELEASE}.tgz" | tar xvzf - -C "${TMP_CLONE_DIR}"
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
+        if [[ "$LINUX_CPU" == "aarch64" ]]; then
+          RELEASE_ARCH=arm64
+        else
+          RELEASE_ARCH=arm
+        fi
+      else
+        RELEASE_ARCH=amd64
+      fi
+      curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-${RELEASE_ARCH}-${GRON_RELEASE}.tgz" | tar xvzf - -C "${TMP_CLONE_DIR}"
       cp -f "${TMP_CLONE_DIR}"/gron "$LOCAL_BIN_PATH"/gron
       chmod 755 "$LOCAL_BIN_PATH"/gron
       rm -rf "$TMP_CLONE_DIR"
 
-      SQ_RELEASE="$(_GitLatestRelease neilotoole/sq | sed 's/^v//')"
-      TMP_CLONE_DIR="$(mktemp -d)"
-      curl -L "https://github.com/neilotoole/sq/releases/download/v${SQ_RELEASE}/sq-linux-${LINUX_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
-      cp -f "${TMP_CLONE_DIR}"/sq "$LOCAL_BIN_PATH"/sq
-      chmod 755 "$LOCAL_BIN_PATH"/sq
-      rm -rf "$TMP_CLONE_DIR"
+      if [[ "$LINUX_ARCH" == "amd64" ]]; then
+        SQ_RELEASE="$(_GitLatestRelease neilotoole/sq | sed 's/^v//')"
+        TMP_CLONE_DIR="$(mktemp -d)"
+        curl -L "https://github.com/neilotoole/sq/releases/download/v${SQ_RELEASE}/sq-linux-${LINUX_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
+        cp -f "${TMP_CLONE_DIR}"/sq "$LOCAL_BIN_PATH"/sq
+        chmod 755 "$LOCAL_BIN_PATH"/sq
+        rm -rf "$TMP_CLONE_DIR"
+      fi
 
       STEPCLI_RELEASE="$(_GitLatestRelease smallstep/cli | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
