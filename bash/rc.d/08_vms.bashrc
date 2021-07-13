@@ -13,7 +13,11 @@ alias vsh='vagrant ssh'
 # vagrant
 ########################################################################
 
-export VAGRANT_DEFAULT_PROVIDER=virtualbox
+if [ $MACOS ]; then
+  export VAGRANT_DEFAULT_PROVIDER=vmware_fusion
+else
+  export VAGRANT_DEFAULT_PROVIDER=virtualbox
+fi
 
 # update all outdated vagrant boxes
 function vbu() {
