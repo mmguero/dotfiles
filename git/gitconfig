@@ -127,6 +127,8 @@
   unstage = reset HEAD --
   # upstream (the non-current remote) integrate
   upstreamintegrate = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && UPS=$(git branch -vvr | grep -Pv \"^\\s*$RMT\" | cut -d \"/\" -f1 | sort -u | head -n 1 | tr -d \" \") && BRNCH=$(git rev-parse --abbrev-ref HEAD) && echo && gitcheck -v -r && echo && echo "git pull --no-rebase $UPS $BRNCH" && git pull --no-rebase $UPS $BRNCH && echo "git push $RMT $BRNCH" && git push $RMT $BRNCH && echo && gitcheck -v -r; }; f"
+  # make a single-branch clone get all branches
+  makedeep = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && echo && git config remote."$RMT".fetch "+refs/heads/*:refs/remotes/$RMT/*" && git fetch "$RMT"; }; f"
 
   # change commit owner info
   change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
