@@ -570,11 +570,11 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        mmguero/signal:latest
-        mmguero/teams:latest
-        mmguero/mirotalk:latest
-        mmguero/mattermost-server:latest
-        mmguero/postgres:latest
+        ghcr.io/mmguero/signal:latest
+        ghcr.io/mmguero/teams:latest
+        ghcr.io/mmguero/mirotalk:latest
+        ghcr.io/mmguero/mattermost-server:latest
+        ghcr.io/mmguero/postgres:latest
         mdouchement/zoom-us:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -587,8 +587,8 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        mmguero/capa:latest
-        mmguero/zeek:latest
+        ghcr.io/mmguero/capa:latest
+        ghcr.io/mmguero/zeek:latest
         mpepping/cyberchef:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -615,8 +615,8 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        mmguero/tunneler:latest
-        mmguero/montag:latest
+        ghcr.io/mmguero/tunneler:latest
+        ghcr.io/mmguero/montag:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         docker pull "$i"
