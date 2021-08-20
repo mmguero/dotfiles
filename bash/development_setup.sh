@@ -1011,7 +1011,6 @@ function InstallCommonPackages {
         strace
         sysstat
         time
-        tmux
         tofrodos
         tree
         tzdata
@@ -1233,7 +1232,6 @@ function InstallCommonPackagesNetworking {
         sshfs
         ssldump
         stunnel4
-        tcpcryptd
         tcpdump
         telnet
         traceroute
@@ -1360,7 +1358,6 @@ function InstallCommonPackagesForensics {
         nikto
         p0f
         plaso
-        rekall-core
         safecat
         scsitools
         testdisk
@@ -1687,7 +1684,6 @@ function SetupNICPrivs {
         /usr/bin/socat
         /usr/bin/stunnel3
         /usr/bin/stunnel4
-        /usr/bin/tcpcryptd
         /usr/bin/tcpflow
         /usr/bin/tcpreplay
         /usr/sbin/arpspoof

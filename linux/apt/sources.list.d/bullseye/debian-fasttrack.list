@@ -1,0 +1,2 @@
+deb https://fasttrack.debian.net/debian/ bullseye-fasttrack main contrib
+deb https://fasttrack.debian.net/debian/ bullseye-backports main contrib
