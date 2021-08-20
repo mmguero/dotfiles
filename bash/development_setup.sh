@@ -293,6 +293,16 @@ function InstallEnvs {
     fi
   fi
 
+  # tmux (build deps)
+  if [[ ${ENVS_INSTALLED[tmux]} = 'true' ]]; then
+    if [ $LINUX ]; then
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+        autotools-dev \
+        build-essential \
+        make
+    fi
+  fi
+
   for i in ${ENV_LIST[@]}; do
     if [[ ${ENVS_INSTALLED[$i]} = 'true' ]]; then
       asdf plugin update $i
