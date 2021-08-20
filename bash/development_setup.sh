@@ -297,6 +297,7 @@ function InstallEnvs {
   if [[ ${ENVS_INSTALLED[tmux]} = 'true' ]]; then
     if [ $LINUX ]; then
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+        automake \
         autotools-dev \
         build-essential \
         make
@@ -805,7 +806,7 @@ function InstallVBoxAndVagrant {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       VAGRANT_BOXES=(
-        bento/debian-10
+        bento/debian-11
         bento/fedora-34
         bento/rockylinux-8
         bento/ubuntu-21.04
