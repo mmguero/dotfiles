@@ -70,9 +70,10 @@ alias norg="gron --ungron"
 alias ungron="gron --ungron"
 alias rg='rg --ignore-case --max-columns 200'
 
-# vpn/tunnel
+# net/vpn/tunnel
 alias ov='sudo openvpn'
 alias wwg='sudo wwg.sh'
+alias ip='ip -c=auto'
 
 #development/misc
 alias pycheck='python -m py_compile'
