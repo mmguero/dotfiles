@@ -532,6 +532,10 @@ function lport () {
   fi
 }
 
+function i () {
+  ip -c -br address show "$@"
+}
+
 function sshscr()
 {
   if [ "$1" ]; then
