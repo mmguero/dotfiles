@@ -95,7 +95,7 @@
   # list commits and files changed
   ll = log --pretty=format:\"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]\" --decorate --numstat
   # list/count extensions of tracked files
-  ext = !git ls-tree -r master --name-only | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n
+  ext = "!f() { BRNCH=$(git rev-parse --abbrev-ref HEAD) && git ls-tree -r \"$BRNCH\" --name-only | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n; }; f"
   # list/count extensions of untracked files (excluding ignored files)
   extun = !git ls-files --others --exclude-standard | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n
   # list/count extensions of untracked files (including ignored files)
