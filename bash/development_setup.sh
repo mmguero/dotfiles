@@ -1927,13 +1927,6 @@ function GueroSymlinks {
 
       [[ ! -d "$LOCAL_CONFIG_PATH"/gdb/peda ]] && _GitClone https://github.com/longld/peda.git "$LOCAL_CONFIG_PATH"/gdb/peda
 
-      if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
-        while IFS= read -d $'\0' -r CONFDIR; do
-          DIRNAME="$(basename "$CONFDIR")"
-          rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln -vrs "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
-        done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
-      fi
-
       if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/sublime ]]; then
         mkdir -p "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User
         while IFS= read -d $'\0' -r CONFFILE; do
