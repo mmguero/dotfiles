@@ -1602,6 +1602,15 @@ function InstallUserLocalBinaries {
         cp -f ./as-tree "$LOCAL_BIN_PATH"/as-tree
         popd >/dev/null 2>&1
         rm -rf "$TMP_CLONE_DIR"
+
+        FFSEND_RELEASE="$(_GitLatestRelease timvisee/ffsend | sed 's/^v//')"
+        TMP_CLONE_DIR="$(mktemp -d)"
+        curl -o "${TMP_CLONE_DIR}"/ffsend -L "https://github.com/timvisee/ffsend/releases/download/v${FFSEND_RELEASE}/ffsend-v${FFSEND_RELEASE}-linux-x64-static"
+        pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+        chmod 755 ./ffsend
+        cp -f ./ffsend "$LOCAL_BIN_PATH"/ffsend
+        popd >/dev/null 2>&1
+        rm -rf "$TMP_CLONE_DIR"
       fi
     fi
   fi
