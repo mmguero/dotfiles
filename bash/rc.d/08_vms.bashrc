@@ -12,11 +12,17 @@ alias vsh='vagrant ssh'
 ########################################################################
 # vagrant
 ########################################################################
-
-if [ $MACOS ]; then
+VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)"
+if [[ $MACOS ]] && [[ "$VAGRANT_PLUGINS" == *"vmware"* ]]; then
   export VAGRANT_DEFAULT_PROVIDER=vmware_fusion
-else
+elif [[ "$VAGRANT_PLUGINS" == *"vagrant-libvirt"* ]]; then
+  export VAGRANT_DEFAULT_PROVIDER=libvirt
+elif [[ "$VAGRANT_PLUGINS" == *"vagrant-vmware"* ]]; then
+  export VAGRANT_DEFAULT_PROVIDER=vagrant-vmware-desktop
+elif [[ "$VAGRANT_PLUGINS" == *"vagrant-vbguest"* ]]; then
   export VAGRANT_DEFAULT_PROVIDER=virtualbox
+else
+  unset VAGRANT_DEFAULT_PROVIDER
 fi
 
 # update all outdated vagrant boxes
