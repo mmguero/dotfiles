@@ -1,6 +1,15 @@
-#vmware/vbox/kvm/qemu
-alias vs='virsh -c qemu:///system '
-alias qemuls='virsh -c qemu:///system list --all'
+# virtualization
+
+########################################################################
+# kvm/qemu/libvirt
+########################################################################
+export LIBVIRT_DEFAULT_URI='qemu:///system'
+alias vs='virsh'
+alias qemuls='virsh list --all'
+
+########################################################################
+# vagrant
+########################################################################
 alias vag='vagrant'
 alias vup='vagrant up'
 alias vhalt='vagrant halt'
@@ -9,9 +18,6 @@ alias vbl='vagrant box list'
 alias vgs='vagrant global-status'
 alias vsh='vagrant ssh'
 
-########################################################################
-# vagrant
-########################################################################
 VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)"
 if [[ $MACOS ]] && [[ "$VAGRANT_PLUGINS" == *"vmware"* ]]; then
   export VAGRANT_DEFAULT_PROVIDER=vmware_fusion

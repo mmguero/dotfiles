@@ -639,125 +639,129 @@ function DockerPullImages {
 
 ################################################################################
 # VirtualBox and vagrant
-function InstallVBoxAndVagrant {
+function InstallVirtualization {
   if [ $MACOS ]; then
 
-    # install virtualbox, if needed
-    if ! brew list --cask --versions virtualbox >/dev/null 2>&1 ; then
-      unset CONFIRMATION
-      read -p "\"virtualbox\" cask is not installed, attempt to install virtualbox via brew [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        echo "Installing virtualbox..."
-        brew install --cask virtualbox
-        echo "Installed virtualbox."
-      fi # virtualbox install confirmation check
-    else
-      echo "\"virtualbox\" is already installed!"
-    fi # virtualbox install check
-
-    # install Vagrant only if vagrant is not yet installed and virtualbox is now installed
-    if ! brew list --cask --versions vagrant >/dev/null 2>&1 && brew list --cask --versions virtualbox >/dev/null 2>&1; then
-      unset CONFIRMATION
-      read -p "\"vagrant\" cask is not installed, attempt to install vagrant via brew [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        echo "Installing vagrant..."
-        brew install --cask vagrant
-        echo "Installed vagrant."
-      fi # vagrant install confirmation check
-    fi
-
-    # install vagrant-manager only if vagrant is installed
-    if ! brew list --cask --versions vagrant-manager >/dev/null 2>&1 && brew list --cask --versions vagrant >/dev/null 2>&1; then
-      unset CONFIRMATION
-      read -p "\"vagrant-manager\" cask is not installed, attempt to install vagrant-manager via brew [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        echo "Installing vagrant-manager..."
-        brew install --cask vagrant-manager
-        echo "Installed vagrant-manager."
-      fi # vagrant-manager install confirmation check
-    fi
+    VIRT_CASK_NAMES=(
+      vmware-fusion
+      virtualbox
+      vagrant
+      vagrant-manager
+    )
+    for i in ${VIRT_CASK_NAMES[@]}; do
+      if ! brew list --cask --versions "$i" >/dev/null 2>&1 ; then
+        unset CONFIRMATION
+        read -p "$i cask is not installed, attempt to install $i via brew [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          echo "Installing $i..."
+          brew install --cask "$i"
+          echo "Installed $i."
+        fi # install confirmation check
+      else
+        echo "$i is already installed!"
+      fi # already installed check
+    done
 
   elif [ $LINUX ] && [[ -z $WINDOWS ]] && [[ "$LINUX_CPU" == "x86_64" ]]; then
 
-    # virtualbox (if not already installed)
+    # virtualbox or kvm
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
 
-    if ! command -v VBoxManage >/dev/null 2>&1 ; then
-      unset VBOX_PACKAGE_NAME
-      VBOX_PACKAGE_NAMES=(
-        virtualbox
-        virtualbox-6.1
-        virtualbox-6.0
-        virtualbox-5.2
-      )
-      for i in ${VBOX_PACKAGE_NAMES[@]}; do
-        VBOX_CANDIDATE="$(apt-cache policy "$i" | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
-        if [[ -n $VBOX_CANDIDATE ]]; then
-          VBOX_PACKAGE_NAME=$i
-          break
-        fi
-      done
-      if [[ -n $VBOX_PACKAGE_NAME ]]; then
-        unset CONFIRMATION
-        read -p "Install $VBOX_PACKAGE_NAME [Y/n]? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-Y}
-        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y dkms module-assistant linux-headers-$(uname -r) "$VBOX_PACKAGE_NAME"
-          if [[ "$SCRIPT_USER" != "root" ]]; then
-            echo "Adding \"$SCRIPT_USER\" to group \"vboxusers\"..."
-            $SUDO_CMD usermod -a -G vboxusers "$SCRIPT_USER"
-            echo "You will need to log out and log back in for this to take effect"
-          fi
-        fi
+    unset CONFIRMATION
+    read -p "Install kvm/libvirt/qemu [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends qemu-system libvirt-clients libvirt-daemon-system virtinst
+      unset CONFIRMATION
+      read -p "Install kvm/libvirt/qemu GUI packages [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends virt-manager gir1.2-spiceclientgtk-3.0
+      fi
+      if [[ "$SCRIPT_USER" != "root" ]]; then
+        echo "Adding \"$SCRIPT_USER\" to group \"libvirt\"..."
+        $SUDO_CMD usermod -a -G libvirt "$SCRIPT_USER"
+        echo "You will need to log out and log back in for this to take effect"
+      fi
+    fi # Check kvm/libvirt/qemu installation?
 
-        if [[ "$VBOX_PACKAGE_NAME" == "virtualbox" ]]; then
-          # virtualbox guest additions ISO
-          VBOX_ISO_PACKAGE_CANDIDATE="$(apt-cache policy virtualbox-guest-additions-iso | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
-          if [[ -n $VBOX_ISO_PACKAGE_CANDIDATE ]]; then
-            unset CONFIRMATION
-            read -p "Install virtualbox-guest-additions-iso [Y/n]? " CONFIRMATION
-            CONFIRMATION=${CONFIRMATION:-Y}
-            if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-              DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y virtualbox-guest-additions-iso
-            fi
+    unset CONFIRMATION
+    read -p "Install VirtualBox [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      if ! command -v VBoxManage >/dev/null 2>&1 ; then
+        unset VBOX_PACKAGE_NAME
+        VBOX_PACKAGE_NAMES=(
+          virtualbox
+          virtualbox-6.1
+        )
+        for i in ${VBOX_PACKAGE_NAMES[@]}; do
+          VBOX_CANDIDATE="$(apt-cache policy "$i" | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
+          if [[ -n $VBOX_CANDIDATE ]]; then
+            VBOX_PACKAGE_NAME=$i
+            break
           fi
-
-          # virtualbox extension pack
-          VBOX_EXT_PACKAGE_CANDIDATE="$(apt-cache policy virtualbox-ext-pack | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
-          if [[ -n $VBOX_EXT_PACKAGE_CANDIDATE ]]; then
-            unset CONFIRMATION
-            read -p "Install virtualbox-ext-pack [Y/n]? " CONFIRMATION
-            CONFIRMATION=${CONFIRMATION:-Y}
-            if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-              DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y virtualbox-ext-pack
-            fi
-          fi
-
-        else
-          VBOX_EXTPACK_URL="$(curl -fsL "https://www.virtualbox.org/wiki/Downloads" | grep -oP "https://.*?vbox-extpack" | sort -V | head -n 1)"
+        done
+        if [[ -n $VBOX_PACKAGE_NAME ]]; then
           unset CONFIRMATION
-          read -p "Download and install $VBOX_EXTPACK_URL [Y/n]? " CONFIRMATION
+          read -p "Install $VBOX_PACKAGE_NAME [Y/n]? " CONFIRMATION
           CONFIRMATION=${CONFIRMATION:-Y}
           if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-            VBOX_EXTPACK_FNAME="$(echo "$VBOX_EXTPACK_URL" | sed "s@.*/@@")"
-            pushd /tmp >/dev/null 2>&1
-            curl -L -J -O "$VBOX_EXTPACK_URL"
-            if [[ -r "$VBOX_EXTPACK_FNAME" ]]; then
-              $SUDO_CMD VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb --replace "$VBOX_EXTPACK_FNAME"
-            else
-              echo "Error downloading $VBOX_EXTPACK_URL to $VBOX_EXTPACK_FNAME"
+            DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y dkms module-assistant linux-headers-$(uname -r) "$VBOX_PACKAGE_NAME"
+            if [[ "$SCRIPT_USER" != "root" ]]; then
+              echo "Adding \"$SCRIPT_USER\" to group \"vboxusers\"..."
+              $SUDO_CMD usermod -a -G vboxusers "$SCRIPT_USER"
+              echo "You will need to log out and log back in for this to take effect"
             fi
-            popd >/dev/null 2>&1
+          fi
+
+          if [[ "$VBOX_PACKAGE_NAME" == "virtualbox" ]]; then
+            # virtualbox guest additions ISO
+            VBOX_ISO_PACKAGE_CANDIDATE="$(apt-cache policy virtualbox-guest-additions-iso | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
+            if [[ -n $VBOX_ISO_PACKAGE_CANDIDATE ]]; then
+              unset CONFIRMATION
+              read -p "Install virtualbox-guest-additions-iso [Y/n]? " CONFIRMATION
+              CONFIRMATION=${CONFIRMATION:-Y}
+              if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+                DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y virtualbox-guest-additions-iso
+              fi
+            fi
+
+            # virtualbox extension pack
+            VBOX_EXT_PACKAGE_CANDIDATE="$(apt-cache policy virtualbox-ext-pack | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
+            if [[ -n $VBOX_EXT_PACKAGE_CANDIDATE ]]; then
+              unset CONFIRMATION
+              read -p "Install virtualbox-ext-pack [Y/n]? " CONFIRMATION
+              CONFIRMATION=${CONFIRMATION:-Y}
+              if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+                DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y virtualbox-ext-pack
+              fi
+            fi
+
+          else
+            VBOX_EXTPACK_URL="$(curl -fsL "https://www.virtualbox.org/wiki/Downloads" | grep -oP "https://.*?vbox-extpack" | sort -V | head -n 1)"
+            unset CONFIRMATION
+            read -p "Download and install $VBOX_EXTPACK_URL [Y/n]? " CONFIRMATION
+            CONFIRMATION=${CONFIRMATION:-Y}
+            if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+              VBOX_EXTPACK_FNAME="$(echo "$VBOX_EXTPACK_URL" | sed "s@.*/@@")"
+              pushd /tmp >/dev/null 2>&1
+              curl -L -J -O "$VBOX_EXTPACK_URL"
+              if [[ -r "$VBOX_EXTPACK_FNAME" ]]; then
+                $SUDO_CMD VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb --replace "$VBOX_EXTPACK_FNAME"
+              else
+                echo "Error downloading $VBOX_EXTPACK_URL to $VBOX_EXTPACK_FNAME"
+              fi
+              popd >/dev/null 2>&1
+            fi
           fi
         fi
-      fi
 
-    else
-      echo "\"virtualbox\" is already installed!"
-    fi # check VBoxManage is not in path to see if some form of virtualbox is already installed
+      else
+        echo "\"virtualbox\" is already installed!"
+      fi # check VBoxManage is not in path to see if some form of virtualbox is already installed
+    fi # Check VirtualBox installation?
 
     # install Vagrant only if vagrant is not yet installed
     if ! command -v vagrant >/dev/null 2>&1; then
@@ -779,7 +783,7 @@ function InstallVBoxAndVagrant {
       echo "\"vagrant\" is already installed!"
     fi # check vagrant is already installed
 
-  fi # MacOS vs. Linux for virtualbox/vagrant
+  fi # MacOS vs. Linux for virtualbox/kvm/vagrant
 
   # see if we want to install vagrant plugins
   if command -v vagrant >/dev/null 2>&1; then
@@ -788,10 +792,10 @@ function InstallVBoxAndVagrant {
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       VAGRANT_PLUGINS=(
+        vagrant-mutate
         vagrant-reload
         vagrant-scp
         vagrant-sshfs
-        vagrant-vbguest
       )
       for i in ${VAGRANT_PLUGINS[@]}; do
         if (( "$( vagrant plugin list | grep -c "^$i " )" == 0 )); then
@@ -802,26 +806,41 @@ function InstallVBoxAndVagrant {
     fi # vagrant plugin install confirmation
 
     unset CONFIRMATION
-    read -p "Install common vagrant boxes [y/N]? " CONFIRMATION
+    read -p "Install common vagrant boxes (linux) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       VAGRANT_BOXES=(
+        bento/almalinux-8
         bento/debian-11
-        bento/fedora-34
-        bento/rockylinux-8
         bento/ubuntu-21.04
         clink15/pxe
         gbailey/amzn2
-        StefanScherer/windows_10
       )
       for i in ${VAGRANT_BOXES[@]}; do
         if (( "$( vagrant box list | grep -c "^$i " )" == 0 )); then
-          vagrant box add --provider virtualbox $i
+          vagrant box add $i
         fi
       done
-      vagrant box outdated --global | grep "is outdated" | awk '{print $2}' | xargs -r -l vagrant box update --provider virtualbox --box
-      vagrant box prune -f -k --provider virtualbox
-    fi # vagrant plugin install confirmation
+      vagrant box outdated --global | grep "is outdated" | grep -vi "win" | awk '{print $2}' | xargs -r -l vagrant box update --box
+      vagrant box prune -f -k
+    fi # linux vagrant boxes install confirmation
+
+    unset CONFIRMATION
+    read -p "Install common vagrant boxes (windows) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      VAGRANT_BOXES=(
+        StefanScherer/windows_10
+        peru/windows-10-enterprise-x64-eval
+      )
+      for i in ${VAGRANT_BOXES[@]}; do
+        if (( "$( vagrant box list | grep -c "^$i " )" == 0 )); then
+          vagrant box add $i
+        fi
+      done
+      vagrant box outdated --global | grep "is outdated" | grep -i "win" | awk '{print $2}' | xargs -r -l vagrant box update --box
+      vagrant box prune -f -k
+    fi # windows vagrant boxes install confirmation
 
   fi # check for vagrant being installed
 
@@ -1994,7 +2013,7 @@ if (( $USER_FUNCTION_IDX == 0 )); then
   SetupAptSources
   InstallDocker
   DockerPullImages
-  InstallVBoxAndVagrant
+  InstallVirtualization
   InstallCommonPackages
   InstallCommonPackagesGUI
   InstallCommonPackagesMedia
