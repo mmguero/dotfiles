@@ -299,6 +299,7 @@ function InstallEnvs {
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
         automake \
         autotools-dev \
+        bison \
         build-essential \
         make
     fi
