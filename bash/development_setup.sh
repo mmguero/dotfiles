@@ -1947,6 +1947,30 @@ function GueroSymlinks {
 
       [[ ! -d "$LOCAL_CONFIG_PATH"/gdb/peda ]] && _GitClone https://github.com/longld/peda.git "$LOCAL_CONFIG_PATH"/gdb/peda
 
+      if [[ $LINUX ]] && dpkg -s lxde-core >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
+        unset CONFIRMATION
+        read -p "Setup symlinks for LXDE config [y/N]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-N}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          while IFS= read -d $'\0' -r CONFDIR; do
+            DIRNAME="$(basename "$CONFDIR")"
+            rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln -vrs "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
+          done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
+        fi
+      fi
+
+      if [[ $LINUX ]] && dpkg -s xfce4 >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/xfce-desktop.config ]]; then
+        unset CONFIRMATION
+        read -p "Setup symlinks for XFCE config [y/N]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-N}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          while IFS= read -d $'\0' -r CONFDIR; do
+            DIRNAME="$(basename "$CONFDIR")"
+            rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln -vrs "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
+          done < <(find "$GUERO_GITHUB_PATH"/linux/xfce-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
+        fi
+      fi
+
       if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/sublime ]]; then
         mkdir -p "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User
         while IFS= read -d $'\0' -r CONFFILE; do
