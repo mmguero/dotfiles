@@ -764,25 +764,21 @@ function InstallVirtualization {
       fi # check VBoxManage is not in path to see if some form of virtualbox is already installed
     fi # Check VirtualBox installation?
 
-    # install Vagrant only if vagrant is not yet installed
-    if ! command -v vagrant >/dev/null 2>&1; then
-      unset CONFIRMATION
-      read -p "Attempt to download and install latest version of Vagrant from releases.hashicorp.com [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        curl -o /tmp/vagrant.deb "https://releases.hashicorp.com$(curl -fsL "https://releases.hashicorp.com$(curl -fsL "https://releases.hashicorp.com/vagrant" | grep 'href="/vagrant/' | head -n 1 | grep -o '".*"' | tr -d '"' )" | grep "x86_64\.deb" | head -n 1 | grep -o 'href=".*"' | sed 's/href=//' | tr -d '"')"
-        $SUDO_CMD dpkg -i /tmp/vagrant.deb
-        rm -f /tmp/vagrant.deb
+    # install Vagrant
+    unset CONFIRMATION
+    read -p "Attempt to download and install latest version of Vagrant from releases.hashicorp.com [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      curl -o /tmp/vagrant.deb "https://releases.hashicorp.com$(curl -fsL "https://releases.hashicorp.com$(curl -fsL "https://releases.hashicorp.com/vagrant" | grep 'href="/vagrant/' | head -n 1 | grep -o '".*"' | tr -d '"' )" | grep "x86_64\.deb" | head -n 1 | grep -o 'href=".*"' | sed 's/href=//' | tr -d '"')"
+      $SUDO_CMD dpkg -i /tmp/vagrant.deb
+      rm -f /tmp/vagrant.deb
 
-      else
-        unset CONFIRMATION
-        read -p "Install vagrant via apt-get instead [Y/n]? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-Y}
-        [[ $CONFIRMATION =~ ^[Yy] ]] && DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y vagrant
-      fi
     else
-      echo "\"vagrant\" is already installed!"
-    fi # check vagrant is already installed
+      unset CONFIRMATION
+      read -p "Install vagrant via apt-get instead [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      [[ $CONFIRMATION =~ ^[Yy] ]] && DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y vagrant
+    fi
 
   fi # MacOS vs. Linux for virtualbox/kvm/vagrant
 
