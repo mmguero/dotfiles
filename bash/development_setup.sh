@@ -1964,6 +1964,10 @@ function GueroSymlinks {
             DIRNAME="$(basename "$CONFDIR")"
             rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln -vrs "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
           done < <(find "$GUERO_GITHUB_PATH"/linux/xfce-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
+          XFCE_DCONF_CONFIG_B64="W29yZy9nbm9tZS9kZXNrdG9wL2ludGVyZmFjZV0KZ3RrLXRoZW1lPSdBZHdhaXRhLWRhcmsnCmljb24tdGhlbWU9J0Fkd2FpdGEnCgpbb3JnL2d0ay9zZXR0aW5ncy9jb2xvci1jaG9vc2VyXQpjdXN0b20tY29sb3JzPVsoMC4wODYyNzQ1MDk4MDM5MjE1NjcsIDAuMDg2Mjc0NTA5ODAzOTIxNTY3LCAwLjExMzcyNTQ5MDE5NjA3ODQzLCAxLjApLCAoMC41LCAwLjUsIDAuNSwgMS4wKV0Kc2VsZWN0ZWQtY29sb3I9KHRydWUsIDAuMDg2Mjc0NTA5ODAzOTIxNTY3LCAwLjA4NjI3NDUwOTgwMzkyMTU2NywgMC4xMTM3MjU0OTAxOTYwNzg0MywgMS4wKQoK"
+          echo "$XFCE_DCONF_CONFIG_B64" | base64 -d > /tmp/xfce.dconf
+          dconf load / < /tmp/xfce.dconf
+          rm -f /tmp/xfce.dconf
         fi
       fi
 
