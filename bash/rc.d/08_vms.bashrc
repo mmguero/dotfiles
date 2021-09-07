@@ -20,6 +20,20 @@ alias vsh='vagrant ssh'
 alias vplsr='gem list --remote vagrant-'
 alias vpls='vagrant plugin list'
 
+if [[ $LINUX ]]; then
+  alias vagrantd='
+    docker run -it --rm \
+      -e LIBVIRT_DEFAULT_URI \
+      -v /var/run/libvirt/:/var/run/libvirt/ \
+      -v ~/.vagrant.d:/.vagrant.d \
+      -v $(realpath "${PWD}"):${PWD} \
+      -w $(realpath "${PWD}") \
+      --network host \
+      ghcr.io/mmguero/vagrant-libvirt:latest \
+      vagrant'
+  alias vagd=vagrantd
+fi
+
 VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)"
 if [[ $MACOS ]] && [[ "$VAGRANT_PLUGINS" == *"vmware"* ]]; then
   export VAGRANT_DEFAULT_PROVIDER=vmware_fusion
