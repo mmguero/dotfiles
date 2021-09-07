@@ -17,6 +17,8 @@ alias vrm='vagrant destroy'
 alias vbl='vagrant box list'
 alias vgs='vagrant global-status'
 alias vsh='vagrant ssh'
+alias vplsr='gem list --remote vagrant-'
+alias vpls='vagrant plugin list'
 
 VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)"
 if [[ $MACOS ]] && [[ "$VAGRANT_PLUGINS" == *"vmware"* ]]; then
