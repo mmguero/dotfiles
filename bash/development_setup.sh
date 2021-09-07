@@ -59,6 +59,7 @@ ENV_LIST=(
   yarn
   perl
   rust
+  age
   bat
   fd
   ripgrep
@@ -66,7 +67,7 @@ ENV_LIST=(
   watchexec
 )
 
-DOCKER_COMPOSE_INSTALL_VERSION=( 1.27.4 )
+DOCKER_COMPOSE_INSTALL_VERSION=( 1.29.2 )
 
 ###################################################################################
 # determine OS
