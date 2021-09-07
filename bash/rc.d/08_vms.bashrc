@@ -31,7 +31,14 @@ if [[ $LINUX ]]; then
       --network host \
       ghcr.io/mmguero/vagrant-libvirt:latest \
       vagrant'
-  alias vagd=vagrantd
+  alias vagd='vagrantd'
+  alias vupd='vagrantd up'
+  alias vhaltd='vagrantd halt'
+  alias vrmd='vagrantd destroy'
+  alias vbld='vagrantd box list'
+  alias vgsd='vagrantd global-status'
+  alias vshd='vagrantd ssh'
+  alias vplsd='vagrantd plugin list'
 fi
 
 VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)"
