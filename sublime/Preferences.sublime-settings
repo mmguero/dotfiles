@@ -1,5 +1,4 @@
 {
-	"update_check": false,
 	"auto_find_in_selection": true,
 	"dpi_scale": 1.25,
 	"font_face": "Hack Nerd Font Mono",
@@ -11,5 +10,6 @@
 	],
 	"tab_size": 2,
 	"translate_tabs_to_spaces": true,
-	"trim_trailing_white_space_on_save": true
+	"trim_trailing_white_space_on_save": true,
+	"update_check": false
 }

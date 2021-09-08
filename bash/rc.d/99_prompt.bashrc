@@ -36,6 +36,7 @@ PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
 if [ -f /.dockerenv ]; then
   PS1="\[$COLOR_BLUE\].\[$COLOR_RESET\]\u \[$COLOR_GREEN\]\h \[$COLOR_DARK_BLUE\]\W\[$COLOR_RESET\]> "
+  unalias cat
 
 else
   unset HASHER
