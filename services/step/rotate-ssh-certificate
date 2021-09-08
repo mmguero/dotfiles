@@ -1,0 +1,9 @@
+#!/bin/sh
+
+step ssh renew --force \
+  --ca-url=https://step.example.com:9000/ \
+  --root=/usr/local/share/ca-certificates/xxxxxxxxxxxxxxxxxxxxxxxxxxxx.crt \
+  --provisioner=sshpop \
+  /etc/ssh/ssh_host_ecdsa_key-cert.pub /etc/ssh/ssh_host_ecdsa_key
+
+

@@ -44,25 +44,18 @@ if [[ -r "$CRT_NAME" ]] && [[ -r "$KEY_NAME" ]] && [[ -r "$CA_NAME" ]]; then
 
   # apply configuration changes
   sudo -n omv-rpc "Config" "applyChanges" "{\"modules\":[\"certificates\"],\"force\":false}"
-  sudo -n omv-rpc "Config" "applyChanges" "{\"modules\":[],\"force\":false}"
+  sudo -n omv-rpc "Config" "applyChanges" "{\"modules\":$(cat /var/lib/openmediavault/dirtymodules.json),\"force\":true}"
+  sudo /bin/systemctl reload nginx
 
   # restart some docker stuff specific to this box
-  set +e
-  for SERVICEDIR in "$HOME"/services/calibre "$HOME"/services/bitwarden "$HOME"/services/booksonic "$HOME"/services/nextcloud; do
-    pushd "$SERVICEDIR" >/dev/null 2>&1
-    docker-compose down
-    docker-compose up -d
-    popd >/dev/null 2>&1
-  done
-  sleep 10
-
-  # set up booksonic LDAP configuration
-  pushd "$HOME"/services/booksonic >/dev/null 2>&1
-  for file in /usr/local/share/ca-certificates/*.crt; do docker cp "$file" booksonic:/usr/local/share/ca-certificates/; done
-  docker-compose exec booksonic bash -c 'for file in /usr/local/share/ca-certificates/*.crt; do keytool -importcert -file "$file" -alias "($(basename "$file" | sed "s/\.crt//")" -keystore /usr/lib/jvm/java-8-openjdk-armhf/jre/lib/security/cacerts -keypass changeit -storepass changeit -noprompt; done; kill $(pidof java)'
-  popd >/dev/null 2>&1
-
-  set -e
+  # set +e
+  #for SERVICEDIR in /home/tlacuache/services/piwigo; do
+  #  pushd "$SERVICEDIR" >/dev/null 2>&1
+  #  docker-compose down
+  #  docker-compose up -d
+  #  popd >/dev/null 2>&1
+  #done
+  # set -e
 
   exit 0
 else

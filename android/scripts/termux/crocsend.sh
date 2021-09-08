@@ -5,7 +5,7 @@ function urldecode() {
   printf '%b' "${url_encoded//%/\\x}"
 }
 
-export CROC_RELAY=example.org:9009
+export CROC_RELAY=example.org:8000
 export CROC_PASS=password
 
 args=("$@")

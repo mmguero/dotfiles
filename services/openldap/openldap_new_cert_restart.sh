@@ -30,8 +30,8 @@ LDAP_ADMIN_URL="ldap://localhost:389"
 RUN_PATH="$(pwd)"
 [[ "$(uname -s)" = 'Darwin' ]] && REALPATH=grealpath || REALPATH=realpath
 [[ "$(uname -s)" = 'Darwin' ]] && DIRNAME=gdirname || DIRNAME=dirname
-if ! (type "$REALPATH" && type "$DIRNAME" && type step && type ldapadd) > /dev/null; then
-  echo "$(basename "${BASH_SOURCE[0]}") requires $REALPATH, $DIRNAME, step and ldapadd"
+if ! (type "$REALPATH" && type "$DIRNAME" && type ldapadd) > /dev/null; then
+  echo "$(basename "${BASH_SOURCE[0]}") requires $REALPATH, $DIRNAME and ldapadd"
   exit 1
 fi
 SCRIPT_PATH="$($DIRNAME $($REALPATH -e "${BASH_SOURCE[0]}"))"

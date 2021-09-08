@@ -1,0 +1,15 @@
+[Unit]
+AssertPathExists=/home/user/services/cert
+Description=step-ca automated certificate management
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+WorkingDirectory=/home/user/services/cert
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/home/user/.local/bin/step ca renew --force --daemon --exec "/bin/bash /home/user/services/cert/service_new_cert_restart.sh" /home/user/services/cert/service.crt /home/user/services/cert/service.key
+
+[Install]
+WantedBy=default.target

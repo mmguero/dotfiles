@@ -1,8 +1,0 @@
-#!/bin/sh
-
-(while [ $# -gt 0 ]; do
-echo $1
-convert $1 $1.jpg
-shift
-done) | zenity --progress --pulsate --title "Working..." --text "Converting RAW files to Jpeg"
-
