@@ -3,7 +3,7 @@
 # This is my one-stop-shop Linux/*NIX box setup.
 # If you are not me this may not be what you're looking for.
 
-# add contents of https://raw.githubusercontent.com/mmguero/config/master/bash/rc.d/04_envs.bashrc
+# add contents of https://raw.githubusercontent.com/mmguero/dotfiles/master/bash/rc.d/04_envs.bashrc
 # to .bashrc after running this script (or let this script set up the symlinks for ~/.bashrc.d for you)
 
 # Tested on:
@@ -34,12 +34,12 @@ LOCAL_DATA_PATH=${XDG_DATA_HOME:-$HOME/.local/share}
 LOCAL_BIN_PATH=$HOME/.local/bin
 LOCAL_CONFIG_PATH=${XDG_CONFIG_HOME:-$HOME/.config}
 
-# see if this has been cloned from github.com/mmguero/config
+# see if this has been cloned from github.com/mmguero/dotfiles
 # (so we can assume other stuff might be here for symlinking)
 unset GUERO_GITHUB_PATH
 if [ $(basename "$SCRIPT_PATH") = 'bash' ]; then
   pushd "$SCRIPT_PATH"/.. >/dev/null 2>&1
-  if (( "$( (git remote -v 2>/dev/null | awk '{print $2}' | grep -P 'config(_private)?' | wc -l) || echo 0 )" > 0 )); then
+  if (( "$( (git remote -v 2>/dev/null | awk '{print $2}' | grep -P 'dotfiles(-private)?' | wc -l) || echo 0 )" > 0 )); then
     GUERO_GITHUB_PATH="$(pwd)"
   fi
   popd >/dev/null 2>&1
