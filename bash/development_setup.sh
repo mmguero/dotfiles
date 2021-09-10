@@ -625,6 +625,7 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         ghcr.io/mmguero/tunneler:latest
         ghcr.io/mmguero/montag:latest
+        ghcr.io/mmguero/cleanvid:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         docker pull "$i"
