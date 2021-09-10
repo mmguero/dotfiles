@@ -912,7 +912,7 @@ function wireshark() {
 }
 
 function pithos() {
-  nohup "$(which wireshark)" "$@" </dev/null >/dev/null 2>&1 &
+  nohup "$(which pithos)" "$@" </dev/null >/dev/null 2>&1 &
 }
 
 ####
