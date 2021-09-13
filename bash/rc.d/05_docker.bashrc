@@ -146,6 +146,7 @@ function x11desktop() {
     --share /var/run/libvirt/ \
     --share /var/run/docker.sock \
     --group-add=docker \
+    --group-add=fuse \
     --group-add=libvirt \
   ghcr.io/mmguero/xfce-ext:latest </dev/null >/dev/null 2>&1 &
 }
