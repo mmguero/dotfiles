@@ -113,21 +113,6 @@ function cyberchef() {
 ########################################################################
 # desktop
 ########################################################################
-function x11desktop() {
-  if [ "$1" ]; then
-    DESKTOP_PROVIDER="$1"
-    shift
-  else
-    DESKTOP_PROVIDER="lxde"
-  fi
-  if [[ "$DESKTOP_PROVIDER" == "mate" ]]; then
-    INITFLAG="--init=systemd"
-  else
-    INITFLAG=""
-  fi
-  nohup x11docker --desktop --sudouser $INITFLAG --pulseaudio -- x11docker/$DESKTOP_PROVIDER "$@" </dev/null >/dev/null 2>&1 &
-}
-
 function chromiumd() {
   mkdir -p "$HOME/download"
   nohup x11docker --gpu --pulseaudio -- "-v" "$HOME/download:/Downloads" "--tmpfs" "/dev/shm" -- jess/chromium --no-sandbox "$@" </dev/null >/dev/null 2>&1 &
@@ -148,6 +133,23 @@ function kodi() {
   nohup x11docker --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
 }
 
+function x11desktop() {
+  nohup x11docker \
+    --clipboard \
+    --dbus \
+    --desktop \
+    --home \
+    --network=host \
+    --printer \
+    --pulse \
+    --webcam \
+    --share /var/run/libvirt/ \
+    --share /var/run/docker.sock \
+    --group-add=docker \
+    --group-add=libvirt \
+  ghcr.io/mmguero/xfce-ext:latest </dev/null >/dev/null 2>&1 &
+}
+
 ########################################################################
 # helper functions for docker
 ########################################################################
@@ -162,25 +164,6 @@ function drun() {
   docker run -t -i -P --rm \
     -e HISTFILE=/tmp/.bash_history \
     $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
-    "$@"
-}
-
-# run a new container (with X11/pulse) and remove it when done
-function drunx() {
-  XSOCK=/tmp/.X11-unix
-  XAUTH=/tmp/.docker.xauth
-  touch $XAUTH
-  xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
-  docker run -t -i -P --rm \
-    -v $XSOCK:$XSOCK:rw,Z \
-    -v $XAUTH:$XAUTH:rw,Z \
-    -e HISTFILE=/tmp/.bash_history \
-    -e DISPLAY=$DISPLAY \
-    -e XAUTHORITY=$XAUTH \
-    -e PULSE_SERVER=tcp:$(/sbin/ifconfig docker0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}'):4713 \
-    -e PULSE_COOKIE=/run/pulse/cookie \
-    $DOCKER_SHARE_TMP $DOCKER_SHARE_BASH_RC $DOCKER_SHARE_BASH_ALIASES $DOCKER_SHARE_BASH_FUNCTIONS $DOCKER_SHARE_GIT_CONFIG \
-    -v $DOCKER_SHARE_HOME/.config/pulse/cookie:/run/pulse/cookie:rw,Z \
     "$@"
 }
 
