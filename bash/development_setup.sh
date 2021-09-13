@@ -111,15 +111,9 @@ else
   if [[ $EUID -eq 0 ]]; then
     SCRIPT_USER="root"
     SUDO_CMD=""
-
   else
     SCRIPT_USER="$(whoami)"
-    if [[ "$(sudo whoami)" == "root" ]]; then
-      SUDO_CMD="sudo"
-    else
-      echo "This command must be run as root, or \"sudo\" must be available (in case packages must be installed)"
-      exit 1
-    fi
+    SUDO_CMD="sudo"
   fi
   if ! dpkg -s apt >/dev/null 2>&1; then
     echo "This command only target Linux distributions that use apt/apt-get"
