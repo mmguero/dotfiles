@@ -181,8 +181,8 @@ alias dps="docker ps"
 alias dpa="docker ps -a"
 
 # Get images
-alias di="docker images | tail -n +2"
-alias dis="docker images | tail -n +2 | cols 1 2 | sed \"s/ /:/\""
+alias di="docker images | tail -n +2 | tac"
+alias dis="docker images | tail -n +2 | tac | cols 1 2 | sed \"s/ /:/\""
 
 # Get container IP
 alias dip="docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
