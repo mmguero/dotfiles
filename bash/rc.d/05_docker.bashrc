@@ -202,7 +202,7 @@ function dhealth() {
 
 # backup *all* docker images!
 function docker_backup() {
-  for IMAGE in `dis`; do export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g') ; docker save "$IMAGE" | pv | pigz > "$FN.tgz"  ; done
+  for IMAGE in $(dis | grep -Pv "(docker-osx|android-build-box|malcolmnetsec)"); do export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g') ; docker save "$IMAGE" | pv | pigz > "$FN.tgz"  ; done
 }
 
 # pull updates for docker images
