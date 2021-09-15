@@ -58,3 +58,29 @@ fi
 function vbu() {
   vagrant box outdated --global | grep "is outdated" | cols 2 | xargs -r -l vagrant box update --box
 }
+
+# boot an ISO in qemu
+function qemuiso() {
+  if [[ "$1" ]]; then
+    if [[ $MACOS ]]; then
+      MACHINE="type=q35,accel=hvf"
+    elif [[ $LINUX ]] && dd if=/dev/kvm count=0 >/dev/null 2>&1; then
+      MACHINE="type=q35,accel=kvm"
+    else
+      MACHINE="type=q35"
+    fi
+    qemu-system-x86_64 \
+        -machine "$MACHINE" \
+        -smp ${QEMU_CPU:-2} \
+        -boot d \
+        -cdrom "$1" \
+        -m ${QEMU_RAM:-4096} \
+        -vga virtio \
+        -usb \
+        -device usb-tablet \
+        -display default,show-cursor=on
+  else
+    echo "No image file specified" >&2
+    exit 1
+  fi
+}
