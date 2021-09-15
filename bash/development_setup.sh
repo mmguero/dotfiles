@@ -1119,7 +1119,6 @@ function InstallCommonPackagesGUI {
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         $SUDO_CMD apt-get update -qq >/dev/null 2>&1
         DEBIAN_PACKAGE_LIST=(
-          albert
           arandr
           dconf-cli
           fonts-noto-color-emoji
@@ -1969,10 +1968,6 @@ function GueroSymlinks {
           rm -vf "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User/"$FNAME" && ln -vrs "$CONFFILE" "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User/"$FNAME"
         done < <(find "$GUERO_GITHUB_PATH"/sublime -mindepth 1 -maxdepth 1 -type f -print0)
       fi
-
-      [[ $LINUX ]] && dpkg -s albert >/dev/null 2>&1 && mkdir -p "$LOCAL_CONFIG_PATH"/autostart && \
-        rm -vf "$LOCAL_CONFIG_PATH"/autostart/albert.desktop && \
-        ln -vrs /usr/share/applications/albert.desktop "$LOCAL_CONFIG_PATH"/autostart/albert.desktop
 
       LINKED_SCRIPTS=(
         clarence-0.4.4

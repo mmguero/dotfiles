@@ -63,7 +63,6 @@
         <value type="string" value="pcloud"/>
         <value type="string" value="virt-manager"/>
         <value type="string" value="diodon"/>
-        <value type="string" value="albert"/>
         <value type="string" value="networkmanager applet"/>
       </property>
       <property name="known-items" type="array">
