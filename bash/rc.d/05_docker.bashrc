@@ -113,16 +113,6 @@ function cyberchef() {
 ########################################################################
 # desktop
 ########################################################################
-function chromiumd() {
-  mkdir -p "$HOME/download"
-  nohup x11docker --gpu --pulseaudio -- "-v" "$HOME/download:/Downloads" "--tmpfs" "/dev/shm" -- jess/chromium --no-sandbox "$@" </dev/null >/dev/null 2>&1 &
-}
-
-function firefoxd() {
-  mkdir -p "$HOME/download"
-  nohup x11docker --gpu --pulseaudio -- "-v" "$HOME/download:/Downloads" "--tmpfs" "/dev/shm" -- jess/firefox "$@" </dev/null >/dev/null 2>&1 &
-}
-
 function kodi() {
   if [ "$1" ]; then
     MEDIA_FOLDER="$1"
@@ -154,6 +144,16 @@ function x11desktop() {
 ########################################################################
 # helper functions for docker
 ########################################################################
+
+function dstopped(){
+  local name=$1
+  local state
+  state=$(docker inspect --format "{{.State.Running}}" "$name" 2>/dev/null)
+
+  if [[ "$state" == "false" ]]; then
+    docker rm "$name"
+  fi
+}
 
 function dclean() {
     docker rm -v $(docker ps --filter status=exited -q 2>/dev/null) 2>/dev/null
