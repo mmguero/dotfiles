@@ -1308,11 +1308,18 @@ function InstallCommonPackagesNetworkingGUI {
       done
 
       if [[ "$LINUX_ARCH" == "amd64" ]]; then
-        InstallFirefoxLinuxAmd64
-
         curl -sSL -o /tmp/synergy_debian_amd64.deb "https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/synergy_debian_amd64.deb"
         $SUDO_CMD dpkg -i /tmp/synergy_debian_amd64.deb
         rm -f /tmp/synergy_debian_amd64.deb
+      fi
+    fi
+
+    if [[ "$LINUX_ARCH" == "amd64" ]]; then
+      unset CONFIRMATION
+      read -p "Install latest Firefox [y/N]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        InstallFirefoxLinuxAmd64
       fi
     fi
 
