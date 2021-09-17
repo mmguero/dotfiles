@@ -803,7 +803,17 @@ function InstallVirtualization {
       unset CONFIRMATION
       read -p "Install vagrant via apt-get instead [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
-      [[ $CONFIRMATION =~ ^[Yy] ]] && DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y vagrant
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y vagrant
+
+      elif $SUDO_CMD docker info >/dev/null 2>&1 ; then
+        unset CONFIRMATION
+        read -p "Pull ghcr.io/mmguero/vagrant-libvirt:latest instead [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          docker pull ghcr.io/mmguero/vagrant-libvirt:latest
+        fi
+      fi
     fi
 
     unset CONFIRMATION
@@ -812,7 +822,7 @@ function InstallVirtualization {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       curl -sSL -o /tmp/packer.zip "$(curl -sSL https://www.packer.io/downloads|grep -oP '"url":"https://releases\.hashicorp\.com/packer/.*?_linux_amd64\.zip"' | grep -v '{' | sort --version-sort | tail -n 1 | cut -d: -f2- | tr -d '"')"
       pushd /tmp >/dev/null 2>&1
-      gunzip -S .zip packer.zip
+      gunzip -f -S .zip packer.zip
       chmod 755 ./packer
       mkdir -p "$LOCAL_BIN_PATH"
       mv ./packer "$LOCAL_BIN_PATH"
