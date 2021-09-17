@@ -1,22 +1,4 @@
-if [ $WINDOWS10 ]; then
-  export WINDOWS_USER=$USER
-  export DOCKER_HOST=tcp://localhost:2375
-  export DOCKER_SHARE_HOME=C:/Users/$WINDOWS_USER
-  export DOCKER_SHARE_TMP="-v $DOCKER_SHARE_HOME/tmp:/host:rw,Z"
-  if [ -d /mnt/c/Users/$WINDOWS_USER/cloud/sync/config ]; then
-    export DOCKER_SHARE_BASH_RC="-v C:/Users/$WINDOWS_USER/cloud/config/bash/rc:/etc/bash.bashrc:ro,Z -v C:/Users/$WINDOWS_USER/cloud/config/bash/rc.d:/etc/bashrc.d:ro,Z"
-    export DOCKER_SHARE_BASH_ALIASES="-v C:/Users/$WINDOWS_USER/cloud/config/bash/aliases:/etc/bash.bash_aliases:ro,Z"
-    export DOCKER_SHARE_BASH_FUNCTIONS="-v C:/Users/$WINDOWS_USER/cloud/config/bash/functions:/etc/bash.bash_functions:ro,Z"
-    export DOCKER_SHARE_GIT_CONFIG="-v C:/Users/$WINDOWS_USER/cloud/config/git/gitconfig:/etc/gitconfig:ro,Z"
-  else
-    export DOCKER_SHARE_BASH_RC=""
-    export DOCKER_SHARE_BASH_ALIASES=""
-    export DOCKER_SHARE_BASH_FUNCTIONS=""
-    export DOCKER_SHARE_GIT_CONFIG=""
-  fi
-  # eval $(docker-machine.exe env default --shell bash | sed 's?\\?/?g;s?C:/?/mnt/c/?g')
-
-elif [ $MACOS ]; then
+if [ $MACOS ]; then
   unset DOCKER_HOST
   export WINDOWS_USER=$USER
   export DOCKER_SHARE_HOME=$HOME
@@ -45,11 +27,9 @@ fi
 ########################################################################
 # media
 ########################################################################
-alias m4b-tool='docker run -it --rm -u $(id -u):$(id -g) -v "$(pwd)":/mnt m4b-tool'
-
 function spotify() {
   mkdir -p "$HOME/.config/spotify/config" "$HOME/.config/spotify/cache"
-  nohup x11docker --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify </dev/null >/dev/null 2>&1 &
+  nohup x11docker --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify:latest </dev/null >/dev/null 2>&1 &
 }
 
 function ffmpegd() {
@@ -102,12 +82,12 @@ function signal() {
 # web
 ########################################################################
 function tor() {
-  nohup x11docker --hostuser=$USER -- "--tmpfs" "/dev/shm" -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
+  nohup x11docker --hostuser=$USER -- "--tmpfs" "/dev/shm" -- jess/tor-browser:latest "$@" </dev/null >/dev/null 2>&1 &
 }
 
 function cyberchef() {
   docker run -d --rm -p 8000:8000 --name cyberchef mpepping/cyberchef:latest && \
-    xdg-open http://localhost:8000
+  o http://localhost:8000
 }
 
 ########################################################################
@@ -207,7 +187,7 @@ function docker_backup() {
 
 # pull updates for docker images
 function dockup() {
-  di | grep -Piv "(malcolmnetsec|x11docker|jess|mingc)/" | cols 1 2 | tr ' ' ':' | xargs -r -l docker pull
+  di | grep -Piv "(malcolmnetsec)/" | cols 1 2 | tr ' ' ':' | xargs -r -l docker pull
 }
 
 function dxl() {
@@ -231,7 +211,7 @@ function dregls () {
   curl -k -X GET "https://"$1"/v2/_catalog"
 }
 
-alias dockviz='docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz images -t'
+alias dockviz='docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz:latest images -t'
 
 function dive () {
   docker run --rm -it \

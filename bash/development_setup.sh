@@ -548,6 +548,7 @@ function DockerPullImages {
         erichough/kodi:latest
         ghcr.io/mmguero/cleanvid:latest
         ghcr.io/mmguero/montag:latest
+        jess/spotify:latest
         mwader/static-ffmpeg:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -580,6 +581,7 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         andrewmackrodt/chromium-x11:latest
         ghcr.io/mmguero/firefox:latest
+        jess/spotify:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         docker pull "$i"

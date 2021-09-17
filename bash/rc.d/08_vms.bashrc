@@ -5,7 +5,7 @@
 ########################################################################
 export LIBVIRT_DEFAULT_URI='qemu:///system'
 alias vs='virsh'
-alias qemuls='virsh list --all'
+alias vls='virsh list --all'
 
 ########################################################################
 # vagrant
