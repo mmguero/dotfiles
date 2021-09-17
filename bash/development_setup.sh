@@ -323,6 +323,7 @@ function InstallEnvPackages {
     if pip -V >/dev/null 2>&1; then
       pip install -U \
         beautifulsoup4 \
+        black \
         chepy[extras] \
         colorama \
         colored \
