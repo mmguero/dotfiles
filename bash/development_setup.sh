@@ -526,7 +526,7 @@ EOT
 function DockerPullImages {
   if $SUDO_CMD docker info >/dev/null 2>&1 ; then
     unset CONFIRMATION
-    read -p "Pull common docker images [y/N]? " CONFIRMATION
+    read -p "Pull common docker images (Linux distributions) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -546,8 +546,9 @@ function DockerPullImages {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         erichough/kodi:latest
-        mwader/static-ffmpeg:latest
         ghcr.io/mmguero/cleanvid:latest
+        ghcr.io/mmguero/montag:latest
+        mwader/static-ffmpeg:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         docker pull "$i"
@@ -555,11 +556,15 @@ function DockerPullImages {
     fi # docker pull media images confirmation
 
     unset CONFIRMATION
-    read -p "Pull common docker images (web) [y/N]? " CONFIRMATION
+    read -p "Pull common docker images (web services) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         containous/whoami:latest
+        ghcr.io/mmguero/nginx-ldap:latest
+        ghcr.io/mmguero/stunnel:latest
+        ghcr.io/mmguero/tunneler:latest
+        haugene/transmission-openvpn:latest
         nginx:latest
         traefik:latest
       )
@@ -569,15 +574,55 @@ function DockerPullImages {
     fi # docker pull web images confirmation
 
     unset CONFIRMATION
+    read -p "Pull common docker images (web browsers) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      DOCKER_IMAGES=(
+        andrewmackrodt/chromium-x11:latest
+        ghcr.io/mmguero/firefox:latest
+      )
+      for i in ${DOCKER_IMAGES[@]}; do
+        docker pull "$i"
+      done
+    fi # docker pull web images confirmation
+
+    unset CONFIRMATION
+    read -p "Pull common docker images (desktop environment) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      DOCKER_IMAGES=(
+        ghcr.io/mmguero/xfce-base:latest
+        ghcr.io/mmguero/xfce-ext:latest
+        ghcr.io/mmguero/xfce:latest
+      )
+      for i in ${DOCKER_IMAGES[@]}; do
+        docker pull "$i"
+      done
+    fi # docker pull desktop environment
+
+    unset CONFIRMATION
+    read -p "Pull common docker images (deblive) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      DOCKER_IMAGES=(
+        ghcr.io/mmguero/deblive:latest
+        tianon/qemu:latest
+      )
+      for i in ${DOCKER_IMAGES[@]}; do
+        docker pull "$i"
+      done
+    fi # docker pull desktop environment
+
+    unset CONFIRMATION
     read -p "Pull common docker images (communication) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
+        ghcr.io/mmguero/mattermost-server:latest
+        ghcr.io/mmguero/mirotalk:latest
+        ghcr.io/mmguero/postgres:latest
         ghcr.io/mmguero/signal:latest
         ghcr.io/mmguero/teams:latest
-        ghcr.io/mmguero/mirotalk:latest
-        ghcr.io/mmguero/mattermost-server:latest
-        ghcr.io/mmguero/postgres:latest
         mdouchement/zoom-us:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -592,6 +637,7 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         ghcr.io/mmguero/capa:latest
         ghcr.io/mmguero/zeek:latest
+        ghcr.io/idaholab/navv:latest
         mpepping/cyberchef:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -612,19 +658,6 @@ function DockerPullImages {
         docker pull "$i"
       done
     fi # docker pull docker images confirmation
-
-    unset CONFIRMATION
-    read -p "Pull common docker images (mmguero) [y/N]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-N}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      DOCKER_IMAGES=(
-        ghcr.io/mmguero/tunneler:latest
-        ghcr.io/mmguero/montag:latest
-      )
-      for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
-      done
-    fi # docker pull mmguero images confirmation
 
   fi # docker is there
 }
