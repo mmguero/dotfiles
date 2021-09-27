@@ -590,6 +590,18 @@ function DockerPullImages {
     fi # docker pull web images confirmation
 
     unset CONFIRMATION
+    read -p "Pull common docker images (office) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      DOCKER_IMAGES=(
+        woahbase/alpine-libreoffice:latest
+      )
+      for i in ${DOCKER_IMAGES[@]}; do
+        docker pull "$i"
+      done
+    fi # docker pull office confirmation
+
+    unset CONFIRMATION
     read -p "Pull common docker images (desktop environment) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
