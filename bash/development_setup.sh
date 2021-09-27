@@ -548,6 +548,7 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         erichough/kodi:latest
         ghcr.io/mmguero/cleanvid:latest
+        ghcr.io/mmguero/lossless-cut:latest
         ghcr.io/mmguero/montag:latest
         jess/spotify:latest
         mwader/static-ffmpeg:latest

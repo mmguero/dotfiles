@@ -32,6 +32,18 @@ function spotify() {
   nohup x11docker --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify:latest </dev/null >/dev/null 2>&1 &
 }
 
+function losslesscut() {
+  DOCS_FOLDER="$(realpath $(pwd))"
+  if [[ -n "$1" ]]; then
+    if [[ -f "$1" ]]; then
+      DOCS_FOLDER="$(dirname "$(realpath "$1")")"
+    elif [[ -d "$1" ]]; then
+      DOCS_FOLDER="$(realpath "$1")"
+    fi
+  fi
+  nohup x11docker --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- ghcr.io/mmguero/lossless-cut:latest </dev/null >/dev/null 2>&1 &
+}
+
 function ffmpegd() {
   DIR="$(pwd)"
 
