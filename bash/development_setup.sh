@@ -1253,10 +1253,7 @@ function InstallCommonPackagesMedia {
         audacious
         audacity
         ffmpeg
-        gimp
-        gimp-plugin-registry
-        gimp-texturize
-        gtk-recordmydesktop
+        kazam
         imagemagick
         mpv
         pavucontrol
@@ -1270,6 +1267,22 @@ function InstallCommonPackagesMedia {
       if pip -V >/dev/null 2>&1 ; then
         pip install -U youtube-dl
       fi
+
+      unset CONFIRMATION
+      read -p "Install common packages (media/GIMP) [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+        DEBIAN_PACKAGE_LIST=(
+          gimp
+          gimp-plugin-registry
+          gimp-texturize
+        )
+        for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+        done
+      fi
+
     fi
 
   fi # Linux
