@@ -109,14 +109,15 @@ function libreoffice-docker() {
   if [[ -n "$1" ]]; then
     if [[ -f "$1" ]]; then
       DOCS_FOLDER="$(dirname "$(realpath "$1")")"
-      DOC_FILE="/home/alpine/$(basename "$1")"
+      DOC_FILE="/home/alpine/Documents/$(basename "$1")"
       shift
     elif [[ -d "$1" ]]; then
       DOCS_FOLDER="$(realpath "$1")"
       shift
     fi
   fi
-  docker run --rm -it \
+  mkdir -p "$HOME/.config/libreoffice" "$HOME/.fonts"
+  docker run -d --rm -it \
     --name libreoffice-$(date -u +%s) \
     -e PGID=$(id -g) \
     -e PUID=$(id -u) \
@@ -124,7 +125,9 @@ function libreoffice-docker() {
     -e "DISPLAY=$DISPLAY" \
     -v /usr/share/fonts:/usr/share/fonts:ro \
     -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
-    -v "$DOCS_FOLDER":/home/alpine:rw \
+    -v "$HOME"/.config/libreoffice:/home/alpine/.config/libreoffice:rw \
+    -v "$HOME"/.fonts:/home/alpine/.fonts:rw \
+    -v "$DOCS_FOLDER":/home/alpine/Documents:rw \
     woahbase/alpine-libreoffice:latest \
     --nologo "$@" "$DOC_FILE"
 }
@@ -134,7 +137,7 @@ function gimp-docker() {
   if [[ -n "$1" ]]; then
     if [[ -f "$1" ]]; then
       DOCS_FOLDER="$(dirname "$(realpath "$1")")"
-      DOC_FILE="/home/alpine/$(basename "$1")"
+      DOC_FILE="/home/alpine/Documents/$(basename "$1")"
       shift
       set -- "$@" "$DOC_FILE"
     elif [[ -d "$1" ]]; then
@@ -142,8 +145,8 @@ function gimp-docker() {
       shift
     fi
   fi
-  mkdir -p "$HOME/.config/GIMP"
-  docker run --rm -it \
+  mkdir -p "$HOME/.config/GIMP" "$HOME/.fonts"
+  docker run -d --rm -it \
     --name gimp-$(date -u +%s) \
     -e PGID=$(id -g) \
     -e PUID=$(id -u) \
@@ -153,7 +156,8 @@ function gimp-docker() {
     -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
     -v /usr/share/xml/iso-codes:/usr/share/xml/iso-codes:ro \
     -v "$HOME"/.config/GIMP:/home/alpine/.config/GIMP:rw \
-    -v "$DOCS_FOLDER":/home/alpine:rw \
+    -v "$HOME"/.fonts:/home/alpine/.fonts:rw \
+    -v "$DOCS_FOLDER":/home/alpine/Documents:rw \
     woahbase/alpine-gimp:latest \
     --no-splash "$@"
 }
