@@ -57,9 +57,12 @@
   # shows commits from all branches which are not merged upstream (the non-current remote), plus the last commit in upstream
   noup = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && UPS=$(git branch -vvr | grep -Pv \"^\\s*$RMT\" | cut -d \"/\" -f1 | sort -u | head -n 1 | tr -d \" \") && git log --graph --decorate --pretty=oneline --abbrev-commit --all @{$UPS}^..; }; f"
   # show local diffs with tool
+  diffs = diff --staged
   xdiff = difftool
+  xdiffs = difftool --staged
   # show cleaner in-line textual diff
   dif = diff --color-words='[^[:space:]]|([[:alnum:]]|UTF_8_GUARD)+' --word-diff=plain
+  difs = diff --color-words='[^[:space:]]|([[:alnum:]]|UTF_8_GUARD)+' --word-diff=plain --staged
   # show visual diff for specified revision
   diffrev = "!f() { git difftool \"$1\"^..\"$1\"; }; f"
   # show visual diff for last commit
@@ -104,6 +107,8 @@
   mrg = merge --no-commit --no-ff
   # "git add" only modified files from this directory onward
   addmod = !git status --short --untracked-files=no --porcelain ${GIT_PREFIX:-./} | awk '/^[ MA]M/{print $2}' | xargs -rl git add -v
+  # pull from upstream into this branch
+  pullup = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && UPS=$(git branch -vvr | grep -Pv \"^\\s*$RMT\" | cut -d \"/\" -f1 | sort -u | head -n 1 | tr -d \" \") && BRNCH=$(git rev-parse --abbrev-ref HEAD) && echo \"git pull $UPS $BRNCH\" && git pull \"$UPS\" \"$BRNCH\"; }; f"
   # commit adding all changes (but not to untracked files) with the message following this command
   save = commit -am
   # short status without untracked files
