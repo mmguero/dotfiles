@@ -595,6 +595,7 @@ function DockerPullImages {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         woahbase/alpine-libreoffice:latest
+        woahbase/alpine-gimp:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         docker pull "$i"

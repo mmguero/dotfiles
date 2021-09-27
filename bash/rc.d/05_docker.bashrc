@@ -129,6 +129,34 @@ function libreoffice-docker() {
     --nologo "$@" "$DOC_FILE"
 }
 
+function gimp-docker() {
+  set -x
+  DOCS_FOLDER="$(realpath $(pwd))"
+  if [[ -n "$1" ]]; then
+    if [[ -f "$1" ]]; then
+      DOCS_FOLDER="$(dirname "$(realpath "$1")")"
+      DOC_FILE="/home/alpine/$(basename "$1")"
+      shift
+      set -- "$@" "$DOC_FILE"
+    elif [[ -d "$1" ]]; then
+      DOCS_FOLDER="$(realpath "$1")"
+      shift
+    fi
+  fi
+  docker run --rm -it \
+    --name gimp-$(date -u +%s) \
+    -e PGID=$(id -g) \
+    -e PUID=$(id -u) \
+    -m 2096m \
+    -e "DISPLAY=$DISPLAY" \
+    -v /usr/share/fonts:/usr/share/fonts:ro \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+    -v /usr/share/xml/iso-codes:/usr/share/xml/iso-codes:ro \
+    -v "$DOCS_FOLDER":/home/alpine:rw \
+    woahbase/alpine-gimp:latest \
+    --no-splash "$@"
+  set +x
+}
 
 function x11desktop() {
   nohup x11docker \
