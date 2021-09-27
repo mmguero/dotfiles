@@ -1275,6 +1275,7 @@ function InstallCommonPackagesMedia {
         $SUDO_CMD apt-get update -qq >/dev/null 2>&1
         DEBIAN_PACKAGE_LIST=(
           gimp
+          gimp-gmic
           gimp-plugin-registry
           gimp-texturize
         )
