@@ -130,7 +130,6 @@ function libreoffice-docker() {
 }
 
 function gimp-docker() {
-  set -x
   DOCS_FOLDER="$(realpath $(pwd))"
   if [[ -n "$1" ]]; then
     if [[ -f "$1" ]]; then
@@ -143,6 +142,7 @@ function gimp-docker() {
       shift
     fi
   fi
+  mkdir -p "$HOME/.config/GIMP"
   docker run --rm -it \
     --name gimp-$(date -u +%s) \
     -e PGID=$(id -g) \
@@ -152,10 +152,10 @@ function gimp-docker() {
     -v /usr/share/fonts:/usr/share/fonts:ro \
     -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
     -v /usr/share/xml/iso-codes:/usr/share/xml/iso-codes:ro \
+    -v "$HOME"/.config/GIMP:/home/alpine/.config/GIMP:rw \
     -v "$DOCS_FOLDER":/home/alpine:rw \
     woahbase/alpine-gimp:latest \
     --no-splash "$@"
-  set +x
 }
 
 function x11desktop() {
