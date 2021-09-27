@@ -103,6 +103,33 @@ function kodi() {
   nohup x11docker --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
 }
 
+function libreoffice-docker() {
+  DOCS_FOLDER="$(realpath $(pwd))"
+  DOC_FILE=""
+  if [[ -n "$1" ]]; then
+    if [[ -f "$1" ]]; then
+      DOCS_FOLDER="$(dirname "$(realpath "$1")")"
+      DOC_FILE="/home/alpine/$(basename "$1")"
+      shift
+    elif [[ -d "$1" ]]; then
+      DOCS_FOLDER="$(realpath "$1")"
+      shift
+    fi
+  fi
+  docker run --rm -it \
+    --name libreoffice-$(date -u +%s) \
+    -e PGID=$(id -g) \
+    -e PUID=$(id -u) \
+    -m 2096m \
+    -e "DISPLAY=$DISPLAY" \
+    -v /usr/share/fonts:/usr/share/fonts:ro \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+    -v "$DOCS_FOLDER":/home/alpine:rw \
+    woahbase/alpine-libreoffice:latest \
+    --nologo "$@" "$DOC_FILE"
+}
+
+
 function x11desktop() {
   nohup x11docker \
     --clipboard \
