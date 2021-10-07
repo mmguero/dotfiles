@@ -74,6 +74,8 @@
   branchlog = "!f() { git log \"$2\" ^\"$1\" --no-merges; }; f"
   # all subdirectories in current directory and their most recent commits/authors
   dirlog = "!find -maxdepth 1 -type d -not -iwholename '*.git*' | xargs -I {} bash -c 'printf \"%-20s %s \n\" \"{}\" \"$(git --no-pager log -1 --date=local --pretty='\"'%cd %h %cn'\"' -- {};)\"'"
+  # change remote.XXXXXXX.fetch to ALL remote branches for the current remote
+  fetchall = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && git config remote.\"$RMT\".fetch \"+refs/heads/*:refs/remotes/$RMT/*\" && git fetch \"$RMT\"; }; f"
   # show log for specified file
   filelog = log -u
   # find files with names matching pattern
