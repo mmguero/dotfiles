@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import base64
 import os
 import pprint
 import sys
@@ -42,6 +43,21 @@ def parseXML(xmlfile):
     return sorted(posts, key = lambda e : dateparse(e['published']))
 
 ###################################################################################################
+def guessType(filepath):
+  try:
+    import magic  # python-magic
+    return magic.from_file(filepath, mime=True)
+  except ImportError:
+    import mimetypes
+    return mimetypes.guess_type(filepath)[0]
+
+###################################################################################################
+def fileToBase64(filepath):
+    with open(filepath, 'rb') as f:
+      encoded_str = base64.b64encode(f.read())
+    return encoded_str.decode('utf-8')
+
+###################################################################################################
 def wgetPosts(posts):
   global args
   global debug
@@ -69,6 +85,9 @@ def wgetPosts(posts):
       eprint(f"exception: {e}")
 
     for path in Path(os.path.join(newdir, args.blog_address)).rglob('*.html'):
+      fileParts = os.path.splitext(path)
+      outFileSpec = fileParts[0] + "_scrubbed" + fileParts[1]
+      outPath = os.path.dirname(outFileSpec)
       soup = BeautifulSoup(open(path), 'html.parser')
       # for blogger "simple theme"
       for divClass in [ 'tabs-outer', 'column-right-outer', 'header-outer', 'post-footer', 'comments', 'content-cap-top', 'cap-top', 'cap-bottom', 'footer-outer', 'post-feeds', 'fauxcolumn-outer', 'fauxborder-right', 'content-fauxcolumns', 'body-fauxcolumns']:
@@ -82,9 +101,11 @@ def wgetPosts(posts):
           tag.decompose()
       [comment.extract() for comment in soup.findAll(text=lambda text: isinstance(text, Comment))]
       [tag.extract() for tag in soup.findAll("script")]
-      fileParts = os.path.splitext(path)
-      outFileSpec = fileParts[0] + "_scrubbed" + fileParts[1]
-      outPath = os.path.dirname(outFileSpec)
+      for img in soup.find_all('img'):
+        imgPath = os.path.join(outPath, img.attrs['src']) if ('src' in img.attrs) else ''
+        if os.path.isfile(imgPath):
+          mimetype = guessType(imgPath)
+          img.attrs['src'] = f"data:{mimetype};base64,{fileToBase64(imgPath)}"
       with open(outFileSpec, 'wb') as f:
         f.write(soup.prettify('utf-8'))
       if os.path.isfile(outFileSpec):
