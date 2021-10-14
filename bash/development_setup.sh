@@ -873,7 +873,7 @@ function InstallVirtualization {
       VAGRANT_BOXES=(
         bento/almalinux-8
         bento/debian-11
-        bento/ubuntu-21.04
+        bento/ubuntu-21.10
         clink15/pxe
         gbailey/amzn2
       )
