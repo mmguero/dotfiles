@@ -852,6 +852,9 @@ function ddisousb() {
 function tmux() {
   TMUX="$(which tmux)"
 
+  # this should prevent systemd from killing our tmux sessions when we log out
+  type systemd-run >/dev/null 2>&1 && PARENTPROC="systemd-run --scope --user" || PARENTPROC=
+
   # old habits die hard, make "screen -l" and "screen -r" work the way I want them to for tmux
 
   if [ "$#" -eq 1 ] && ([ "$1" = "-list" ] || [ "$1" = "-l" ]); then
@@ -868,7 +871,7 @@ function tmux() {
     fi
 
   else
-    "$TMUX" "$@"
+    $PARENTPROC "$TMUX" "$@"
   fi
 }
 
