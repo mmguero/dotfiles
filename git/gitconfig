@@ -17,6 +17,7 @@
 	default = simple
 [diff]
   tool = xxdiff
+  algorithm = histogram
   # tool = icdiff
 [merge]
 	tool = kdiff3
