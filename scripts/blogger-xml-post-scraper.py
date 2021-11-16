@@ -152,6 +152,15 @@ def wgetPosts(posts):
         newOdtFileName = os.path.join(args.output, f"{dateparse(post['published']).strftime('%Y-%m-%d_%H:%M')}_{os.path.basename(odtFileName).replace('_scrubbed', '')}")
         os.rename(odtFileName, newOdtFileName)
 
+      # TODO:
+      # libreoffice is inserting a hard break before each page
+      # need to:
+      # 1. open odt file
+      # 2. in content.xml
+      #     - style:master-page-name="HTML" -> style:master-page-name=""
+      #     - <style:paragraph-properties style:page-number="auto"/> -> <style:paragraph-properties style:page-number="auto" fo:break-before="auto" fo:break-after="auto"/>
+      # 3. re-save odt file
+
 ###################################################################################################
 # main
 def main():
