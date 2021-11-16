@@ -89,25 +89,55 @@ def wgetPosts(posts):
       outFileSpec = fileParts[0] + "_scrubbed" + fileParts[1]
       outPath = os.path.dirname(outFileSpec)
       soup = BeautifulSoup(open(path), 'html.parser')
-      # for blogger "simple theme"
-      for divClass in [ 'tabs-outer', 'column-right-outer', 'header-outer', 'post-footer', 'comments', 'content-cap-top', 'cap-top', 'cap-bottom', 'footer-outer', 'post-feeds', 'fauxcolumn-outer', 'fauxborder-right', 'content-fauxcolumns', 'body-fauxcolumns']:
+
+      # for blogger "simple theme", we're going to prune and clean out all kinds of tags we don't need
+
+      # move lowest level containing actual blog post up to the top of body
+      if body := soup.find('body'):
+        movedMain = False
+        for div in soup.find_all("div", { 'class' : 'date-outer' }):
+          body.insert(0, div)
+          movedMain = True
+        if movedMain:
+          for div in soup.find_all("div", { 'class' : 'content' }):
+            div.decompose()
+
+      # remove divs we don't care about baed on class, id, and style
+      for divClass in [ 'clear', 'tabs-outer', 'column-right-outer', 'header-outer', 'post-header', 'post-footer', 'comments', 'content-cap-top', 'cap-top', 'cap-bottom', 'footer-outer', 'post-feeds', 'fauxcolumn-outer', 'fauxborder-right', 'content-fauxcolumns', 'body-fauxcolumns', 'column-left-inner', 'column-left-outer']:
         for div in soup.find_all("div", { 'class' : divClass }):
           div.decompose()
       for divId in ['b-navbar-fg', 'b-navbar-bg', 'b-navbar', 'Navbar1', 'navbar', 'blog-pager']:
         for div in soup.find_all("div", { 'id' : divId }):
           div.decompose()
-      for tagType in ['head', 'footer', 'iframe', 'meta', 'header', 'noscript']:
+      for divStyle in ['clear: both;']:
+        for div in soup.find_all("div", { 'style' : divStyle }):
+          div.decompose()
+
+      # remove other tag types we don't care about
+      for tagType in ['head', 'footer', 'iframe', 'meta', 'header', 'noscript', 'aside']:
         for tag in soup.find_all(tagType):
           tag.decompose()
+
+      # remove html comments
       [comment.extract() for comment in soup.findAll(text=lambda text: isinstance(text, Comment))]
+
+      # remove javascript
       [tag.extract() for tag in soup.findAll("script")]
+
+      # embed images using base64 rather than linking to files
       for img in soup.find_all('img'):
         imgPath = os.path.join(outPath, img.attrs['src']) if ('src' in img.attrs) else ''
         if os.path.isfile(imgPath):
           mimetype = guessType(imgPath)
           img.attrs['src'] = f"data:{mimetype};base64,{fileToBase64(imgPath)}"
+        # insert a hard break before each image
+        img.insert_after(soup.new_tag('br',attrs={"clear": "all"}))
+
+      # write massaged HTML file
       with open(outFileSpec, 'wb') as f:
         f.write(soup.prettify('utf-8'))
+
+      # convert to libreoffice odt
       if os.path.isfile(outFileSpec):
         retCode, output = mmguero.RunProcess(['libreoffice',
                                               '--headless',
