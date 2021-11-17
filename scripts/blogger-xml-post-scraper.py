@@ -195,7 +195,7 @@ def wgetPosts(posts):
                                               cwd=args.output,
                                               debug=debug)
         odtFileName = os.path.join(args.output, os.path.basename(os.path.splitext(outFileSpec)[0]+'.odt'))
-        newOdtFileName = os.path.join(args.output, f"{dateparse(post['published']).strftime('%Y-%m-%d_%H:%M')}_{os.path.basename(odtFileName).replace('_scrubbed', '')}")
+        newOdtFileName = os.path.join(args.output, f"{dateparse(post['published']).strftime('%Y-%m-%d_%H-%M')}_{os.path.basename(odtFileName).replace('_scrubbed', '')}")
         os.rename(odtFileName, newOdtFileName)
         tweakODT(newOdtFileName)
 
