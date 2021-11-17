@@ -3,11 +3,15 @@
 
 import argparse
 import base64
+import feedparser
+import fileinput
 import os
 import pprint
+import re
 import sys
+import tempfile
 import time
-import feedparser
+import zipfile
 
 from bs4 import BeautifulSoup, Comment
 from dateutil.parser import parse as dateparse
@@ -41,6 +45,48 @@ def parseXML(xmlfile):
         posts.append(entry)
 
     return sorted(posts, key = lambda e : dateparse(e['published']))
+
+###################################################################################################
+# libreoffice is inserting a hard break before each page
+# need to:
+# 1. open odt file
+# 2. in content.xml
+#     - style:master-page-name="HTML" -> style:master-page-name=""
+#     - <style:paragraph-properties style:page-number="auto"/> -> <style:paragraph-properties style:page-number="auto" fo:break-before="auto" fo:break-after="auto"/>
+# 3. re-save odt file
+def tweakODT(odtfile):
+  try:
+    # create and navigate to a temporary directory
+    with tempfile.TemporaryDirectory() as tmpDirName:
+      with mmguero.pushd(tmpDirName):
+        # open the original ODT (zip file) and extract content.xml which contains the style elements we need to mess with
+        with zipfile.ZipFile(odtfile, 'r') as origOdt:
+          origOdt.extract('content.xml')
+          if os.path.isfile('content.xml'):
+            # read content.xml and modify the style elements we need to mess with, in-place
+            with fileinput.FileInput('content.xml', inplace=True, backup=None) as content:
+                for line in content:
+                  line = re.sub(r'(style:master-page-name=)"[^\"]*"', r'\1""', line)
+                  line = re.sub(r'(<style:paragraph-properties\b.*?)/>', r'\1 fo:break-before="auto" fo:break-after="auto"/>', line)
+                  print(line)
+            # create and open the new ODT (zip file)
+            tmpfd, tmpname = tempfile.mkstemp(dir=tmpDirName)
+            os.close(tmpfd)
+            with zipfile.ZipFile(tmpname, 'w') as newOdt:
+              # transfer contents of original ODT to new ODT except for content.xml
+              newOdt.comment = origOdt.comment
+              for item in origOdt.infolist():
+                if item.filename != 'content.xml':
+                  newOdt.writestr(item, origOdt.read(item.filename))
+              # write modified content.xml
+              newOdt.write('content.xml', 'content.xml')
+        # replace the original ODT with the new ODT
+        if os.path.isfile(tmpname):
+          os.remove(odtfile)
+          os.rename(tmpname, odtfile)
+
+  except Exception as e:
+    eprint(f"exception: {e}")
 
 ###################################################################################################
 def guessType(filepath):
@@ -151,15 +197,7 @@ def wgetPosts(posts):
         odtFileName = os.path.join(args.output, os.path.basename(os.path.splitext(outFileSpec)[0]+'.odt'))
         newOdtFileName = os.path.join(args.output, f"{dateparse(post['published']).strftime('%Y-%m-%d_%H:%M')}_{os.path.basename(odtFileName).replace('_scrubbed', '')}")
         os.rename(odtFileName, newOdtFileName)
-
-      # TODO:
-      # libreoffice is inserting a hard break before each page
-      # need to:
-      # 1. open odt file
-      # 2. in content.xml
-      #     - style:master-page-name="HTML" -> style:master-page-name=""
-      #     - <style:paragraph-properties style:page-number="auto"/> -> <style:paragraph-properties style:page-number="auto" fo:break-before="auto" fo:break-after="auto"/>
-      # 3. re-save odt file
+        tweakODT(newOdtFileName)
 
 ###################################################################################################
 # main
