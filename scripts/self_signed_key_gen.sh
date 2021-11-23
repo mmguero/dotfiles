@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # generate self-signed CA, server, and client .crt/.key files and dhparam.pem
 
@@ -6,14 +6,20 @@
 #   openssl s_server -Verify 999 -CAfile ca.crt -key server.key -cert server.crt -accept 44330 -www
 #   openssl s_client -CAfile ca.crt -key client.key -cert client.crt -showcerts -connect localhost:44330
 
+ENCODING="utf-8"
+
+if [ -t 0 ] ; then
+  INTERACTIVE_SHELL=yes
+else
+  INTERACTIVE_SHELL=no
+fi
+
 set -e
 set -u
 set -o pipefail
 
-ENCODING="utf-8"
-
 RUN_PATH="$(pwd)"
-OUTPUT_PATH="$(pwd)"/certs_$(date "+%Y-%m-%d_%H:%M:%S")
+OUTPUT_PATH="${1:-"$(pwd)"/certs_$(date "+%Y-%m-%d_%H:%M:%S")}"
 
 # create a temporary directory to store our results in (make sure /tmp is big enough to extract all of these logs into!)
 WORKDIR="$(mktemp -d -t keygen-XXXXXX)"
@@ -57,7 +63,7 @@ if [ -d "$WORKDIR" ]; then
   echo "Generating CA certificate and key..."
 
   SUBJECT_DEFAULT="/C=US/ST=$(randomStateAbbr)/O=ACME/OU=R&D"
-  SUBJECT=""
+  [[ $INTERACTIVE_SHELL == "yes" ]] && SUBJECT="" || SUBJECT=$SUBJECT_DEFAULT
   while [[ -z $SUBJECT ]]; do
     echo ""
     read -p "CA subject [$SUBJECT_DEFAULT]? " SUBJECT
@@ -69,11 +75,12 @@ if [ -d "$WORKDIR" ]; then
   # server -------------------------------
   echo "Generating server certificate and key..."
 
-  cat <<EOF > "server.conf"
+  if [[ $INTERACTIVE_SHELL == "yes" ]]; then
+    cat <<EOF > "server.conf"
 [req]
 distinguished_name = req_distinguished_name
 req_extensions = v3_req
-prompt = yes
+prompt = $INTERACTIVE_SHELL
 
 [req_distinguished_name]
 countryName           = Country Name (2 letter code)
@@ -95,13 +102,31 @@ organizationalUnitName_default = R&D
 commonName          = Common Name (e.g., your name or server hostname)
 commonName_max      = 64
 
-emailAddress        = Email Address
-emailAddress_max    = 40
+emailAddress         = Email Address
+emailAddress_max     = 40
 
 [v3_req]
 keyUsage = keyEncipherment, dataEncipherment
 extendedKeyUsage = serverAuth
 EOF
+  else
+    cat <<EOF > "server.conf"
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = $INTERACTIVE_SHELL
+
+[req_distinguished_name]
+countryName                 = US
+stateOrProvinceName         = $(randomStateFull)
+0.organizationName          = ACME
+organizationalUnitName      = R&D
+
+[v3_req]
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+EOF
+  fi
 
   openssl genrsa -out server.key 2048
   openssl req -sha512 -new -key server.key -out server.csr -config server.conf
@@ -114,11 +139,12 @@ EOF
   # client -------------------------------
   echo "Generating client certificate and key..."
 
-  cat <<EOF > "client.conf"
+  if [[ $INTERACTIVE_SHELL == "yes" ]]; then
+    cat <<EOF > "client.conf"
 [req]
 distinguished_name = req_distinguished_name
 req_extensions = v3_req
-prompt = yes
+prompt = $INTERACTIVE_SHELL
 
 [req_distinguished_name]
 countryName           = Country Name (2 letter code)
@@ -155,6 +181,32 @@ extendedKeyUsage = serverAuth, clientAuth
 keyUsage = keyEncipherment, dataEncipherment
 extendedKeyUsage = serverAuth, clientAuth
 EOF
+  else
+    cat <<EOF > "client.conf"
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = $INTERACTIVE_SHELL
+
+[req_distinguished_name]
+countryName            = US
+stateOrProvinceName    = $(randomStateFull)
+0.organizationName     = ACME
+organizationalUnitName = R&D
+
+[usr_cert]
+basicConstraints = CA:FALSE
+nsCertType = client, server
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+keyUsage = critical, digitalSignature, keyEncipherment, keyAgreement, nonRepudiation
+extendedKeyUsage = serverAuth, clientAuth
+
+[v3_req]
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+EOF
+  fi
 
   openssl genrsa -out client.key 2048
   openssl req -sha512 -new -key client.key -out client.csr -config client.conf
