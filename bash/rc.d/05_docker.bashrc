@@ -3,15 +3,19 @@ if [ $MACOS ]; then
   export WINDOWS_USER=$USER
   export DOCKER_SHARE_HOME=$HOME
   export DOCKER_SHARE_TMP="-v $DOCKER_SHARE_HOME/tmp:/host:rw,Z"
-  export DOCKER_SHARE_BASH_RC="-v $DOCKER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z -v $DOCKER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z"
-  export DOCKER_SHARE_BASH_ALIASES="-v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z"
-  export DOCKER_SHARE_BASH_FUNCTIONS="-v $DOCKER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z"
-  export DOCKER_SHARE_GIT_CONFIG="-v $DOCKER_SHARE_HOME/.gitconfig:/etc/gitconfig:ro,Z"
+  if docker info --format '{{.Name}}' 2>/dev/null | grep -q ^lima-colima >/dev/null 2>&1; then
+    unset DOCKER_SHARE_BASH_RC
+    unset DOCKER_SHARE_BASH_ALIASES
+    unset DOCKER_SHARE_BASH_FUNCTIONS
+    unset DOCKER_SHARE_GIT_CONFIG
+  else
+    export DOCKER_SHARE_BASH_RC="-v $DOCKER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z -v $DOCKER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z"
+    export DOCKER_SHARE_BASH_ALIASES="-v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z"
+    export DOCKER_SHARE_BASH_FUNCTIONS="-v $DOCKER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z"
+    export DOCKER_SHARE_GIT_CONFIG="-v $DOCKER_SHARE_HOME/.gitconfig:/etc/gitconfig:ro,Z"
+  fi
 
 else
-  unset DOCKER_HOST
-  export WINDOWS_USER=$USER
-  export DOCKER_SHARE_HOME=$HOME
   export DOCKER_SHARE_TMP="-v $DOCKER_SHARE_HOME/tmp:/host:rw,Z"
   export DOCKER_SHARE_BASH_RC="-v $DOCKER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z -v $DOCKER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z"
   export DOCKER_SHARE_BASH_ALIASES="-v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z"
