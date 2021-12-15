@@ -1613,6 +1613,9 @@ function InstallUserLocalBinaries {
       chmod 755 "$LOCAL_BIN_PATH"/croc
       rm -rf "$TMP_CLONE_DIR"
 
+      # curl -o "$LOCAL_BIN_PATH"/makesure -L "https://raw.githubusercontent.com/xonixx/makesure/main/makesure.awk"
+      # chmod 755 "$LOCAL_BIN_PATH"/makesure
+
       GRON_RELEASE="$(_GitLatestRelease tomnomnom/gron | sed 's/^v//')"
       TMP_CLONE_DIR="$(mktemp -d)"
       if [[ "$LINUX_ARCH" =~ ^arm ]]; then
