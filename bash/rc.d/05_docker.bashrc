@@ -1,7 +1,7 @@
+unset DOCKER_HOST
+export WINDOWS_USER=$USER
+export DOCKER_SHARE_HOME=$HOME
 if [ $MACOS ]; then
-  unset DOCKER_HOST
-  export WINDOWS_USER=$USER
-  export DOCKER_SHARE_HOME=$HOME
   export DOCKER_SHARE_TMP="-v $DOCKER_SHARE_HOME/tmp:/host:rw,Z"
   if docker info --format '{{.Name}}' 2>/dev/null | grep -q ^lima-colima >/dev/null 2>&1; then
     unset DOCKER_SHARE_BASH_RC
