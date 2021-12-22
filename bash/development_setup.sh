@@ -1716,6 +1716,13 @@ function InstallUserLocalBinaries {
         cp -f ./ffsend "$LOCAL_BIN_PATH"/ffsend
         popd >/dev/null 2>&1
         rm -rf "$TMP_CLONE_DIR"
+
+        DAG_RELEASE="$(_GitLatestRelease devmatteini/dag)"
+        TMP_CLONE_DIR="$(mktemp -d)"
+        curl -L "https://github.com/devmatteini/dag/releases/download/${DAG_RELEASE}/dag-${DAG_RELEASE}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+        cp -f "${TMP_CLONE_DIR}"/dag "$LOCAL_BIN_PATH"/dag
+        chmod 755 "$LOCAL_BIN_PATH"/dag
+        rm -rf "$TMP_CLONE_DIR"
       fi
     fi
   fi
