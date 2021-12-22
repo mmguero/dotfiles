@@ -77,7 +77,8 @@ alias wwg='sudo wwg.sh'
 alias ip='ip -c=auto'
 
 #development/misc
-alias pycheck='python -m py_compile'
+alias pycheck='python3 -m py_compile'
+alias black='python3 -m black --line-length 120'
 alias delblanks='sed -i "/^\s*$/d"'
 alias extip='type dig >/dev/null 2>&1 && dig +short myip.opendns.com @resolver1.opendns.com || ( curl -sSLH "Cache-Control: no-cache" https://ifconfig.co/?$(date +%s) 2>/dev/null || wget -qO- --no-cache https://ifconfig.co/?$(date +%s) 2>/dev/null )'
 alias cl='curl -L -J -O'
