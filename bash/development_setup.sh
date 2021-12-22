@@ -329,27 +329,29 @@ function InstallEnvPackages {
         colored \
         cryptography \
         Cython \
+        dateparser \
         entrypoint2 \
         git+https://github.com/badele/gitcheck.git \
         git+https://github.com/mmguero/python-mmguero.git \
         git-up \
         humanhash3 \
+        jinja2 \
         magic-wormhole \
+        nikola \
         patool \
         Pillow \
         psutil \
         py-cui \
         pyinotify \
-        pythondialog \
-        python-magic \
         pyshark \
         python-dateutil \
+        python-magic \
+        pythondialog \
         pyunpack \
         pyyaml \
         requests\[security\] \
         scapy \
-        urllib3 \
-        magic-wormhole
+        urllib3
 
       [[ ! -d "$LOCAL_CONFIG_PATH"/chepy_plugins ]] && _GitClone https://github.com/securisec/chepy_plugins "$LOCAL_CONFIG_PATH"/chepy_plugins
     fi
