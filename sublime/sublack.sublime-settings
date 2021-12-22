@@ -1,0 +1,6 @@
+{
+    "black_on_save": true,
+    "black_command": "/home/tlacuache/.asdf/shims/black",
+    "black_skip_string_normalization": true,
+    "black_line_length": 120
+}

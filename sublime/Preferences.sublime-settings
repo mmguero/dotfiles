@@ -1,16 +1,16 @@
 {
-	"auto_find_in_selection": true,
-	"dpi_scale": 1.25,
-	"font_face": "Hack Nerd Font Mono",
-	"font_size": 12,
+    "auto_find_in_selection": true,
+    "dpi_scale": 1.25,
+    "font_face": "Hack Nerd Font Mono",
+    "font_size": 12,
 	"ignored_packages":
 	[
 		"Markdown",
 		"Vintage"
 	],
-	"tab_size": 2,
-	"translate_tabs_to_spaces": true,
-	"trim_trailing_white_space_on_save": true,
-	"update_check": false,
-	"mde.auto_fold_link.enabled": false
+    "mde.auto_fold_link.enabled": false,
+    "tab_size": 4,
+    "translate_tabs_to_spaces": true,
+    "trim_trailing_white_space_on_save": true,
+    "update_check": false
 }
