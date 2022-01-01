@@ -320,8 +320,8 @@ function InstallEnvPackages {
   if [[ $CONFIRMATION =~ ^[Yy] ]]; then
     _EnvSetup
 
-    if pip -V >/dev/null 2>&1; then
-      pip install -U \
+    if python3 -m pip -V >/dev/null 2>&1; then
+      python3 -m pip install -U \
         beautifulsoup4 \
         black \
         chepy[extras] \
@@ -332,11 +332,11 @@ function InstallEnvPackages {
         dateparser \
         entrypoint2 \
         git+https://github.com/badele/gitcheck.git \
-        git+https://github.com/mmguero/python-mmguero.git \
         git-up \
         humanhash3 \
         jinja2 \
         magic-wormhole \
+        mmguero \
         nikola \
         patool \
         Pillow \
@@ -485,9 +485,9 @@ function InstallDocker {
       read -p "\"docker-compose version\" failed, attempt to install docker-compose [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        if pip -V >/dev/null 2>&1 ; then
+        if python3 -m pip -V >/dev/null 2>&1 ; then
           echo "Installing Docker Compose via pip..."
-          pip install -U docker-compose
+          python3 -m pip install -U docker-compose
           if ! docker-compose version >/dev/null 2>&1 ; then
             echo "Installing docker-compose failed"
             exit 1
@@ -501,7 +501,7 @@ function InstallDocker {
             echo "Installing docker-compose failed"
             exit 1
           fi
-        fi # pip vs. curl for docker-compose install
+        fi # pip3 vs. curl for docker-compose install
       fi # docker-compose install confirmation check
     else
       echo "\"docker-compose\" is already installed!"
@@ -1267,8 +1267,8 @@ function InstallCommonPackagesMedia {
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
       done
-      if pip -V >/dev/null 2>&1 ; then
-        pip install -U youtube-dl
+      if python3 -m pip -V >/dev/null 2>&1 ; then
+        python3 -m pip install -U youtube-dl cleanvid monkeyplug montag-cleaner
       fi
 
       unset CONFIRMATION
