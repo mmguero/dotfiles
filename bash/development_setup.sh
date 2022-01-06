@@ -1717,11 +1717,11 @@ function InstallUserLocalBinaries {
         popd >/dev/null 2>&1
         rm -rf "$TMP_CLONE_DIR"
 
-        DAG_RELEASE="$(_GitLatestRelease devmatteini/dag)"
+        DRA_RELEASE="$(_GitLatestRelease devmatteini/dra)"
         TMP_CLONE_DIR="$(mktemp -d)"
-        curl -L "https://github.com/devmatteini/dag/releases/download/${DAG_RELEASE}/dag-${DAG_RELEASE}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
-        cp -f "${TMP_CLONE_DIR}"/dag "$LOCAL_BIN_PATH"/dag
-        chmod 755 "$LOCAL_BIN_PATH"/dag
+        curl -L "https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+        cp -f "${TMP_CLONE_DIR}"/dra "$LOCAL_BIN_PATH"/dra
+        chmod 755 "$LOCAL_BIN_PATH"/dra
         rm -rf "$TMP_CLONE_DIR"
       fi
     fi
