@@ -508,6 +508,13 @@ function InstallDocker {
     fi # docker-compose install check
 
     unset CONFIRMATION
+    read -p "Install distrobox [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- -p "$LOCAL_BIN_PATH"
+    fi
+
+    unset CONFIRMATION
     read -p "Configure user namespaces [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
