@@ -109,7 +109,7 @@
   # merge, no commit, no ff
   mrg = merge --no-commit --no-ff
   # "git add" only modified files from this directory onward
-  addmod = !git status --short --untracked-files=no --porcelain ${GIT_PREFIX:-./} | awk -F'\"' '/^[ MA]M/{print $2}' | xargs -r -I XXX git add -v "XXX"
+  addmod = add -v -u
   # pull from upstream into this branch
   pullup = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && UPS=$(git branch -vvr | grep -Pv \"^\\s*$RMT\" | cut -d \"/\" -f1 | sort -u | head -n 1 | tr -d \" \") && BRNCH=$(git rev-parse --abbrev-ref HEAD) && echo \"git pull $UPS $BRNCH\" && git pull \"$UPS\" \"$BRNCH\"; }; f"
   # commit adding all changes (but not to untracked files) with the message following this command
