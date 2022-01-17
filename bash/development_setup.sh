@@ -62,6 +62,8 @@ ENV_LIST=(
   age
   bat
   fd
+  jq
+  yq
   ripgrep
   tmux
   watchexec
