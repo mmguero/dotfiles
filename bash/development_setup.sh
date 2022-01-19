@@ -1687,6 +1687,20 @@ function InstallUserLocalBinaries {
       chmod 755 "$LOCAL_BIN_PATH"/termshark
       rm -rf "$TMP_CLONE_DIR"
 
+      SUPERCRONIC_RELEASE="$(_GitLatestRelease aptible/supercronic | sed 's/^v//')"
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
+        if [[ "$LINUX_CPU" == "aarch64" ]]; then
+          RELEASE_ARCH=arm64
+        else
+          RELEASE_ARCH=arm
+        fi
+      else
+        RELEASE_ARCH=amd64
+      fi
+      curl -o "$LOCAL_BIN_PATH"/supercronic.new -L "https://github.com/aptible/supercronic/releases/download/v${SUPERCRONIC_RELEASE}/supercronic-linux-${RELEASE_ARCH}"
+      chmod 755 "$LOCAL_BIN_PATH"/supercronic.new
+      [[ -f "$LOCAL_BIN_PATH"/supercronic ]] && rm -f "$LOCAL_BIN_PATH"/supercronic
+      mv "$LOCAL_BIN_PATH"/supercronic.new "$LOCAL_BIN_PATH"/supercronic
 
       TMP_CLONE_DIR="$(mktemp -d)"
       if [[ "$LINUX_ARCH" =~ ^arm ]]; then
