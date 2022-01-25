@@ -1277,7 +1277,7 @@ function InstallCommonPackagesMedia {
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
       done
       if python3 -m pip -V >/dev/null 2>&1 ; then
-        python3 -m pip install -U youtube-dl cleanvid monkeyplug montag-cleaner
+        python3 -m pip install -U yt-dlp cleanvid monkeyplug montag-cleaner
       fi
 
       unset CONFIRMATION

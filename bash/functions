@@ -117,32 +117,32 @@ function humanhash () {
 # media
 ########################################################################
 function yt () {
-  youtube-dl -o - "$1" | mpv -
+  yt-dlp -o - "$1" | mpv -
 }
 
 function ytsel () {
-  youtube-dl -o - "$(xsel)" | mpv -
+  yt-dlp -o - "$(xsel)" | mpv -
 }
 
 function pytv() {
-  youtube-dl -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -
+  yt-dlp -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -
 }
 
 function pyt() {
-  youtube-dl -f bestaudio -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -vo null /dev/fd/3 3<&0 </dev/tty
+  yt-dlp -f bestaudio -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -vo null /dev/fd/3 3<&0 </dev/tty
 }
 
 function ytmp3() {
   search="$1"
   if [[ "$search" =~ ^http ]]; then
-    youtube-dl -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 "$search"
+    yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 "$search"
   else
-    youtube-dl -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
+    yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
   fi
 }
 
 function ytsearch() {
-  youtube-dl -F --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1"
+  yt-dlp -F --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1"
 }
 
 function conv2mp4() {
