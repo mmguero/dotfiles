@@ -31,6 +31,10 @@ fi
 ########################################################################
 # media
 ########################################################################
+export MONKEYPLUG_DOCKER_IMAGE=ghcr.io/mmguero/monkeyplug:large
+export VOSK_MODEL=/home/tlacuache/devel/github/mmguero/monkeyplug/src/monkeyplug/model
+export ZEEK_DOCKER_IMAGE=ghcr.io/mmguero/zeek:plus
+
 function spotify() {
   mkdir -p "$HOME/.config/spotify/config" "$HOME/.config/spotify/cache"
   nohup x11docker --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify:latest </dev/null >/dev/null 2>&1 &
@@ -147,6 +151,28 @@ function x11desktop() {
     --group-add=fuse \
     --group-add=libvirt \
   ghcr.io/mmguero/xfce-ext:latest </dev/null >/dev/null 2>&1 &
+}
+
+function dockeriso() {
+    if [[ -e /dev/kvm ]]; then
+        if [[ "$1" ]]; then
+            docker run \
+            --detach \
+            --publish-all \
+            --rm \
+            -e QEMU_CPU=${QEMU_CPU:-2} \
+            -e QEMU_RAM=${QEMU_CPU:-4096} \
+            --device /dev/kvm \
+            --volume "$(realpath "$1")":/image/live.iso:ro \
+            ghcr.io/mmguero/qemu-live-iso:latest
+        else
+            echo "No image file specified" >&2
+            exit 1
+        fi
+    else
+        echo "/dev/kvm not found" >&2
+        exit 1
+    fi
 }
 
 ########################################################################
