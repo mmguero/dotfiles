@@ -80,6 +80,26 @@ function ffmpegd() {
   fi
 }
 
+function ytdlpd() {
+  DIR="$(pwd)"
+
+  docker run -i -t --rm \
+    -e PUID=$(id -u) \
+    -e PGID=$(id -g) \
+    -v "$DIR:$DIR:rw" \
+    -w "$DIR" \
+    ghcr.io/mmguero/yt-dlp "$@"
+}
+
+function ytmp3d() {
+  search="$1"
+  if [[ "$search" =~ ^http ]]; then
+    ytdlpd -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 "$search"
+  else
+    ytdlpd -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
+  fi
+}
+
 ########################################################################
 # communications
 ########################################################################
