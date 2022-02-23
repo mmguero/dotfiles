@@ -2126,6 +2126,31 @@ function GueroSymlinks {
 }
 
 ################################################################################
+function GueroDockerWrappers {
+  unset CONFIRMATION
+  read -p "Download mmguero's Docker image wrapper shell scripts [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    mkdir -p "$LOCAL_BIN_PATH"
+    pushd "$LOCAL_BIN_PATH" >/dev/null 2>&1
+    WRAPPER_SH_URLS=(
+      https://raw.githubusercontent.com/mmguero/cleanvid/main/docker/cleanvid-docker.sh
+      https://raw.githubusercontent.com/mmguero/docker/master/capa/capa-docker.sh
+      https://raw.githubusercontent.com/mmguero/docker/master/gimp/gimp-docker.sh
+      https://github.com/idaholab/network-architecture-verification-and-validation/blob/develop/docker/navv-docker.sh
+      https://raw.githubusercontent.com/mmguero/monkeyplug/main/docker/monkeyplug-docker.sh
+      https://raw.githubusercontent.com/mmguero/montag/main/docker/montag-docker.sh
+      https://raw.githubusercontent.com/mmguero/zeek-docker/main/zeek-docker.sh
+    )
+    for i in ${WRAPPER_SH_URLS[@]}; do
+      curl -f -L -O -J "$i" && \
+        chmod 755 "$(basename "$i")"
+    done
+    popd >/dev/null 2>&1
+  fi # confirmation
+}
+
+################################################################################
 # "main"
 
 # in case we've already got some envs set up to use
