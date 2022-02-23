@@ -2136,6 +2136,7 @@ function GueroDockerWrappers {
     WRAPPER_SH_URLS=(
       https://raw.githubusercontent.com/mmguero/cleanvid/main/docker/cleanvid-docker.sh
       https://raw.githubusercontent.com/mmguero/docker/master/capa/capa-docker.sh
+      https://raw.githubusercontent.com/mmguero/docker/master/yt-dlp/yt-dlp-docker.sh
       https://raw.githubusercontent.com/mmguero/docker/master/gimp/gimp-docker.sh
       https://github.com/idaholab/network-architecture-verification-and-validation/blob/develop/docker/navv-docker.sh
       https://raw.githubusercontent.com/mmguero/monkeyplug/main/docker/monkeyplug-docker.sh
@@ -2143,7 +2144,8 @@ function GueroDockerWrappers {
       https://raw.githubusercontent.com/mmguero/zeek-docker/main/zeek-docker.sh
     )
     for i in ${WRAPPER_SH_URLS[@]}; do
-      curl -f -L -O -J "$i" && \
+      rm -f "$(basename "$i")" && \
+        curl -f -L -O -J "$i" && \
         chmod 755 "$(basename "$i")"
     done
     popd >/dev/null 2>&1
