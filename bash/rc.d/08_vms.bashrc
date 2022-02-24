@@ -21,24 +21,42 @@ alias vplsr='gem list --remote vagrant-'
 alias vpls='vagrant plugin list'
 
 if [[ $LINUX ]]; then
-  alias vagrantd='
+  function vagrantd() {
     docker run -it --rm \
       -e LIBVIRT_DEFAULT_URI \
+      -e VAGRANT_DEFAULT_PROVIDER=libvirt \
       -v /var/run/libvirt/:/var/run/libvirt/ \
-      -v ~/.vagrant.d:/.vagrant.d \
+      -v "${VAGRANT_HOME:-$HOME/.vagrant.d}":/.vagrant.d \
       -v $(realpath "${PWD}"):${PWD} \
       -w $(realpath "${PWD}") \
       --network host \
       ghcr.io/mmguero/vagrant-libvirt:latest \
-      vagrant'
-  alias vagd='vagrantd'
-  alias vupd='vagrantd up'
-  alias vhaltd='vagrantd halt'
-  alias vrmd='vagrantd destroy'
-  alias vbld='vagrantd box list'
-  alias vgsd='vagrantd global-status'
-  alias vshd='vagrantd ssh'
-  alias vplsd='vagrantd plugin list'
+      vagrant "$@"
+  }
+  function vagd() {
+    vagrantd "$@"
+  }
+  function vupd() {
+    vagrantd up "$@"
+  }
+  function vhaltd() {
+    vagrantd halt "$@"
+  }
+  function vrmd() {
+    vagrantd destroy "$@"
+  }
+  function vbld() {
+    vagrantd box list "$@"
+  }
+  function vgsd() {
+    vagrantd global-status "$@"
+  }
+  function vshd() {
+    vagrantd ssh "$@"
+  }
+  function vplsd() {
+    vagrantd plugin list "$@"
+  }
 fi
 
 VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)"
