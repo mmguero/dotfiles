@@ -24,11 +24,13 @@ if [[ $LINUX ]]; then
   function vagrantd() {
     docker run -it --rm \
       -e LIBVIRT_DEFAULT_URI \
+      -e USER_UID=$(id -u) \
+      -e USER_GID=$(id -g) \
       -e VAGRANT_DEFAULT_PROVIDER=libvirt \
       -v /var/run/libvirt/:/var/run/libvirt/ \
       -v "${VAGRANT_HOME:-$HOME/.vagrant.d}":/.vagrant.d \
-      -v $(realpath "${PWD}"):${PWD} \
-      -w $(realpath "${PWD}") \
+      -v "$(realpath "${PWD}")":"${PWD}" \
+      -w "${PWD}" \
       --network host \
       ghcr.io/mmguero/vagrant-libvirt:latest \
       vagrant "$@"
