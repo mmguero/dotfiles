@@ -10,16 +10,6 @@ alias vls='virsh list --all'
 ########################################################################
 # vagrant
 ########################################################################
-alias vag='vagrant'
-alias vup='vagrant up'
-alias vhalt='vagrant halt'
-alias vrm='vagrant destroy'
-alias vbl='vagrant box list'
-alias vgs='vagrant global-status'
-alias vsh='vagrant ssh'
-alias vplsr='gem list --remote vagrant-'
-alias vpls='vagrant plugin list'
-
 if [[ $LINUX ]]; then
   function vagrantd() {
     docker run -it --rm \
@@ -59,6 +49,49 @@ if [[ $LINUX ]]; then
   function vplsd() {
     vagrantd plugin list "$@"
   }
+
+  function vagrant() {
+    if which vagrant >/dev/null 2>&1; then
+      "$(which vagrant)" "$@"
+    else
+      vagrantd "$@"
+    fi
+  }
+  function vag() {
+    vagrant "$@"
+  }
+  function vup() {
+    vagrant up "$@"
+  }
+  function vhalt() {
+    vagrant halt "$@"
+  }
+  function vrm() {
+    vagrant destroy "$@"
+  }
+  function vbl() {
+    vagrant box list "$@"
+  }
+  function vgs() {
+    vagrant global-status "$@"
+  }
+  function vsh() {
+    vagrant ssh "$@"
+  }
+  function vpls() {
+    vagrant plugin list "$@"
+  }
+
+else
+  alias vag='vagrant'
+  alias vup='vagrant up'
+  alias vhalt='vagrant halt'
+  alias vrm='vagrant destroy'
+  alias vbl='vagrant box list'
+  alias vgs='vagrant global-status'
+  alias vsh='vagrant ssh'
+  alias vplsr='gem list --remote vagrant-'
+  alias vpls='vagrant plugin list'
 fi
 
 VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)"
