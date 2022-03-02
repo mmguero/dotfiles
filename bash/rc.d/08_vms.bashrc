@@ -22,6 +22,7 @@ if [[ $LINUX ]]; then
       -v "$(realpath "${PWD}")":"${PWD}" \
       -w "${PWD}" \
       --network host \
+      --pull=never \
       ghcr.io/mmguero/vagrant-libvirt:latest \
       vagrant "$@"
   }
