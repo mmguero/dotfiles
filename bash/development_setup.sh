@@ -1702,6 +1702,21 @@ function InstallUserLocalBinaries {
       [[ -f "$LOCAL_BIN_PATH"/supercronic ]] && rm -f "$LOCAL_BIN_PATH"/supercronic
       mv "$LOCAL_BIN_PATH"/supercronic.new "$LOCAL_BIN_PATH"/supercronic
 
+      BORINGPROXY_RELEASE="$(_GitLatestRelease boringproxy/boringproxy | sed 's/^v//')"
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
+        if [[ "$LINUX_CPU" == "aarch64" ]]; then
+          RELEASE_ARCH=arm64
+        else
+          RELEASE_ARCH=arm
+        fi
+      else
+        RELEASE_ARCH=x86_64
+      fi
+      curl -o "$LOCAL_BIN_PATH"/boringproxy.new -L "https://github.com/boringproxy/boringproxy/releases/download/v${BORINGPROXY_RELEASE}/boringproxy-linux-${RELEASE_ARCH}"
+      chmod 755 "$LOCAL_BIN_PATH"/boringproxy.new
+      [[ -f "$LOCAL_BIN_PATH"/boringproxy ]] && rm -f "$LOCAL_BIN_PATH"/boringproxy
+      mv "$LOCAL_BIN_PATH"/boringproxy.new "$LOCAL_BIN_PATH"/boringproxy
+
       TMP_CLONE_DIR="$(mktemp -d)"
       if [[ "$LINUX_ARCH" =~ ^arm ]]; then
         if [[ "$LINUX_CPU" == "aarch64" ]]; then
