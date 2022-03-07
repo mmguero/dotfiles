@@ -475,11 +475,22 @@ function InstallDocker {
           $SUDO_CMD usermod -a -G docker "$SCRIPT_USER"
           echo "You will need to log out and log back in for this to take effect"
         fi
+
       fi # docker install confirmation check
 
     else
       echo "\"docker\" is already installed!"
     fi # docker install check
+
+    if [[ -f /etc/docker/daemon.json ]] && ! grep -q buildkit /etc/docker/daemon.json; then
+      unset CONFIRMATION
+      read -p "Enable Docker buildkit [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        (cat /etc/docker/daemon.json 2>/dev/null || echo '{}') | jq '. + { "features": { "buildkit": true } }' | $SUDO_CMD sponge /etc/docker/daemon.json
+        ( $SUDO_CMD systemctl daemon-reload && $SUDO_CMD systemctl restart docker ) || true
+      fi
+    fi
 
     # install docker-compose, if needed
     if ! docker-compose version >/dev/null 2>&1 ; then
