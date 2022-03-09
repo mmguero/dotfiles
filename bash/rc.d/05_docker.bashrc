@@ -91,31 +91,41 @@ function ytdlpd() {
     ghcr.io/mmguero/yt-dlp "$@"
 }
 
-function ytmp3d() {
-  search="$1"
+function ytmusicd() {
+  format="$1"
+  search="$2"
+  quality="${3:-0}"
   if [[ "$search" =~ ^http ]]; then
-    ytdlpd -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 "$search"
+    yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 "$search"
   else
-    ytdlpd -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
+    yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
   fi
+}
+
+function ytmp3d() {
+  ytmusicd mp3 "$@"
+}
+
+function ytoggd() {
+  ytmusicd vorbis "$@"
 }
 
 ########################################################################
 # communications
 ########################################################################
-function zoom() {
-  # https://hub.docker.com/r/mdouchement/zoom-us
-  if ! type zoom-us-wrapper >/dev/null 2>&1; then
-    mkdir -p "$HOME"/.local/bin
-    docker pull mdouchement/zoom-us:latest
-    docker run -it --rm -u $(id -u):$(id -g) --volume "$HOME"/.local/bin:/target mdouchement/zoom-us:latest install
-  fi
-  zoom-us-wrapper zoom
-}
+#function zoom() {
+#  # https://hub.docker.com/r/mdouchement/zoom-us
+#  if ! type zoom-us-wrapper >/dev/null 2>&1; then
+#    mkdir -p "$HOME"/.local/bin
+#    docker pull mdouchement/zoom-us:latest
+#    docker run -it --rm -u $(id -u):$(id -g) --volume "$HOME"/.local/bin:/target mdouchement/zoom-us:latest install
+#  fi
+#  zoom-us-wrapper zoom
+#}
 
-function teams() {
-  nohup x11docker --gpu --alsa --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" -- mmguero/teams:latest "$@" </dev/null >/dev/null 2>&1 &
-}
+#function teams() {
+#  nohup x11docker --gpu --alsa --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" -- mmguero/teams:latest "$@" </dev/null >/dev/null 2>&1 &
+#}
 
 function signal() {
   mkdir -p "$HOME/.config/Signal"

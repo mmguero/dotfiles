@@ -132,13 +132,23 @@ function pyt() {
   yt-dlp -f bestaudio -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1" -o - | mpv -vo null /dev/fd/3 3<&0 </dev/tty
 }
 
-function ytmp3() {
-  search="$1"
+function ytmusic() {
+  format="$1"
+  search="$2"
+  quality="${3:-0}"
   if [[ "$search" =~ ^http ]]; then
-    yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 "$search"
+    yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 "$search"
   else
-    yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 2 -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
+    yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
   fi
+}
+
+function ytmp3() {
+  ytmusic mp3 "$@"
+}
+
+function ytogg() {
+  ytmusic vorbis "$@"
 }
 
 function ytsearch() {
