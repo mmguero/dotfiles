@@ -313,6 +313,11 @@ _upto () {
 }
 complete -F _upto upto
 
+# count files matching a given wildcard expression (e.g., count ~/download/*)
+function count() {
+  test -e "$1" && echo "$#" || echo 0;
+}
+
 ########################################################################
 # history
 ########################################################################
