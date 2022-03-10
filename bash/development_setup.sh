@@ -1727,7 +1727,6 @@ function InstallUserLocalBinaries {
       chmod 755 "$LOCAL_BIN_PATH"/boringproxy.new
       [[ -f "$LOCAL_BIN_PATH"/boringproxy ]] && rm -f "$LOCAL_BIN_PATH"/boringproxy
       mv "$LOCAL_BIN_PATH"/boringproxy.new "$LOCAL_BIN_PATH"/boringproxy
-      $SUDO_CMD /sbin/setcap 'cap_net_bind_service=+ep' "$LOCAL_BIN_PATH"/boringproxy
 
       TMP_CLONE_DIR="$(mktemp -d)"
       if [[ "$LINUX_ARCH" =~ ^arm ]]; then
