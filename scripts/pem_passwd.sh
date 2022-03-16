@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -11,17 +11,17 @@ function cleanup {
   fi
 }
 
-OVPN_ORIG_NAME="$1"
+FILE_ORIG_NAME="$1"
 
-if [[ -n "${OVPN_ORIG_NAME}" ]] && \
-   [[ -f "${OVPN_ORIG_NAME}" ]]; then
+if [[ -n "${FILE_ORIG_NAME}" ]] && \
+   [[ -f "${FILE_ORIG_NAME}" ]]; then
 
   trap "cleanup" EXIT
 
-  # extract private key from ovpn
-  echo "Extracting the private key from ${OVPN_ORIG_NAME}"
-  sed -n '/-----BEGIN.*PRIVATE KEY-----/,/-----END.*PRIVATE KEY-----/p' "${OVPN_ORIG_NAME}" > "${WORKDIR}"/extracted.key
-  [[ -s "${WORKDIR}"/extracted.key ]] || (echo "could not extract private key from ovpn" ; exit 1)
+  # extract private key from file
+  echo "Extracting the private key from ${FILE_ORIG_NAME}"
+  sed -n '/-----BEGIN.*PRIVATE KEY-----/,/-----END.*PRIVATE KEY-----/p' "${FILE_ORIG_NAME}" > "${WORKDIR}"/extracted.key
+  [[ -s "${WORKDIR}"/extracted.key ]] || (echo "could not extract private key from file" ; exit 1)
 
   # check and/or decrypt the old key
   openssl rsa -in "${WORKDIR}"/extracted.key -check > "${WORKDIR}"/checked.key 2>&1 | grep -v --line-buffered "writing RSA key" || true
@@ -34,12 +34,12 @@ if [[ -n "${OVPN_ORIG_NAME}" ]] && \
 
   # write out the new composite OVPN file
   TIMESTAMP=$(date +"%Y-%m-%d_%H:%M:%S")
-  OVPN_NEW_NAME="${OVPN_ORIG_NAME%.*}_pwchg_${TIMESTAMP}.${OVPN_ORIG_NAME##*.}"
-  echo "Writing new OVPN file \"${OVPN_NEW_NAME}\""
-  sed -e '/-----BEGIN.*PRIVATE KEY-----/{:a; N; /\n-----END.*PRIVATE KEY-----$/!ba; r '"${WORKDIR}"/new.key -e 'd;}' "${OVPN_ORIG_NAME}" > "${OVPN_NEW_NAME}"
+  FILE_NEW_NAME="${FILE_ORIG_NAME%.*}_pwchg_${TIMESTAMP}.${FILE_ORIG_NAME##*.}"
+  echo "Writing new OVPN file \"${FILE_NEW_NAME}\""
+  sed -e '/-----BEGIN.*PRIVATE KEY-----/{:a; N; /\n-----END.*PRIVATE KEY-----$/!ba; r '"${WORKDIR}"/new.key -e 'd;}' "${FILE_ORIG_NAME}" > "${FILE_NEW_NAME}"
 
 else
-  echo "Please specify original .ovpn file as the single argument to this script"
+  echo "Please specify original file as the single argument to this script"
   popd
   exit 1
 fi

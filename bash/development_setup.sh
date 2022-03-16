@@ -2125,19 +2125,8 @@ function GueroSymlinks {
       fi
 
       LINKED_SCRIPTS=(
-        clarence-0.4.4
-        mpvurl.sh
-        nc_web_server.sh
-        office_webcam.sh
-        ovpn_password_change.sh
-        screenshot.sh
+        pem_passwd.sh
         self_signed_key_gen.sh
-        sound_cap.sh
-        ssh_speed_test.sh
-        tilix.sh
-        trashthumbs.sh
-        vid_cap.sh
-        vid_rename.sh
         windems.sh
       )
       for i in ${LINKED_SCRIPTS[@]}; do
