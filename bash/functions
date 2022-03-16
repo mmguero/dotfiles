@@ -607,6 +607,24 @@ function worm()
   fi
 }
 
+function dighost() {
+  local host="${1:-guero.top}"
+  if [[ -n "$2" ]]; then
+    dig +short "${host}" @"${2}"
+  else
+    dig +short "${host}"
+  fi
+}
+
+function digip() {
+  local ip="${1:-127.0.0.1}"
+  if [[ -n "$2" ]]; then
+    dig +short -x "${ip}" @"${2}"
+  else
+    dig +short "${ip}"
+  fi
+}
+
 ########################################################################
 # GIT
 ########################################################################
