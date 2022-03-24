@@ -397,8 +397,6 @@ function SetupAptSources {
         $SUDO_CMD apt-get update 2>&1 | grep -Po "NO_PUBKEY\s*\w+" | awk '{print $2}' | sort -u | xargs -r -l $SUDO_CMD apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv
         # some manual ones
         GPG_KEY_URLS=(
-          https://build.opensuse.org/projects/home:manuelschneid3r/public_key
-          https://db.debian.org/fetchkey.cgi?fingerprint=FEDEC1CB337BCF509F43C2243914B532F4DFBE99
         )
         for i in ${GPG_KEY_URLS[@]}; do
           curl -fsSL "$i" | $SUDO_CMD apt-key add -
