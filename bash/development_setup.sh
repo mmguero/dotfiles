@@ -583,12 +583,13 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        containous/whoami:latest
         ghcr.io/mmguero/nginx-ldap:latest
         ghcr.io/mmguero/stunnel:latest
         ghcr.io/mmguero/tunneler:latest
+        ghcr.io/mmguero/wireproxy:latest
         haugene/transmission-openvpn:latest
         nginx:latest
+        traefik/whoami:latest
         traefik:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -603,7 +604,6 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         andrewmackrodt/chromium-x11:latest
         ghcr.io/mmguero/firefox:latest
-        jess/spotify:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         docker pull "$i"
