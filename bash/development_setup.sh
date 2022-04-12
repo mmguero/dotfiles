@@ -297,7 +297,8 @@ function InstallEnvs {
         autotools-dev \
         bison \
         build-essential \
-        make
+        make \
+        unzip
     fi
   fi
 
