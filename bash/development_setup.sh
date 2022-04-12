@@ -66,7 +66,6 @@ ENV_LIST=(
   yq
   ripgrep
   tmux
-  watchexec
 )
 
 DOCKER_COMPOSE_INSTALL_VERSION=( 1.29.2 )
