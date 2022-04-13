@@ -37,7 +37,7 @@
       <property name="mode" type="uint" value="1"/>
       <property name="length" type="uint" value="97"/>
       <property name="position-locked" type="bool" value="true"/>
-      <property name="autohide-behavior" type="uint" value="1"/>
+      <property name="autohide-behavior" type="uint" value="2"/>
       <property name="plugin-ids" type="array">
         <value type="int" value="24"/>
         <value type="int" value="26"/>
@@ -50,13 +50,22 @@
       <property name="button-title" type="string" value=""/>
       <property name="show-button-title" type="bool" value="false"/>
     </property>
-    <property name="plugin-4" type="string" value="pager"/>
+    <property name="plugin-4" type="string" value="pager">
+      <property name="rows" type="uint" value="1"/>
+    </property>
     <property name="plugin-5" type="string" value="separator">
       <property name="style" type="uint" value="0"/>
     </property>
     <property name="plugin-6" type="string" value="systray">
       <property name="square-icons" type="bool" value="true"/>
       <property name="known-legacy-items" type="array">
+        <value type="string" value="bluetooth enabled"/>
+        <value type="string" value="bluetooth active &lt;b&gt;1 active connection&lt;/b&gt;"/>
+        <value type="string" value="system-config-printer"/>
+        <value type="string" value="pidgin"/>
+        <value type="string" value="ibus panel"/>
+        <value type="string" value="teams-insiders"/>
+        <value type="string" value="zoom"/>
         <value type="string" value="kazam"/>
         <value type="string" value="clipman"/>
         <value type="string" value="thunar"/>
@@ -66,6 +75,9 @@
         <value type="string" value="networkmanager applet"/>
       </property>
       <property name="known-items" type="array">
+        <value type="string" value="blueman"/>
+        <value type="string" value="zoom"/>
+        <value type="string" value="remmina-icon"/>
         <value type="string" value="vlc"/>
         <value type="string" value="Diodon"/>
       </property>
@@ -73,7 +85,7 @@
     <property name="plugin-8" type="string" value="pulseaudio">
       <property name="enable-keyboard-shortcuts" type="bool" value="true"/>
       <property name="show-notifications" type="bool" value="true"/>
-      <property name="mpris-players" type="string" value="vlc"/>
+      <property name="mpris-players" type="string" value="audacious;firefox.instance103734;firefox.instance10703;firefox.instance1162389;firefox.instance129518;firefox.instance1439431;firefox.instance1463272;firefox.instance166897;firefox.instance1688275;firefox.instance1737796;firefox.instance1750252;firefox.instance1883862;firefox.instance1897059;firefox.instance1938603;firefox.instance201074;firefox.instance21693;firefox.instance21705;firefox.instance220043;firefox.instance223071;firefox.instance225977;firefox.instance226271;firefox.instance227454;firefox.instance2280293;firefox.instance243430;firefox.instance254073;firefox.instance2687;firefox.instance280383;firefox.instance282067;firefox.instance292802;firefox.instance296366;firefox.instance3270;firefox.instance3317967;firefox.instance3329598;firefox.instance3443942;firefox.instance3475536;firefox.instance3819770;firefox.instance3873060;firefox.instance3983;firefox.instance4450;firefox.instance4558;firefox.instance466695;firefox.instance47319;firefox.instance4788;firefox.instance4884;firefox.instance5043;firefox.instance52675;firefox.instance538808;firefox.instance540696;firefox.instance634739;firefox.instance74239;firefox.instance840820;firefox.instance84261;firefox.instance85725;firefox.instance879065;firefox.instance888760;vlc"/>
     </property>
     <property name="plugin-9" type="string" value="power-manager-plugin"/>
     <property name="plugin-10" type="string" value="notification-plugin"/>
