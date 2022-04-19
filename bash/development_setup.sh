@@ -350,8 +350,8 @@ function InstallEnvPackages {
         python-magic \
         pythondialog \
         pyunpack \
-        pyyaml \
         requests\[security\] \
+        ruamel.yaml \
         scapy \
         urllib3
 
