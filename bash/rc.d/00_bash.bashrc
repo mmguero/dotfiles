@@ -23,10 +23,10 @@ export HH_CONFIG=hicolor,rawhistory,favorites   # get more colors
 shopt -s checkwinsize
 
 # make less more friendly for non-text input files, see lesspipe(1)
-[ -x /usr/bin/lesspipe ] && eval "$(lesspipe)"
+[[ -x /usr/bin/lesspipe ]] && eval "$(lesspipe)"
 
 # set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+if [[ -z "$debian_chroot" ]] && [[ -r /etc/debian_chroot ]]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
@@ -49,9 +49,9 @@ unset LINUX
 unset WINDOWS10
 unset LC_WINDOWS10
 
-if [ $(uname -s) = 'Darwin' ]; then
+if [[ $(uname -s) = 'Darwin' ]]; then
   export MACOS=0
-elif grep -q Microsoft /proc/version 2>/dev/null; then
+elif grep -q Microsoft /proc/version 2>/dev/null || [[ -n $MSYSTEM ]]; then
   export WINDOWS10=0
   export LC_WINDOWS10=$WINDOWS10
   alias open='explorer.exe'
@@ -66,7 +66,7 @@ else
 fi
 
 function o() {
-  if [ $# -eq 0 ]; then
+  if [[ $# -eq 0 ]]; then
     open .
   else
     for FILE in "$@"; do
@@ -77,17 +77,17 @@ function o() {
 
 ###############################################################################
 
-if [ $LINUX ]; then
+if [[ $LINUX ]]; then
 
   [[ -r "/etc/bash_completion" ]] && . "/etc/bash_completion"
 
-  if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
+  if [[ $TILIX_ID ]] || [[ $VTE_VERSION ]]; then
     [[ -r "/etc/profile.d/vte.sh" ]] && . "/etc/profile.d/vte.sh" || . /etc/profile.d/vte-*.sh
   fi
 
 fi
 
-if [ $MACOS ]; then
+if [[ $MACOS ]]; then
   [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
   [[ -r "$HOME/.iterm2_shell_integration.bash" ]] && . "$HOME/.iterm2_shell_integration.bash"
   bind '"\e[5C": forward-word'

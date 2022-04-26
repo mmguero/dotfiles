@@ -1007,11 +1007,11 @@ function regexxer() {
 }
 
 function spice() {
-  nohup "$(which remote-viewer)" $(virsh -c qemu:///system domdisplay $1) </dev/null >/dev/null 2>&1 &
+  nohup "$(which spicy)" --uri="$(virsh -c qemu:///system domdisplay $1)" </dev/null >/dev/null 2>&1 &
 }
 
 function spiceport() {
-  nohup "$(which remote-viewer)" "spice://127.0.0.1?port=$1" </dev/null >/dev/null 2>&1 &
+  nohup "$(which spicy)" -h 127.0.0.1 -p "$1" </dev/null >/dev/null 2>&1 &
 }
 
 function wireshark() {

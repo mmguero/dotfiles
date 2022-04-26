@@ -1,7 +1,7 @@
 unset DOCKER_HOST
 export WINDOWS_USER=$USER
 export DOCKER_SHARE_HOME=$HOME
-if [ $MACOS ]; then
+if [[ $MACOS ]]; then
   export DOCKER_SHARE_TMP="-v $DOCKER_SHARE_HOME/tmp:/host:rw,Z"
   export DOCKER_SHARE_BASH_RC="-v $DOCKER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z -v $DOCKER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z"
   export DOCKER_SHARE_BASH_ALIASES="-v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z"
@@ -149,7 +149,7 @@ function cyberchef() {
 # desktop
 ########################################################################
 function kodi() {
-  if [ "$1" ]; then
+  if [[ "$1" ]]; then
     MEDIA_FOLDER="$1"
     shift
   else
@@ -195,6 +195,23 @@ function dockeriso() {
     else
         echo "/dev/kvm not found" >&2
         exit 1
+    fi
+}
+
+function deblive() {
+    if [[ -e /dev/kvm ]]; then
+      docker run \
+      --detach \
+      --publish-all \
+      --rm \
+      -e QEMU_CPU=${QEMU_CPU:-2} \
+      -e QEMU_RAM=${QEMU_CPU:-4096} \
+      -e QEMU_CDROM=/image/live.iso \
+      --device /dev/kvm \
+      ghcr.io/mmguero/deblive:latest
+    else
+      echo "/dev/kvm not found" >&2
+      exit 1
     fi
 }
 

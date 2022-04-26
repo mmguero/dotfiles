@@ -2,7 +2,7 @@
 
 ###############################################################################
 # force bash
-if [ -z "$BASH_VERSION" ]; then
+if [[ -z "$BASH_VERSION" ]]; then
   echo "Wrong interpreter, please run \"$0\" with bash" >&2
   exit 1
 fi
@@ -11,13 +11,14 @@ fi
 # determine OS, root user and some other parameters
 unset MACOS
 unset LINUX
-unset WINDOWS
-if [ $(uname -s) = 'Darwin' ]; then
+unset WSL
+unset MSYS
+if [[ $(uname -s) = 'Darwin' ]]; then
   export MACOS=0
 elif grep -q Microsoft /proc/version; then
   export WINDOWS=0
-else
-  export LINUX=0
+elif [[ -n $MSYSTEM ]]; then
+  export MSYS=0
 fi
 
 #

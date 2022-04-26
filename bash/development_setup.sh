@@ -10,13 +10,14 @@
 # - Debian Linux
 # - Debian on WSL (sort of)
 # - macOS (sort of)
+# - msys/mingw (sort of)
 
 ###################################################################################
 # initialize
 
 export DEBIAN_FRONTEND=noninteractive
 
-if [ -z "$BASH_VERSION" ]; then
+if [[ -z "$BASH_VERSION" ]]; then
   echo "Wrong interpreter, please run \"$0\" with bash"
   exit 1
 fi
@@ -37,7 +38,7 @@ LOCAL_CONFIG_PATH=${XDG_CONFIG_HOME:-$HOME/.config}
 # see if this has been cloned from github.com/mmguero/dotfiles
 # (so we can assume other stuff might be here for symlinking)
 unset GUERO_GITHUB_PATH
-if [ $(basename "$SCRIPT_PATH") = 'bash' ]; then
+if [[ $(basename "$SCRIPT_PATH") = 'bash' ]]; then
   pushd "$SCRIPT_PATH"/.. >/dev/null 2>&1
   if (( "$( (git remote -v 2>/dev/null | awk '{print $2}' | grep -P 'dotfiles(-private)?' | wc -l) || echo 0 )" > 0 )); then
     GUERO_GITHUB_PATH="$(pwd)"
@@ -47,9 +48,6 @@ fi
 
 ###################################################################################
 # variables for env development environments and tools
-
-# TODO: some tools (tmux, jq, ripgrep, cmake, etc.) can be managed this way too.
-# would this be better? probably?
 
 ENV_LIST=(
   python
@@ -74,18 +72,24 @@ DOCKER_COMPOSE_INSTALL_VERSION=( 1.29.2 )
 # determine OS
 unset MACOS
 unset LINUX
-unset WINDOWS
+unset WSL
+unset MSYS
+unset HAS_SCOOP
 unset LINUX_DISTRO
 unset LINUX_RELEASE
 unset LINUX_ARCH
 unset LINUX_CPU
 
-if [ $(uname -s) = 'Darwin' ]; then
+if [[ $(uname -s) = 'Darwin' ]]; then
   export MACOS=0
+
+elif [[ -n $MSYSTEM ]]; then
+  export MSYS=0
+  scoop help >/dev/null 2>&1 && export HAS_SCOOP=0
 
 else
   if grep -q Microsoft /proc/version; then
-    export WINDOWS=0
+    export WSL=0
   fi
   export LINUX=0
   if command -v lsb_release >/dev/null 2>&1 ; then
@@ -104,7 +108,11 @@ else
 fi
 
 # determine user and/or if we need to use sudo to install packages
-if [ $MACOS ]; then
+if [[ -n $MACOS ]]; then
+  SCRIPT_USER="$(whoami)"
+  SUDO_CMD=""
+
+elif [[ -n $MSYS ]]; then
   SCRIPT_USER="$(whoami)"
   SUDO_CMD=""
 
@@ -135,9 +143,12 @@ function InstallEssentialPackages {
     echo "\"curl\", \"git\", \"jq\" and \"moreutils\" are already installed!"
   else
     echo "Installing curl, git, jq and moreutils..."
-    if [ $MACOS ]; then
+    if [[ -n $MACOS ]]; then
       brew install git jq moreutils # since Jaguar curl is already installed in MacOS
-    elif [ $LINUX ]; then
+    elif [[ -n $MSYS ]]; then
+      [[ -n $HAS_SCOOP ]] && scoop install main/curl main/git main/jq || pacman -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
+      pacman -Sy moreutils
+    elif [[ -n $LINUX ]]; then
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq moreutils
     fi
@@ -151,7 +162,7 @@ function _GitClone {
 
 ###################################################################################
 function _GitLatestRelease {
-  if [ "$1" ]; then
+  if [[ -n "$1" ]]; then
     (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases/latest" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
       (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
       echo unknown
@@ -163,25 +174,28 @@ function _GitLatestRelease {
 ###################################################################################
 # function to set up paths and init things after env installations
 function _EnvSetup {
-  if [ -d "${ASDF_DIR:-$HOME/.asdf}" ]; then
-    . "${ASDF_DIR:-$HOME/.asdf}"/asdf.sh
-    if [ -n $ASDF_DIR ]; then
-      . "${ASDF_DIR:-$HOME/.asdf}"/completions/asdf.bash
-      for i in ${ENV_LIST[@]}; do
-        asdf reshim "$i" >/dev/null 2>&1 || true
-      done
-    fi
-  fi
+  if [[ -z $MSYS ]]; then
 
-  export PYTHONDONTWRITEBYTECODE=1
-
-  if [[ -n $ASDF_DIR ]]; then
-    if asdf plugin list | grep -q golang; then
-      [[ -z $GOROOT ]] && go version >/dev/null 2>&1 && export GOROOT="$(go env GOROOT)"
-      [[ -z $GOPATH ]] && go version >/dev/null 2>&1 && export GOPATH="$(go env GOPATH)"
+    if [[ -d "${ASDF_DIR:-$HOME/.asdf}" ]]; then
+      . "${ASDF_DIR:-$HOME/.asdf}"/asdf.sh
+      if [[ -n $ASDF_DIR ]]; then
+        . "${ASDF_DIR:-$HOME/.asdf}"/completions/asdf.bash
+        for i in ${ENV_LIST[@]}; do
+          asdf reshim "$i" >/dev/null 2>&1 || true
+        done
+      fi
     fi
-    if (asdf plugin list | grep -q rust) && (asdf current rust >/dev/null 2>&1); then
-      . "$ASDF_DIR"/installs/rust/"$(asdf current rust | awk '{print $2}')"/env
+
+    export PYTHONDONTWRITEBYTECODE=1
+
+    if [[ -n $ASDF_DIR ]]; then
+      if asdf plugin list | grep -q golang; then
+        [[ -z $GOROOT ]] && go version >/dev/null 2>&1 && export GOROOT="$(go env GOROOT)"
+        [[ -z $GOPATH ]] && go version >/dev/null 2>&1 && export GOPATH="$(go env GOPATH)"
+      fi
+      if (asdf plugin list | grep -q rust) && (asdf current rust >/dev/null 2>&1); then
+        . "$ASDF_DIR"/installs/rust/"$(asdf current rust | awk '{print $2}')"/env
+      fi
     fi
   fi
 }
@@ -189,7 +203,7 @@ function _EnvSetup {
 ################################################################################
 # brew on macOS
 function SetupMacOSBrew {
-  if [ $MACOS ]; then
+  if [[ -n $MACOS ]]; then
 
     # install brew, if needed
     if ! brew info >/dev/null 2>&1 ; then
@@ -213,104 +227,120 @@ function SetupMacOSBrew {
 }
 
 ################################################################################
+# scoop on on windows 10
+function SetupWindowsScoop {
+  if [[ -n $MSYS ]]; then
+
+    # TODO
+    echo "todo"
+
+  fi # MSYS check
+}
+
+################################################################################
 # envs (via asdf)
 function InstallEnvs {
-  declare -A ENVS_INSTALLED
-  for i in ${ENV_LIST[@]}; do
-    ENVS_INSTALLED[$i]=false
-  done
+  if [[ -n $MSYS ]]; then
+    echo "asdf not supported under MSYS">&2
 
-  if ([[ -n $ASDF_DIR ]] && [[ ! -d "$ASDF_DIR" ]]) || ([[ -z $ASDF_DIR ]] && [[ ! -d "$HOME"/.asdf ]]) ; then
-    ASDF_DIR="${ASDF_DIR:-$HOME/.asdf}"
-    unset CONFIRMATION
-    read -p "\"asdf\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      git clone --recurse-submodules --shallow-submodules https://github.com/asdf-vm/asdf.git "$ASDF_DIR"
-      pushd "$ASDF_DIR" >/dev/null 2>&1
-      git checkout "$(git describe --abbrev=0 --tags)"
-      popd >/dev/null 2>&1
+  else
+    declare -A ENVS_INSTALLED
+    for i in ${ENV_LIST[@]}; do
+      ENVS_INSTALLED[$i]=false
+    done
+
+    if ([[ -n $ASDF_DIR ]] && [[ ! -d "$ASDF_DIR" ]]) || ([[ -z $ASDF_DIR ]] && [[ ! -d "$HOME"/.asdf ]]) ; then
+      ASDF_DIR="${ASDF_DIR:-$HOME/.asdf}"
+      unset CONFIRMATION
+      read -p "\"asdf\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        git clone --recurse-submodules --shallow-submodules https://github.com/asdf-vm/asdf.git "$ASDF_DIR"
+        pushd "$ASDF_DIR" >/dev/null 2>&1
+        git checkout "$(git describe --abbrev=0 --tags)"
+        popd >/dev/null 2>&1
+      fi
     fi
-  fi
 
-  if [ -d "${ASDF_DIR:-$HOME/.asdf}" ]; then
-    _EnvSetup
-    if [ -n $ASDF_DIR ]; then
-      asdf update
-      for i in ${ENV_LIST[@]}; do
-        if ! ( asdf plugin list | grep -q "$i" ) >/dev/null 2>&1 ; then
-          unset CONFIRMATION
-          read -p "\"$i\" is not installed, attempt to install it [y/N]? " CONFIRMATION
-          CONFIRMATION=${CONFIRMATION:-N}
-          if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-            asdf plugin add "$i" && ENVS_INSTALLED[$i]=true
+    if [[ -d "${ASDF_DIR:-$HOME/.asdf}" ]]; then
+      _EnvSetup
+      if [[ -n $ASDF_DIR ]]; then
+        asdf update
+        for i in ${ENV_LIST[@]}; do
+          if ! ( asdf plugin list | grep -q "$i" ) >/dev/null 2>&1 ; then
+            unset CONFIRMATION
+            read -p "\"$i\" is not installed, attempt to install it [y/N]? " CONFIRMATION
+            CONFIRMATION=${CONFIRMATION:-N}
+            if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+              asdf plugin add "$i" && ENVS_INSTALLED[$i]=true
+            fi
+          else
+            unset CONFIRMATION
+            read -p "\"$i\" is already installed, attempt to update it [y/N]? " CONFIRMATION
+            CONFIRMATION=${CONFIRMATION:-N}
+            if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+              ENVS_INSTALLED[$i]=true
+            fi
           fi
-        else
-          unset CONFIRMATION
-          read -p "\"$i\" is already installed, attempt to update it [y/N]? " CONFIRMATION
-          CONFIRMATION=${CONFIRMATION:-N}
-          if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-            ENVS_INSTALLED[$i]=true
-          fi
-        fi
-      done
+        done
+      fi
+      _EnvSetup
+    fi # .asdf check
+
+    # install versions of the tools and plugins
+
+    # python (build deps)
+    if [[ ${ENVS_INSTALLED[python]} = 'true' ]]; then
+      if [[ -n $LINUX ]]; then
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+          build-essential \
+          libbz2-dev \
+          libffi-dev \
+          libfreetype6-dev \
+          libfribidi-dev \
+          libharfbuzz-dev \
+          libjpeg-dev \
+          liblcms2-dev \
+          libncurses5-dev \
+          libopenjp2-7-dev \
+          libreadline-dev \
+          libsqlite3-dev \
+          libssl-dev \
+          libtiff5-dev \
+          libwebp-dev \
+          libxml2-dev \
+          libxmlsec1-dev \
+          llvm \
+          make \
+          wget \
+          xz-utils \
+          zlib1g-dev
+      fi
     fi
+
+    # tmux (build deps)
+    if [[ ${ENVS_INSTALLED[tmux]} = 'true' ]]; then
+      if [[ -n $LINUX ]]; then
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+          automake \
+          autotools-dev \
+          bison \
+          build-essential \
+          make \
+          unzip
+      fi
+    fi
+
+    for i in ${ENV_LIST[@]}; do
+      if [[ ${ENVS_INSTALLED[$i]} = 'true' ]]; then
+        asdf plugin update $i
+        asdf install $i latest
+        asdf global $i latest
+        asdf reshim $i
+      fi
+    done
     _EnvSetup
-  fi # .asdf check
-
-  # install versions of the tools and plugins
-
-  # python (build deps)
-  if [[ ${ENVS_INSTALLED[python]} = 'true' ]]; then
-    if [ $LINUX ]; then
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
-        build-essential \
-        libbz2-dev \
-        libffi-dev \
-        libfreetype6-dev \
-        libfribidi-dev \
-        libharfbuzz-dev \
-        libjpeg-dev \
-        liblcms2-dev \
-        libncurses5-dev \
-        libopenjp2-7-dev \
-        libreadline-dev \
-        libsqlite3-dev \
-        libssl-dev \
-        libtiff5-dev \
-        libwebp-dev \
-        libxml2-dev \
-        libxmlsec1-dev \
-        llvm \
-        make \
-        wget \
-        xz-utils \
-        zlib1g-dev
-    fi
   fi
-
-  # tmux (build deps)
-  if [[ ${ENVS_INSTALLED[tmux]} = 'true' ]]; then
-    if [ $LINUX ]; then
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
-        automake \
-        autotools-dev \
-        bison \
-        build-essential \
-        make \
-        unzip
-    fi
-  fi
-
-  for i in ${ENV_LIST[@]}; do
-    if [[ ${ENVS_INSTALLED[$i]} = 'true' ]]; then
-      asdf plugin update $i
-      asdf install $i latest
-      asdf global $i latest
-      asdf reshim $i
-    fi
-  done
-  _EnvSetup
 }
 
 ################################################################################
@@ -344,7 +374,6 @@ function InstallEnvPackages {
         Pillow \
         psutil \
         py-cui \
-        pyinotify \
         pyshark \
         python-dateutil \
         python-magic \
@@ -409,7 +438,7 @@ function SetupAptSources {
 
 ################################################################################
 function InstallDocker {
-  if [ $MACOS ]; then
+  if [[ -n $MACOS ]]; then
 
     # install docker-edge, if needed
     if ! brew list --cask --versions docker-edge >/dev/null 2>&1 ; then
@@ -426,7 +455,7 @@ function InstallDocker {
       echo "\"docker-edge\" is already installed!"
     fi # docker-edge install check
 
-  elif [ $LINUX ] && [[ -z $WINDOWS ]]; then
+  elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
     # install docker-ce, if needed
     if ! $SUDO_CMD docker info >/dev/null 2>&1 ; then
@@ -702,7 +731,7 @@ function DockerPullImages {
 ################################################################################
 # VirtualBox and vagrant
 function InstallVirtualization {
-  if [ $MACOS ]; then
+  if [[ -n $MACOS ]]; then
 
     VIRT_CASK_NAMES=(
       vmware-fusion
@@ -725,7 +754,23 @@ function InstallVirtualization {
       fi # already installed check
     done
 
-  elif [ $LINUX ] && [[ -z $WINDOWS ]] && [[ "$LINUX_CPU" == "x86_64" ]]; then
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+
+    unset CONFIRMATION
+    read -p "Install VirtualBox [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      scoop bucket add nonportable
+      scoop install main/sudo
+      sudo scoop install nonportable/virtualbox-np
+    fi
+
+    unset CONFIRMATION
+    read -p "Install Vagrant [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install main/vagrant
+
+  elif [[ -n $LINUX ]] && [[ -z $WSL ]] && [[ "$LINUX_CPU" == "x86_64" ]]; then
 
     # virtualbox or kvm
     $SUDO_CMD apt-get update -qq >/dev/null 2>&1
@@ -929,7 +974,7 @@ function InstallVirtualization {
 
 ################################################################################
 function InstallCommonPackages {
-  if [ $MACOS ]; then
+  if [[ -n $MACOS ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages [Y/n]? " CONFIRMATION
@@ -1017,7 +1062,35 @@ function InstallCommonPackages {
       brew install neilotoole/sq/sq
     fi
 
-  elif [ $LINUX ]; then
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+
+    unset CONFIRMATION
+    read -p "Install common packages [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      scoop bucket add extras
+      scoop install main/dark
+      scoop install main/innounp
+      scoop install main/7zip
+      scoop install main/bat
+      scoop install main/dos2unix
+      scoop install main/fd
+      scoop install main/grep
+      scoop install main/less
+      scoop install main/openssl
+      scoop install main/python
+      scoop install main/ripgrep
+      scoop install main/sed
+      scoop install main/sudo
+      scoop install main/touch
+      scoop install main/unrar
+      scoop install main/unzip
+      scoop install main/yq
+      scoop install main/zip
+      scoop install extras/age
+    fi
+
+  elif [[ -n $LINUX ]]; then
     unset CONFIRMATION
     read -p "Install common packages [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -1138,7 +1211,7 @@ EOT
 
       # install the packages
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-        if [[ ! $i =~ ^firmware ]] || [[ -z $WINDOWS ]]; then
+        if [[ ! $i =~ ^firmware ]] || [[ -z $WSL ]]; then
           DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
         fi
       done
@@ -1184,7 +1257,7 @@ EOT
 
 ################################################################################
 function InstallCommonPackagesGUI {
-  if [ $MACOS ]; then
+  if [[ -n $MACOS ]]; then
 
     unset CONFIRMATION
     read -p "Install common casks [Y/n]? " CONFIRMATION
@@ -1203,67 +1276,82 @@ function InstallCommonPackagesGUI {
       brew install --cask wireshark
     fi
 
-  elif [ $LINUX ]; then
-    if [[ -z $WINDOWS ]]; then
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
 
-      unset CONFIRMATION
-      read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        $SUDO_CMD apt-get update -qq >/dev/null 2>&1
-        DEBIAN_PACKAGE_LIST=(
-          arandr
-          dconf-cli
-          fonts-noto-color-emoji
-          fonts-hack-ttf
-          ghex
-          gparted
-          gtk2-engines-murrine
-          gtk2-engines-pixbuf
-          keepassxc
-          meld
-          numix-gtk-theme
-          obsidian-icon-theme
-          pdftk
-          regexxer
-          rofi
-          seahorse
-          sublime-text
-          thunar
-          thunar-archive-plugin
-          thunar-volman
-          tilix
-          ttf-mscorefonts-installer
-          xautomation
-          xbindkeys
-          xdiskusage
-          xfdesktop4
-          xxdiff
-          xxdiff-scripts
-          xsel
-        )
-        for i in ${DEBIAN_PACKAGE_LIST[@]}; do
-          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
-        done
+    unset CONFIRMATION
+    read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      scoop bucket add extras
+      scoop install main/msys2
+      scoop install extras/bulk-crap-uninstaller
+      scoop install extras/conemu
+      scoop install extras/cpu-z
+      scoop install extras/libreoffice
+      scoop install extras/sublime-text
+      scoop install extras/sumatrapdf
+      scoop install extras/sysinternals
+    fi
 
-        if [ ! -d ~/.themes/vimix-dark-laptop-beryl ]; then
-          TMP_CLONE_DIR="$(mktemp -d)"
-          _GitClone https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
-          pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
-          mkdir -p ~/.themes
-          ./install.sh -d ~/.themes -n vimix -c dark -t beryl -s laptop
-          popd >/dev/null 2>&1
-          rm -rf "$TMP_CLONE_DIR"
-        fi
+  elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
+
+    unset CONFIRMATION
+    read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      DEBIAN_PACKAGE_LIST=(
+        arandr
+        dconf-cli
+        fonts-noto-color-emoji
+        fonts-hack-ttf
+        ghex
+        gparted
+        gtk2-engines-murrine
+        gtk2-engines-pixbuf
+        keepassxc
+        meld
+        numix-gtk-theme
+        obsidian-icon-theme
+        pdftk
+        regexxer
+        rofi
+        seahorse
+        sublime-text
+        thunar
+        thunar-archive-plugin
+        thunar-volman
+        tilix
+        ttf-mscorefonts-installer
+        xautomation
+        xbindkeys
+        xdiskusage
+        xfdesktop4
+        xxdiff
+        xxdiff-scripts
+        xsel
+      )
+      for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      done
+
+      if [[ ! -d ~/.themes/vimix-dark-laptop-beryl ]]; then
+        TMP_CLONE_DIR="$(mktemp -d)"
+        _GitClone https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
+        pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+        mkdir -p ~/.themes
+        ./install.sh -d ~/.themes -n vimix -c dark -t beryl -s laptop
+        popd >/dev/null 2>&1
+        rm -rf "$TMP_CLONE_DIR"
       fi
+    fi
 
-    fi # not windows
-  fi # Mac vs not-mac
+  fi # Mac vs Linux
 }
 
 ################################################################################
 function InstallCommonPackagesMedia {
-  if [[ $LINUX ]] && [[ -z $WINDOWS ]]; then
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages (media) [Y/n]? " CONFIRMATION
@@ -1307,12 +1395,40 @@ function InstallCommonPackagesMedia {
 
     fi
 
-  fi # Linux
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+
+    unset CONFIRMATION
+    read -p "Install common packages (media) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+      scoop bucket add extras
+      scoop install extras/audacity
+      scoop install main/ffmpeg
+      scoop install extras/mkvtoolnix
+      scoop install extras/vlc
+
+      unset CONFIRMATION
+      read -p "Install common packages (media/GIMP) [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/gimp
+
+      unset CONFIRMATION
+      read -p "Install common packages (media/reaper) [y/N]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/reaper
+
+      unset CONFIRMATION
+      read -p "Install common packages (media/losslesscut) [y/N]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/losslesscut
+    fi
+  fi # Linux vs. MSYS
 }
 
 ################################################################################
 function InstallCommonPackagesNetworking {
-  if [[ $LINUX ]]; then
+  if [[ -n $LINUX ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages (networking) [Y/n]? " CONFIRMATION
@@ -1358,22 +1474,35 @@ function InstallCommonPackagesNetworking {
       done
     fi
 
-  fi # Linux
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+    unset CONFIRMATION
+    read -p "Install common packages (networking) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      scoop bucket add extras
+      scoop bucket add smallstep https://github.com/smallstep/scoop-bucket.git
+      scoop install main/boringproxy
+      scoop install main/croc
+      scoop install smallstep/step
+    fi
+
+  fi # Linux vs. MSYS
 }
 
 ################################################################################
-function InstallFirefoxLinuxAmd64 {
-  if [[ "$LINUX_ARCH" == "amd64" ]]; then
-    curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
-    if [ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]; then
-      $SUDO_CMD mkdir -p /opt
-      $SUDO_CMD rm -rvf /opt/firefox
-      $SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C /opt/
-      rm -vf /tmp/firefox.tar.bz2
-      if [[ -f /opt/firefox/firefox ]]; then
-        $SUDO_CMD rm -vf /usr/local/bin/firefox
-        $SUDO_CMD ln -vrs /opt/firefox/firefox /usr/local/bin/firefox
-        $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
+function InstallLatestFirefoxLinuxAmd64 {
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
+    if [[ "$LINUX_ARCH" == "amd64" ]]; then
+      curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+      if [[ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]]; then
+        $SUDO_CMD mkdir -p /opt
+        $SUDO_CMD rm -rvf /opt/firefox
+        $SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C /opt/
+        rm -vf /tmp/firefox.tar.bz2
+        if [[ -f /opt/firefox/firefox ]]; then
+          $SUDO_CMD rm -vf /usr/local/bin/firefox
+          $SUDO_CMD ln -vrs /opt/firefox/firefox /usr/local/bin/firefox
+          $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
 [Desktop Entry]
 Name=Firefox
 Comment=Web Browser
@@ -1389,16 +1518,17 @@ MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/vn
 StartupWMClass=Firefox
 StartupNotify=true
 EOT
-        dpkg -s firefox-esr >/dev/null 2>&1 && $SUDO_CMD apt-get -y --purge remove firefox-esr
-      fi
-    fi # /tmp/firefox.tar.bz2 check
-  fi
+          dpkg -s firefox-esr >/dev/null 2>&1 && $SUDO_CMD apt-get -y --purge remove firefox-esr
+        fi
+      fi # /tmp/firefox.tar.bz2 check
+    fi
+  fi # Linux
 }
 
 
 ################################################################################
 function InstallCommonPackagesNetworkingGUI {
-  if [[ $LINUX ]] && [[ -z $WINDOWS ]]; then
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages (networking, GUI) [Y/n]? " CONFIRMATION
@@ -1426,16 +1556,47 @@ function InstallCommonPackagesNetworkingGUI {
       read -p "Install latest Firefox [y/N]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-N}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        InstallFirefoxLinuxAmd64
+        InstallLatestFirefoxLinuxAmd64
       fi
     fi
 
-  fi # Linux
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+    unset CONFIRMATION
+    read -p "Install common packages (networking, GUI) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      scoop bucket add extras
+      scoop install extras/putty
+      scoop install extras/winscp
+      scoop install extras/filezilla
+
+      unset CONFIRMATION
+      read -p "Install Firefox [y/N]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/firefox
+
+      unset CONFIRMATION
+      read -p "Install Chromium [y/N]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/chromium
+
+      unset CONFIRMATION
+      read -p "Install common packages (networking, VPN) [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        scoop bucket add nonportable
+        scoop install main/sudo
+        sudo scoop install extras/openvpn
+        sudo scoop install nonportable/wireguard-np
+      fi
+    fi
+
+  fi # Linux vs. MSYS
 }
 
 ################################################################################
 function InstallCommonPackagesForensics {
-  if [[ $LINUX ]]; then
+  if [[ -n $LINUX ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages (forensics/security) [Y/n]? " CONFIRMATION
@@ -1488,13 +1649,16 @@ function InstallCommonPackagesForensics {
       done
     fi
 
-  fi # Linux
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+    echo "Todo"
+
+  fi # Linux vs. MSYS
 }
 
 
 ################################################################################
 function InstallCommonPackagesForensicsGUI {
-  if [[ $LINUX ]] && [[ -z $WINDOWS ]]; then
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
     unset CONFIRMATION
     read -p "Install common packages (forensics/security, GUI) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -1510,12 +1674,16 @@ function InstallCommonPackagesForensicsGUI {
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
       done
     fi
-  fi # Linux
+
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+    echo "Todo"
+
+  fi # Linux vs. MSYS
 }
 
 ################################################################################
 function CreateCommonLinuxConfig {
-  if [[ $LINUX ]]; then
+  if [[ -n $LINUX ]]; then
 
     unset CONFIRMATION
     read -p "Create missing common local config in home [Y/n]? " CONFIRMATION
@@ -1533,9 +1701,9 @@ function CreateCommonLinuxConfig {
                "$LOCAL_BIN_PATH" \
                "$LOCAL_DATA_PATH"/bash-completion/completions
 
-      [ ! -f ~/.vimrc ] && echo "set nocompatible" > ~/.vimrc
+      [[ ! -f ~/.vimrc ]] && echo "set nocompatible" > ~/.vimrc
 
-      if [ ! -d ~/.ssh ]; then
+      if [[ ! -d ~/.ssh ]]; then
         mkdir ~/.ssh
         chmod 700 ~/.ssh
       fi
@@ -1543,7 +1711,7 @@ function CreateCommonLinuxConfig {
       dpkg -s thunar >/dev/null 2>&1 && xdg-mime default Thunar-folder-handler.desktop inode/directory application/x-gnome-saved-search
     fi
 
-    if [[ -z $WINDOWS ]]; then
+    if [[ -z $WSL ]]; then
       unset CONFIRMATION
       read -p "Setup user-dirs.dirs [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
@@ -1572,12 +1740,16 @@ EOX
         fi
       fi
     fi
-  fi
+
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+    echo "Todo"
+
+  fi # Linux vs. MSYS
 }
 
 ################################################################################
 function InstallUserLocalFonts {
-  if [[ $LINUX ]] && [[ -z $WINDOWS ]]; then
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
     unset CONFIRMATION
     read -p "Install user-local fonts [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -1598,19 +1770,30 @@ function InstallUserLocalFonts {
       fi
       TILIX_FONT="Hack Nerd Font Regular"
     fi
-  fi
+
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+    unset CONFIRMATION
+    read -p "Install user-local fonts [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      scoop bucket add nerd-fonts
+      scoop install nerd-fonts/Hack-NF
+      scoop install nerd-fonts/Hack-NF-Mono
+    fi
+
+  fi # Linux vs. MSYS
 }
 
 ################################################################################
 function InstallUserLocalBinaries {
-  if [[ $LINUX ]]; then
+  if [[ -n $LINUX ]]; then
     unset CONFIRMATION
     read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       mkdir -p "$LOCAL_BIN_PATH" "$LOCAL_DATA_PATH"/bash-completion/completions
 
-      if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WINDOWS ]]; then
+      if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WSL ]]; then
         PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
         curl -L "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud
         chmod 755 "$LOCAL_BIN_PATH"/pcloud
@@ -1772,13 +1955,17 @@ function InstallUserLocalBinaries {
         rm -rf "$TMP_CLONE_DIR"
       fi
     fi
-  fi
+
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+    echo "Todo"
+
+  fi # Linux vs. MSYS
 }
 
 ################################################################################
 function SetupGroupsAndSudo {
 
-  if [[ $LINUX ]] && [[ -z $WINDOWS ]]; then
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
     if [[ "$SCRIPT_USER" != "root" ]]; then
 
@@ -1829,12 +2016,16 @@ EOT
         $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
       fi # confirmation on group stuff
     fi # ! -f /etc/sudoers.d/power_groups
-  fi
+
+  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+    echo "Todo"
+
+  fi # Linux vs. MSYS
 }
 
 ################################################################################
 function SetupNICPrivs {
-  if [[ $LINUX ]] && [[ -z $WINDOWS ]]; then
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
     # set capabilities for network capture
     unset CONFIRMATION
     read -p "Set capabilities for netdev users to sniff [Y/n]? " CONFIRMATION
@@ -1900,7 +2091,7 @@ function SetupNICPrivs {
 
 ################################################################################
 function SetupFirewall {
-  if [[ $LINUX ]] && [[ -z $WINDOWS ]] && dpkg -s ufw >/dev/null 2>&1; then
+  if [[ -n $LINUX ]] && [[ -z $WSL ]] && dpkg -s ufw >/dev/null 2>&1; then
 
     unset CONFIRMATION
     read -p "Enable/configure UFW (uncomplicated firewall) [Y/n]? " CONFIRMATION
@@ -1958,7 +2149,7 @@ EOF
 
 ################################################################################
 function SystemConfig {
-  if [[ $LINUX ]] && [[ -z $WINDOWS ]]; then
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
     if [[ -r /etc/sysctl.conf ]] && ! grep -q swappiness /etc/sysctl.conf; then
       unset CONFIRMATION
@@ -2066,13 +2257,13 @@ function GueroSymlinks {
       [[ -r "$GUERO_GITHUB_PATH"/git/git_clone_all.sh ]] && rm -vf "$LOCAL_BIN_PATH"/git_clone_all.sh && \
         ln -vrs "$GUERO_GITHUB_PATH"/git/git_clone_all.sh "$LOCAL_BIN_PATH"/git_clone_all.sh
 
-      [[ $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && \
+      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && \
         ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
 
-      [[ $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ]] && rm -vf ~/.xbindkeysrc && \
+      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ]] && rm -vf ~/.xbindkeysrc && \
         ln -vrs "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ~/.xbindkeysrc
 
-      [[ $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && \
+      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && \
         ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
 
       [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf ~/.gdbinit && \
@@ -2086,7 +2277,7 @@ function GueroSymlinks {
 
       [[ ! -d "$LOCAL_CONFIG_PATH"/gdb/peda ]] && _GitClone https://github.com/longld/peda.git "$LOCAL_CONFIG_PATH"/gdb/peda
 
-      if [[ $LINUX ]] && dpkg -s lxde-core >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
+      if [[ -n $LINUX ]] && dpkg -s lxde-core >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
         unset CONFIRMATION
         read -p "Setup symlinks for LXDE config [y/N]? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-N}
@@ -2098,7 +2289,7 @@ function GueroSymlinks {
         fi
       fi
 
-      if [[ $LINUX ]] && dpkg -s xfce4 >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/xfce-desktop.config ]]; then
+      if [[ -n $LINUX ]] && dpkg -s xfce4 >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/xfce-desktop.config ]]; then
         unset CONFIRMATION
         read -p "Setup symlinks for XFCE config [y/N]? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-N}
@@ -2114,7 +2305,7 @@ function GueroSymlinks {
         fi
       fi
 
-      if [[ $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/sublime ]]; then
+      if [[ -n $LINUX ]] && [[ -d "$GUERO_GITHUB_PATH"/sublime ]]; then
         mkdir -p "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User
         while IFS= read -d $'\0' -r CONFFILE; do
           FNAME="$(basename "$CONFFILE")"
@@ -2189,7 +2380,6 @@ if (( $USER_FUNCTION_IDX == 0 )); then
   InstallEssentialPackages
   InstallEnvs
   _EnvSetup
-  InstallEnvPackages
   SetupAptSources
   InstallDocker
   DockerPullImages
@@ -2202,6 +2392,7 @@ if (( $USER_FUNCTION_IDX == 0 )); then
   InstallCommonPackagesForensics
   InstallCommonPackagesForensicsGUI
   CreateCommonLinuxConfig
+  InstallEnvPackages
   InstallUserLocalFonts
   InstallUserLocalBinaries
   SetupGroupsAndSudo

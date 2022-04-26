@@ -2,7 +2,7 @@
 # PATH
 ###############################################################################
 
-if [ $MACOS ]; then
+if [[ $MACOS ]]; then
   [[ -d "/usr/local/opt/coreutils/libexec/gnubin" ]]  && PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
   [[ -d "/usr/local/opt/findutils/libexec/gnubin" ]]  && PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
   [[ -d "/usr/local/opt/gnu-indent/libexec/gnubin" ]] && PATH="/usr/local/opt/gnu-indent/libexec/gnubin:$PATH"
