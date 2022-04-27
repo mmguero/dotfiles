@@ -14,7 +14,7 @@ scoop install main/msys2 main/git
 # from https://dbondarchuk.com/2016/09/23/adding-permission-for-creating-symlink-using-powershell/
 
 function addSymLinkPermissions($accountToAdd){
-    Write-Host "Checking SymLink permissions.."
+    Write-Host "Checking symlink permissions ..."
     $sidstr = $null
     try {
         $ntprincipal = new-object System.Security.Principal.NTAccount "$accountToAdd"
@@ -30,7 +30,7 @@ function addSymLinkPermissions($accountToAdd){
     }
     Write-Host "Account SID: $($sidstr)" -ForegroundColor DarkCyan
     $tmp = [System.IO.Path]::GetTempFileName()
-    Write-Host "Export current Local Security Policy" -ForegroundColor DarkCyan
+    Write-Host "Exporting current Local Security Policy ..." -ForegroundColor DarkCyan
     secedit.exe /export /cfg "$($tmp)"
     $c = Get-Content -Path $tmp
     $currentSetting = ""
@@ -41,9 +41,9 @@ function addSymLinkPermissions($accountToAdd){
         }
     }
     if( $currentSetting -notlike "*$($sidstr)*" ) {
-        Write-Host "Need to add permissions to SymLink" -ForegroundColor Yellow
+        Write-Host "Need to add symlink permissions" -ForegroundColor Yellow
 
-        Write-Host "Modify Setting ""Create SymLink""" -ForegroundColor DarkCyan
+        Write-Host "Modify setting ""Create SymLink""" -ForegroundColor DarkCyan
 
         if( [string]::IsNullOrEmpty($currentSetting) ) {
             $currentSetting = "*$($sidstr)"
@@ -61,7 +61,7 @@ Revision=1
 SECreateSymbolicLinkPrivilege = $($currentSetting)
 "@
     $tmp2 = [System.IO.Path]::GetTempFileName()
-        Write-Host "Import new settings to Local Security Policy" -ForegroundColor DarkCyan
+        Write-Host "Importing new settings to Local Security Policy ..." -ForegroundColor DarkCyan
         $outfile | Set-Content -Path $tmp2 -Encoding Unicode -Force
         Push-Location (Split-Path $tmp2)
         try {
@@ -70,8 +70,8 @@ SECreateSymbolicLinkPrivilege = $($currentSetting)
             Pop-Location
         }
     } else {
-        Write-Host "NO ACTIONS REQUIRED! Account already in ""Create SymLink""" -ForegroundColor DarkCyan
-        Write-Host "Account $accountToAdd already has permissions to SymLink" -ForegroundColor Green
+        Write-Host "NO ACTION REQUIRED!" -ForegroundColor DarkCyan
+        Write-Host "Account $accountToAdd already has symlink permissions" -ForegroundColor Green
         return $true;
     }
 }
