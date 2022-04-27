@@ -73,7 +73,6 @@ DOCKER_COMPOSE_INSTALL_VERSION=( 1.29.2 )
 unset MACOS
 unset LINUX
 unset WSL
-unset MSYS
 unset HAS_SCOOP
 unset LINUX_DISTRO
 unset LINUX_RELEASE
@@ -84,7 +83,6 @@ if [[ $(uname -s) = 'Darwin' ]]; then
   export MACOS=0
 
 elif [[ -n $MSYSTEM ]]; then
-  export MSYS=0
   command -v scoop >/dev/null 2>&1 && export HAS_SCOOP=0
   command -v cygpath >/dev/null 2>&1 && \
     [[ -n $HAS_SCOOP ]] && \
@@ -117,9 +115,10 @@ if [[ -n $MACOS ]]; then
   SCRIPT_USER="$(whoami)"
   SUDO_CMD=""
 
-elif [[ -n $MSYS ]]; then
+elif [[ -n $MSYSTEM ]]; then
   SCRIPT_USER="$(whoami)"
   SUDO_CMD=""
+  export MSYS=winsymlinks:nativestrict
 
 else
   if [[ $EUID -eq 0 ]]; then
@@ -150,7 +149,7 @@ function InstallEssentialPackages {
     echo "Installing curl, git, jq and moreutils..." >&2
     if [[ -n $MACOS ]]; then
       brew install git jq moreutils # since Jaguar curl is already installed in MacOS
-    elif [[ -n $MSYS ]]; then
+    elif [[ -n $MSYSTEM ]]; then
       [[ -n $HAS_SCOOP ]] && scoop install main/curl main/git main/jq || pacman -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
       pacman --noconfirm -Sy moreutils
     elif [[ -n $LINUX ]]; then
@@ -179,7 +178,7 @@ function _GitLatestRelease {
 ###################################################################################
 # function to set up paths and init things after env installations
 function _EnvSetup {
-  if [[ -z $MSYS ]]; then
+  if [[ -z $MSYSTEM ]]; then
 
     if [[ -d "${ASDF_DIR:-$HOME/.asdf}" ]]; then
       . "${ASDF_DIR:-$HOME/.asdf}"/asdf.sh
@@ -234,7 +233,7 @@ function SetupMacOSBrew {
 ################################################################################
 # scoop on on windows 10
 function SetupWindowsScoop {
-  if [[ -n $MSYS ]]; then
+  if [[ -n $MSYSTEM ]]; then
 
     # TODO
     echo "todo" >&2
@@ -244,7 +243,7 @@ function SetupWindowsScoop {
 ################################################################################
 # envs (via asdf)
 function InstallEnvs {
-  if [[ -z $MSYS ]]; then
+  if [[ -z $MSYSTEM ]]; then
     declare -A ENVS_INSTALLED
     for i in ${ENV_LIST[@]}; do
       ENVS_INSTALLED[$i]=false
@@ -754,7 +753,7 @@ function InstallVirtualization {
       fi # already installed check
     done
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
 
     unset CONFIRMATION
     read -p "Install VirtualBox [y/N]? " CONFIRMATION
@@ -1067,7 +1066,7 @@ function InstallCommonPackages {
       brew install neilotoole/sq/sq
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages [Y/n]? " CONFIRMATION
@@ -1286,7 +1285,7 @@ function InstallCommonPackagesGUI {
       brew install --cask wireshark
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
@@ -1297,7 +1296,7 @@ function InstallCommonPackagesGUI {
       scoop install extras/bulk-crap-uninstaller
       scoop install extras/conemu
       echo "conemu task for $MSYSTEM:" >&2
-      echo "set \"PATH=%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin;%PATH%\" & set CHERE_INVOKING=1 & set MSYSTEM=$MSYSTEM & set MSYS2_PATH_TYPE=inherit & set LC_ALL=C.UTF-8 & set LANG=C.UTF-8 & \"%homedrive%%homepath%\scoop\apps\conemu\current\ConEmu\conemu-msys2-64.exe\" \"%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin\bash.exe\" --login -i -new_console:p" >&2
+      echo "set \"PATH=%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin;%PATH%\" & set CHERE_INVOKING=1 & set MSYSTEM=$MSYSTEM & set MSYS2_PATH_TYPE=inherit & set MSYS=winsymlinks:nativestrict & set LC_ALL=C.UTF-8 & set LANG=C.UTF-8 & \"%homedrive%%homepath%\scoop\apps\conemu\current\ConEmu\conemu-msys2-64.exe\" \"%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin\bash.exe\" --login -i -new_console:p" >&2
       scoop install extras/cpu-z
       scoop install extras/libreoffice
       scoop install extras/meld
@@ -1409,7 +1408,7 @@ function InstallCommonPackagesMedia {
 
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages (media) [Y/n]? " CONFIRMATION
@@ -1492,7 +1491,7 @@ function InstallCommonPackagesNetworking {
       done
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
     unset CONFIRMATION
     read -p "Install common packages (networking) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -1591,7 +1590,7 @@ function InstallCommonPackagesNetworkingGUI {
       fi
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
     unset CONFIRMATION
     read -p "Install common packages (networking, GUI) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -1681,7 +1680,7 @@ function InstallCommonPackagesForensics {
       done
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
     unset CONFIRMATION
     read -p "Install common packages (forensics/security) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -1714,7 +1713,7 @@ function InstallCommonPackagesForensicsGUI {
       done
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
     # nothing for now
     true
 
@@ -1781,7 +1780,7 @@ EOX
       fi
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
     unset CONFIRMATION
     read -p "Create missing common local config in home [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -1844,7 +1843,7 @@ function InstallUserLocalFonts {
       TILIX_FONT="Hack Nerd Font Regular"
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
     unset CONFIRMATION
     read -p "Install user-local fonts [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
@@ -2029,7 +2028,7 @@ function InstallUserLocalBinaries {
       fi
     fi
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
 
     unset CONFIRMATION
     read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
@@ -2108,7 +2107,7 @@ EOT
       fi # confirmation on group stuff
     fi # ! -f /etc/sudoers.d/power_groups
 
-  elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
     scoop install main/sudo
 
   fi # Linux vs. MSYS

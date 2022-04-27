@@ -55,6 +55,7 @@ elif grep -q Microsoft /proc/version 2>/dev/null || [[ -n $MSYSTEM ]]; then
   export WINDOWS10=0
   export LC_WINDOWS10=$WINDOWS10
   alias open='explorer.exe'
+  [[ -n $MSYSTEM ]] && export MSYS=winsymlinks:nativestrict
 else
   shopt -s nocasematch
   export LINUX=0
