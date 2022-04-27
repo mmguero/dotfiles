@@ -18,14 +18,14 @@
 export DEBIAN_FRONTEND=noninteractive
 
 if [[ -z "$BASH_VERSION" ]]; then
-  echo "Wrong interpreter, please run \"$0\" with bash"
+  echo "Wrong interpreter, please run \"$0\" with bash" >&2
   exit 1
 fi
 
 [[ "$(uname -s)" = 'Darwin' ]] && REALPATH=grealpath || REALPATH=realpath
 [[ "$(uname -s)" = 'Darwin' ]] && DIRNAME=gdirname || DIRNAME=dirname
 if ! (type "$REALPATH" && type "$DIRNAME") > /dev/null; then
-  echo "$(basename "${BASH_SOURCE[0]}") requires $REALPATH and $DIRNAME"
+  echo "$(basename "${BASH_SOURCE[0]}") requires $REALPATH and $DIRNAME" >&2
   exit 1
 fi
 SCRIPT_PATH="$($DIRNAME $($REALPATH -e "${BASH_SOURCE[0]}"))"
@@ -130,7 +130,7 @@ else
     SUDO_CMD="sudo"
   fi
   if ! dpkg -s apt >/dev/null 2>&1; then
-    echo "This command only target Linux distributions that use apt/apt-get"
+    echo "This command only target Linux distributions that use apt/apt-get" >&2
     exit 1
   fi
   LINUX_ARCH="$(dpkg --print-architecture)"
@@ -145,9 +145,9 @@ function InstallEssentialPackages {
      command -v git >/dev/null 2>&1 && \
      command -v jq >/dev/null 2>&1 && \
      command -v sponge >/dev/null 2>&1; then
-    echo "\"curl\", \"git\", \"jq\" and \"moreutils\" are already installed!"
+    echo "\"curl\", \"git\", \"jq\" and \"moreutils\" are already installed!" >&2
   else
-    echo "Installing curl, git, jq and moreutils..."
+    echo "Installing curl, git, jq and moreutils..." >&2
     if [[ -n $MACOS ]]; then
       brew install git jq moreutils # since Jaguar curl is already installed in MacOS
     elif [[ -n $MSYS ]]; then
@@ -216,12 +216,12 @@ function SetupMacOSBrew {
       read -p "\"brew\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        echo "Installing brew..."
+        echo "Installing brew..." >&2
         # kind of a chicken-egg situation here with curl/brew, but I think macOS has it installed already
         bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
       fi
     else
-      echo "\"brew\" is already installed!"
+      echo "\"brew\" is already installed!" >&2
     fi # brew install check
 
     brew list --cask >/dev/null 2>&1
@@ -237,8 +237,7 @@ function SetupWindowsScoop {
   if [[ -n $MSYS ]]; then
 
     # TODO
-    echo "todo"
-
+    echo "todo" >&2
   fi # MSYS check
 }
 
@@ -448,13 +447,13 @@ function InstallDocker {
       read -p "\"docker-edge\" cask is not installed, attempt to install docker-edge via brew [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        echo "Installing Docker Edge..."
+        echo "Installing Docker Edge..." >&2
         brew install --cask docker-edge
-        echo "Installed Docker Edge."
-        echo "Please modify performance settings as needed"
+        echo "Installed Docker Edge." >&2
+        echo "Please modify performance settings as needed" >&2
       fi # docker install confirmation check
     else
-      echo "\"docker-edge\" is already installed!"
+      echo "\"docker-edge\" is already installed!" >&2
     fi # docker-edge install check
 
   elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
@@ -477,8 +476,7 @@ function InstallDocker {
 
         curl -fsSL https://download.docker.com/linux/debian/gpg | $SUDO_CMD apt-key add -
 
-        echo "Installing Docker CE..."
-
+        echo "Installing Docker CE..." >&2
         if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
           $SUDO_CMD add-apt-repository \
              "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/ubuntu \
@@ -500,15 +498,15 @@ function InstallDocker {
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y docker-ce
 
         if [[ "$SCRIPT_USER" != "root" ]]; then
-          echo "Adding \"$SCRIPT_USER\" to group \"docker\"..."
+          echo "Adding \"$SCRIPT_USER\" to group \"docker\"..." >&2
           $SUDO_CMD usermod -a -G docker "$SCRIPT_USER"
-          echo "You will need to log out and log back in for this to take effect"
+          echo "You will need to log out and log back in for this to take effect" >&2
         fi
 
       fi # docker install confirmation check
 
     else
-      echo "\"docker\" is already installed!"
+      echo "\"docker\" is already installed!" >&2
     fi # docker install check
 
     if [[ -f /etc/docker/daemon.json ]] && ! grep -q buildkit /etc/docker/daemon.json; then
@@ -528,25 +526,25 @@ function InstallDocker {
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         if python3 -m pip -V >/dev/null 2>&1 ; then
-          echo "Installing Docker Compose via pip..."
+          echo "Installing Docker Compose via pip..." >&2
           python3 -m pip install -U docker-compose
           if ! docker-compose version >/dev/null 2>&1 ; then
-            echo "Installing docker-compose failed"
+            echo "Installing docker-compose failed" >&2
             exit 1
           fi
         else
-          echo "Installing Docker Compose via curl to /usr/local/bin..."
+          echo "Installing Docker Compose via curl to /usr/local/bin..." >&2
           InstallEssentialPackages
           $SUDO_CMD curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_INSTALL_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           $SUDO_CMD chmod +x /usr/local/bin/docker-compose
           if ! /usr/local/bin/docker-compose version >/dev/null 2>&1 ; then
-            echo "Installing docker-compose failed"
+            echo "Installing docker-compose failed" >&2
             exit 1
           fi
         fi # pip3 vs. curl for docker-compose install
       fi # docker-compose install confirmation check
     else
-      echo "\"docker-compose\" is already installed!"
+      echo "\"docker-compose\" is already installed!" >&2
     fi # docker-compose install check
 
     unset CONFIRMATION
@@ -747,12 +745,12 @@ function InstallVirtualization {
         read -p "$i cask is not installed, attempt to install $i via brew [Y/n]? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-Y}
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          echo "Installing $i..."
+          echo "Installing $i..." >&2
           brew install --cask "$i"
-          echo "Installed $i."
+          echo "Installed $i." >&2
         fi # install confirmation check
       else
-        echo "$i is already installed!"
+        echo "$i is already installed!" >&2
       fi # already installed check
     done
 
@@ -794,9 +792,9 @@ function InstallVirtualization {
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends virt-manager gir1.2-spiceclientgtk-3.0
       fi
       if [[ "$SCRIPT_USER" != "root" ]]; then
-        echo "Adding \"$SCRIPT_USER\" to group \"libvirt\"..."
+        echo "Adding \"$SCRIPT_USER\" to group \"libvirt\"..." >&2
         $SUDO_CMD usermod -a -G libvirt "$SCRIPT_USER"
-        echo "You will need to log out and log back in for this to take effect"
+        echo "You will need to log out and log back in for this to take effect" >&2
       fi
     fi # Check kvm/libvirt/qemu installation?
 
@@ -824,9 +822,9 @@ function InstallVirtualization {
           if [[ $CONFIRMATION =~ ^[Yy] ]]; then
             DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y dkms module-assistant linux-headers-$(uname -r) "$VBOX_PACKAGE_NAME"
             if [[ "$SCRIPT_USER" != "root" ]]; then
-              echo "Adding \"$SCRIPT_USER\" to group \"vboxusers\"..."
+              echo "Adding \"$SCRIPT_USER\" to group \"vboxusers\"..." >&2
               $SUDO_CMD usermod -a -G vboxusers "$SCRIPT_USER"
-              echo "You will need to log out and log back in for this to take effect"
+              echo "You will need to log out and log back in for this to take effect" >&2
             fi
           fi
 
@@ -859,13 +857,13 @@ function InstallVirtualization {
             read -p "Download and install $VBOX_EXTPACK_URL [Y/n]? " CONFIRMATION
             CONFIRMATION=${CONFIRMATION:-Y}
             if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-              VBOX_EXTPACK_FNAME="$(echo "$VBOX_EXTPACK_URL" | sed "s@.*/@@")"
+              VBOX_EXTPACK_FNAME="$(echo "$VBOX_EXTPACK_URL" | sed "s@.*/@@")" >&2
               pushd /tmp >/dev/null 2>&1
               curl -L -J -O "$VBOX_EXTPACK_URL"
               if [[ -r "$VBOX_EXTPACK_FNAME" ]]; then
                 $SUDO_CMD VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb --replace "$VBOX_EXTPACK_FNAME"
               else
-                echo "Error downloading $VBOX_EXTPACK_URL to $VBOX_EXTPACK_FNAME"
+                echo "Error downloading $VBOX_EXTPACK_URL to $VBOX_EXTPACK_FNAME" >&2
               fi
               popd >/dev/null 2>&1
             fi
@@ -873,7 +871,7 @@ function InstallVirtualization {
         fi
 
       else
-        echo "\"virtualbox\" is already installed!"
+        echo "\"virtualbox\" is already installed!" >&2
       fi # check VBoxManage is not in path to see if some form of virtualbox is already installed
     fi # Check VirtualBox installation?
 
@@ -1298,6 +1296,8 @@ function InstallCommonPackagesGUI {
       scoop install main/msys2
       scoop install extras/bulk-crap-uninstaller
       scoop install extras/conemu
+      echo "conemu task for $MSYSTEM:" >&2
+      echo "set \"PATH=%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin;%PATH%\" & set CHERE_INVOKING=1 & set MSYSTEM=$MSYSTEM & set MSYS2_PATH_TYPE=inherit & set LC_ALL=C.UTF-8 & set LANG=C.UTF-8 & set HOME=/c/Users/%username% & \"%homedrive%%homepath%\scoop\apps\conemu\current\ConEmu\conemu-msys2-64.exe\" \"%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin\bash.exe\" --login -i -new_console:p" >&2
       scoop install extras/cpu-z
       scoop install extras/libreoffice
       scoop install extras/meld
@@ -1511,6 +1511,10 @@ function InstallCommonPackagesNetworking {
       scoop install main/wget
       scoop install extras/stunnel
       scoop install smallstep/step
+      echo '$ step ca bootstrap --ca-url https://step.example.org:9000 --fingerprint xxxxxxx --install' >&2
+      echo '$ cp ~/.step/certs/root_ca.crt /etc/pki/ca-trust/source/anchors/example.crt' >&2
+      echo '$ update-ca-trust' >&2
+      echo 'for firefox: set security.enterprise_roots.enabled to true' >&2
     fi
 
   fi # Linux vs. MSYS
@@ -2009,7 +2013,16 @@ function InstallUserLocalBinaries {
 
   elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
     # nothing for now (scoop pretty much did this already)
-    true
+    ( [[ -n $USERPROFILE ]] && \
+        [[ -d "$(cygpath -u "$USERPROFILE")"/Downloads ]] && \
+        pushd "$(cygpath -u "$USERPROFILE")"/Downloads >/dev/null 2>&1 ) || pushd . >/dev/null 2>&1
+
+      curl -L -J -O 'https://launchpad.net/veracrypt/trunk/1.25.9/+download/VeraCrypt_Setup_x64_1.25.9.msi'
+      curl -L -J -O 'https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v4.4.160/OpenShellSetup_4_4_160.exe'
+
+      echo "Some installers downloaded to \"$(pwd)\"" >&2
+      popd >/dev/null 2>&1
+    fi
 
   fi # Linux vs. MSYS
 }
@@ -2423,7 +2436,7 @@ for i in "${!FUNCTIONS[@]}"; do
   ((IPLUS=i+1))
   printf "%s\t%s\n" "$IPLUS" "${FUNCTIONS[$i]}"
 done
-echo -n "Operation:"
+echo -n "Operation:" >&2
 read USER_FUNCTION_IDX
 
 if (( $USER_FUNCTION_IDX == 0 )); then
@@ -2461,6 +2474,6 @@ elif (( $USER_FUNCTION_IDX > 0 )) && (( $USER_FUNCTION_IDX <= "${#FUNCTIONS[@]}"
 
 else
   # some people just want to watch the world burn
-  echo "Invalid operation selected"
+  echo "Invalid operation selected" >&2
   exit 1;
 fi
