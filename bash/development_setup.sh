@@ -2022,7 +2022,6 @@ function InstallUserLocalBinaries {
 
       echo "Some installers downloaded to \"$(pwd)\"" >&2
       popd >/dev/null 2>&1
-    fi
 
   fi # Linux vs. MSYS
 }
