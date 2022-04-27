@@ -2069,7 +2069,6 @@ EOT
 
   elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
     scoop install main/sudo
-    sudo scoop install nonportable/virtualbox-np
 
   fi # Linux vs. MSYS
 }
