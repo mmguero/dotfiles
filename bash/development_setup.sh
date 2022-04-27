@@ -1792,7 +1792,7 @@ EOX
                "$HOME/media" \
                "$LOCAL_BIN_PATH"
 
-      if [[ -n $USERPROFILE ]]; then
+      if command -v cygpath >/dev/null 2>&1 && [[ -n $USERPROFILE ]]; then
         WIN_HOME="$(cygpath -u "$USERPROFILE")"
 
         [[ -d "$WIN_HOME"/Downloads ]] && \
@@ -2036,7 +2036,8 @@ function InstallUserLocalBinaries {
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       # nothing for now (scoop pretty much did this already)
-      ( [[ -n $USERPROFILE ]] && \
+      ( command -v cygpath >/dev/null 2>&1 && \
+          [[ -n $USERPROFILE ]] && \
           [[ -d "$(cygpath -u "$USERPROFILE")"/Downloads ]] && \
           pushd "$(cygpath -u "$USERPROFILE")"/Downloads >/dev/null 2>&1 ) || pushd . >/dev/null 2>&1
 
