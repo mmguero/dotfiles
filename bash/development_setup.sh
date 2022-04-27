@@ -2041,8 +2041,10 @@ function InstallUserLocalBinaries {
           [[ -d "$(cygpath -u "$USERPROFILE")"/Downloads ]] && \
           pushd "$(cygpath -u "$USERPROFILE")"/Downloads >/dev/null 2>&1 ) || pushd . >/dev/null 2>&1
 
-        curl -L -J -O 'https://launchpad.net/veracrypt/trunk/1.25.9/+download/VeraCrypt_Setup_x64_1.25.9.msi'
-        curl -L -J -O 'https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v4.4.160/OpenShellSetup_4_4_160.exe'
+        curl -L -J -O "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio "https://.+?VeraCrypt_Setup_x64.+?\.msi" | sed "s/&#43;/+/" | head -n 1)"
+        curl -L -J -O "https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v${OPENSHELL_RELEASE}/OpenShellSetup_$(echo "${OPENSHELL_RELEASE}" | sed 's/\./_/g').exe"
+        curl -L -J -O 'https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Windows/synergy_windows_x64.msi'
+        curl -L -J -O 'https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Windows/pCloud_Windows_x64.exe'
 
         echo "Some installers downloaded to \"$(pwd)\"" >&2
         popd >/dev/null 2>&1
