@@ -89,6 +89,7 @@ elif [[ -n $MSYSTEM ]]; then
     [[ -n $USERPROFILE ]] && \
     [[ -d "$(cygpath -u "$USERPROFILE")"/scoop/shims ]] && \
     export PATH="$(cygpath.exe -u $USERPROFILE)"/scoop/shims:"$PATH"
+  export MSYS=winsymlinks:nativestrict
 
 else
   if grep -q Microsoft /proc/version; then
@@ -118,7 +119,6 @@ if [[ -n $MACOS ]]; then
 elif [[ -n $MSYSTEM ]]; then
   SCRIPT_USER="$(whoami)"
   SUDO_CMD=""
-  export MSYS=winsymlinks:nativestrict
 
 else
   if [[ $EUID -eq 0 ]]; then
