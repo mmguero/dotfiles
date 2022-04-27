@@ -1297,7 +1297,7 @@ function InstallCommonPackagesGUI {
       scoop install extras/bulk-crap-uninstaller
       scoop install extras/conemu
       echo "conemu task for $MSYSTEM:" >&2
-      echo "set \"PATH=%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin;%PATH%\" & set CHERE_INVOKING=1 & set MSYSTEM=$MSYSTEM & set MSYS2_PATH_TYPE=inherit & set LC_ALL=C.UTF-8 & set LANG=C.UTF-8 & set HOME=/c/Users/%username% & \"%homedrive%%homepath%\scoop\apps\conemu\current\ConEmu\conemu-msys2-64.exe\" \"%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin\bash.exe\" --login -i -new_console:p" >&2
+      echo "set \"PATH=%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin;%PATH%\" & set CHERE_INVOKING=1 & set MSYSTEM=$MSYSTEM & set MSYS2_PATH_TYPE=inherit & set LC_ALL=C.UTF-8 & set LANG=C.UTF-8 & \"%homedrive%%homepath%\scoop\apps\conemu\current\ConEmu\conemu-msys2-64.exe\" \"%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin\bash.exe\" --login -i -new_console:p" >&2
       scoop install extras/cpu-z
       scoop install extras/libreoffice
       scoop install extras/meld
@@ -1349,12 +1349,12 @@ function InstallCommonPackagesGUI {
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
       done
 
-      if [[ ! -d ~/.themes/vimix-dark-laptop-beryl ]]; then
+      if [[ ! -d "$HOME"/.themes/vimix-dark-laptop-beryl ]]; then
         TMP_CLONE_DIR="$(mktemp -d)"
         _GitClone https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
         pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
-        mkdir -p ~/.themes
-        ./install.sh -d ~/.themes -n vimix -c dark -t beryl -s laptop
+        mkdir -p "$HOME"/.themes
+        ./install.sh -d "$HOME"/.themes -n vimix -c dark -t beryl -s laptop
         popd >/dev/null 2>&1
         rm -rf "$TMP_CLONE_DIR"
       fi
@@ -1730,7 +1730,7 @@ function CreateCommonLinuxConfig {
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-      touch ~/.hushlogin
+      touch "$HOME"/.hushlogin
 
       mkdir -p "$HOME/Desktop" \
                "$HOME/download" \
@@ -1741,11 +1741,11 @@ function CreateCommonLinuxConfig {
                "$LOCAL_BIN_PATH" \
                "$LOCAL_DATA_PATH"/bash-completion/completions
 
-      [[ ! -f ~/.vimrc ]] && echo "set nocompatible" > ~/.vimrc
+      [[ ! -f "$HOME"/.vimrc ]] && echo "set nocompatible" > "$HOME"/.vimrc
 
-      if [[ ! -d ~/.ssh ]]; then
-        mkdir ~/.ssh
-        chmod 700 ~/.ssh
+      if [[ ! -d "$HOME"/.ssh ]]; then
+        mkdir "$HOME"/.ssh
+        chmod 700 "$HOME"/.ssh
       fi
 
       dpkg -s thunar >/dev/null 2>&1 && xdg-mime default Thunar-folder-handler.desktop inode/directory application/x-gnome-saved-search
@@ -1786,16 +1786,34 @@ EOX
     read -p "Create missing common local config in home [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      touch ~/.hushlogin
+      touch "$HOME"/.hushlogin
 
       mkdir -p "$HOME/tmp" \
+               "$HOME/media" \
                "$LOCAL_BIN_PATH"
 
-      [[ ! -f ~/.vimrc ]] && echo "set nocompatible" > ~/.vimrc
+      if [[ -n $USERPROFILE ]]; then
+        WIN_HOME="$(cygpath -u "$USERPROFILE")"
 
-      if [[ ! -d ~/.ssh ]]; then
-        mkdir ~/.ssh
-        chmod 700 ~/.ssh
+        [[ -d "$WIN_HOME"/Downloads ]] && \
+          ln -vs "$WIN_HOME"/Downloads "$HOME"/download
+        [[ -d "$WIN_HOME"/Documents ]] && \
+          ln -vs "$WIN_HOME"/Documents "$HOME"/Documents
+        [[ -d "$WIN_HOME"/Desktop ]] && \
+          ln -vs "$WIN_HOME"/Desktop "$HOME"/Desktop
+        [[ -d "$WIN_HOME"/Pictures ]] && \
+          ln -vs "$WIN_HOME"/Pictures "$HOME"/media/images
+        [[ -d "$WIN_HOME"/Music ]] && \
+          ln -vs "$WIN_HOME"/Music "$HOME"/media/music
+        [[ -d "$WIN_HOME"/Videos ]] && \
+          ln -vs "$WIN_HOME"/Videos "$HOME"/media/video
+      fi
+
+      [[ ! -f "$HOME"/.vimrc ]] && echo "set nocompatible" > "$HOME"/.vimrc
+
+      if [[ ! -d "$HOME"/.ssh ]]; then
+        mkdir "$HOME"/.ssh
+        chmod 700 "$HOME"/.ssh
       fi
     fi
 
@@ -2300,41 +2318,41 @@ function GueroSymlinks {
       [[ -r "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" ]] && rm -vf "$LOCAL_BIN_PATH"/"$SCRIPT_NAME" && \
         ln -vrs "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" "$LOCAL_BIN_PATH"/"$SCRIPT_NAME"
 
-      [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf ~/.bashrc && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/rc ~/.bashrc
+      [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf "$HOME"/.bashrc && \
+        ln -vrs "$GUERO_GITHUB_PATH"/bash/rc "$HOME"/.bashrc
 
-      [[ -r "$GUERO_GITHUB_PATH"/bash/aliases ]] && rm -vf ~/.bash_aliases && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/aliases ~/.bash_aliases
+      [[ -r "$GUERO_GITHUB_PATH"/bash/aliases ]] && rm -vf "$HOME"/.bash_aliases && \
+        ln -vrs "$GUERO_GITHUB_PATH"/bash/aliases "$HOME"/.bash_aliases
 
-      [[ -r "$GUERO_GITHUB_PATH"/bash/functions ]] && rm -vf ~/.bash_functions && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/functions ~/.bash_functions
+      [[ -r "$GUERO_GITHUB_PATH"/bash/functions ]] && rm -vf "$HOME"/.bash_functions && \
+        ln -vrs "$GUERO_GITHUB_PATH"/bash/functions "$HOME"/.bash_functions
 
-      [[ -d "$GUERO_GITHUB_PATH"/bash/rc.d ]] && rm -vf ~/.bashrc.d && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/rc.d ~/.bashrc.d
+      [[ -d "$GUERO_GITHUB_PATH"/bash/rc.d ]] && rm -vf "$HOME"/.bashrc.d && \
+        ln -vrs "$GUERO_GITHUB_PATH"/bash/rc.d "$HOME"/.bashrc.d
 
-      [[ -r "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf ~/.gitconfig && \
-        ln -vrs "$GUERO_GITHUB_PATH"/git/gitconfig ~/.gitconfig
+      [[ -r "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf "$HOME"/.gitconfig && \
+        ln -vrs "$GUERO_GITHUB_PATH"/git/gitconfig "$HOME"/.gitconfig
 
-      [[ -r "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf ~/.gitignore_global && \
-        ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global ~/.gitignore_global
+      [[ -r "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf "$HOME"/.gitignore_global && \
+        ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global "$HOME"/.gitignore_global
 
       [[ -r "$GUERO_GITHUB_PATH"/git/git_clone_all.sh ]] && rm -vf "$LOCAL_BIN_PATH"/git_clone_all.sh && \
         ln -vrs "$GUERO_GITHUB_PATH"/git/git_clone_all.sh "$LOCAL_BIN_PATH"/git_clone_all.sh
 
-      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf ~/.tmux.conf && \
-        ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ~/.tmux.conf
+      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf "$HOME"/.tmux.conf && \
+        ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf "$HOME"/.tmux.conf
 
-      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ]] && rm -vf ~/.xbindkeysrc && \
-        ln -vrs "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ~/.xbindkeysrc
+      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ]] && rm -vf "$HOME"/.xbindkeysrc && \
+        ln -vrs "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc "$HOME"/.xbindkeysrc
 
-      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf ~/.xxdiffrc && \
-        ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ~/.xxdiffrc
+      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf "$HOME"/.xxdiffrc && \
+        ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc "$HOME"/.xxdiffrc
 
-      [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf ~/.gdbinit && \
-        ln -vrs "$GUERO_GITHUB_PATH"/gdb/gdbinit ~/.gdbinit
+      [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf "$HOME"/.gdbinit && \
+        ln -vrs "$GUERO_GITHUB_PATH"/gdb/gdbinit "$HOME"/.gdbinit
 
-      [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p ~/.cgdb && rm -vf ~/.cgdb/cgdbrc && \
-        ln -vrs "$GUERO_GITHUB_PATH"/gdb/cgdbrc ~/.cgdb/cgdbrc
+      [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p "$HOME"/.cgdb && rm -vf "$HOME"/.cgdb/cgdbrc && \
+        ln -vrs "$GUERO_GITHUB_PATH"/gdb/cgdbrc "$HOME"/.cgdb/cgdbrc
 
       [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p "$LOCAL_CONFIG_PATH"/gdb && rm -vf "$LOCAL_CONFIG_PATH"/gdb/hexdump.py && \
         ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py "$LOCAL_CONFIG_PATH"/gdb/hexdump.py
