@@ -84,11 +84,12 @@ if [[ $(uname -s) = 'Darwin' ]]; then
 
 elif [[ -n $MSYSTEM ]]; then
   command -v scoop >/dev/null 2>&1 && export HAS_SCOOP=0
-  command -v cygpath >/dev/null 2>&1 && \
+  if command -v cygpath >/dev/null 2>&1 && \
     [[ -n $USERPROFILE ]] && \
-    [[ -d "$(cygpath -u "$USERPROFILE")"/scoop/shims ]] && \
-    export PATH="$(cygpath.exe -u $USERPROFILE)"/scoop/shims:"$PATH" && \
+    [[ -d "$(cygpath -u "$USERPROFILE")"/scoop/shims ]]; then
+    export PATH="$(cygpath -u $USERPROFILE)"/scoop/shims:"$PATH"
     export HAS_SCOOP=0
+  fi
   export MSYS=winsymlinks:nativestrict
 
 else
