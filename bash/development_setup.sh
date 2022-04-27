@@ -2030,16 +2030,22 @@ function InstallUserLocalBinaries {
     fi
 
   elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
-    # nothing for now (scoop pretty much did this already)
-    ( [[ -n $USERPROFILE ]] && \
-        [[ -d "$(cygpath -u "$USERPROFILE")"/Downloads ]] && \
-        pushd "$(cygpath -u "$USERPROFILE")"/Downloads >/dev/null 2>&1 ) || pushd . >/dev/null 2>&1
 
-      curl -L -J -O 'https://launchpad.net/veracrypt/trunk/1.25.9/+download/VeraCrypt_Setup_x64_1.25.9.msi'
-      curl -L -J -O 'https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v4.4.160/OpenShellSetup_4_4_160.exe'
+    unset CONFIRMATION
+    read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      # nothing for now (scoop pretty much did this already)
+      ( [[ -n $USERPROFILE ]] && \
+          [[ -d "$(cygpath -u "$USERPROFILE")"/Downloads ]] && \
+          pushd "$(cygpath -u "$USERPROFILE")"/Downloads >/dev/null 2>&1 ) || pushd . >/dev/null 2>&1
 
-      echo "Some installers downloaded to \"$(pwd)\"" >&2
-      popd >/dev/null 2>&1
+        curl -L -J -O 'https://launchpad.net/veracrypt/trunk/1.25.9/+download/VeraCrypt_Setup_x64_1.25.9.msi'
+        curl -L -J -O 'https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v4.4.160/OpenShellSetup_4_4_160.exe'
+
+        echo "Some installers downloaded to \"$(pwd)\"" >&2
+        popd >/dev/null 2>&1
+    fi
 
   fi # Linux vs. MSYS
 }
