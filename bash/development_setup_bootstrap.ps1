@@ -13,7 +13,7 @@ scoop install main/msys2 main/git
 # enable permission to create symlinks
 # from https://dbondarchuk.com/2016/09/23/adding-permission-for-creating-symlink-using-powershell/
 
-function addSymLinkPermissions($accountToAdd){
+function addSymLinkPermissions($accountToAdd) {
     Write-Host "Checking symlink permissions ..."
     $sidstr = $null
     try {
@@ -24,33 +24,35 @@ function addSymLinkPermissions($accountToAdd){
         $sidstr = $null
     }
     Write-Host "Account: $($accountToAdd)" -ForegroundColor DarkCyan
-    if( [string]::IsNullOrEmpty($sidstr) ) {
+    if ([string]::IsNullOrEmpty($sidstr)) {
         Write-Host "Account not found!" -ForegroundColor Red
         exit -1
     }
     Write-Host "Account SID: $($sidstr)" -ForegroundColor DarkCyan
+
     $tmp = [System.IO.Path]::GetTempFileName()
     Write-Host "Exporting current Local Security Policy ..." -ForegroundColor DarkCyan
     secedit.exe /export /cfg "$($tmp)"
     $c = Get-Content -Path $tmp
     $currentSetting = ""
-    foreach($s in $c) {
-        if( $s -like "SECreateSymbolicLinkPrivilege*") {
+    foreach ($s in $c) {
+        if ($s -like "SECreateSymbolicLinkPrivilege*") {
             $x = $s.split("=",[System.StringSplitOptions]::RemoveEmptyEntries)
             $currentSetting = $x[1].Trim()
         }
     }
-    if( $currentSetting -notlike "*$($sidstr)*" ) {
-        Write-Host "Need to add symlink permissions" -ForegroundColor Yellow
 
+    if ($currentSetting -notlike "*$($sidstr)*") {
+        Write-Host "Need to add symlink permissions" -ForegroundColor Yellow
         Write-Host "Modify setting ""Create SymLink""" -ForegroundColor DarkCyan
 
-        if( [string]::IsNullOrEmpty($currentSetting) ) {
+        if ([string]::IsNullOrEmpty($currentSetting)) {
             $currentSetting = "*$($sidstr)"
         } else {
             $currentSetting = "*$($sidstr),$($currentSetting)"
         }
         Write-Host "$currentSetting"
+
     $outfile = @"
 [Unicode]
 Unicode=yes
@@ -69,6 +71,7 @@ SECreateSymbolicLinkPrivilege = $($currentSetting)
         } finally {
             Pop-Location
         }
+
     } else {
         Write-Host "NO ACTION REQUIRED!" -ForegroundColor DarkCyan
         Write-Host "Account $accountToAdd already has symlink permissions" -ForegroundColor Green
