@@ -240,10 +240,7 @@ function SetupWindowsScoop {
 ################################################################################
 # envs (via asdf)
 function InstallEnvs {
-  if [[ -n $MSYS ]]; then
-    echo "asdf not supported under MSYS">&2
-
-  else
+  if [[ -z $MSYS ]]; then
     declare -A ENVS_INSTALLED
     for i in ${ENV_LIST[@]}; do
       ENVS_INSTALLED[$i]=false
