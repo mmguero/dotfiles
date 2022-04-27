@@ -1075,14 +1075,9 @@ function InstallCommonPackages {
       scoop install main/bat
       scoop install main/dos2unix
       scoop install main/fd
-      scoop install main/grep
-      scoop install main/less
-      scoop install main/openssl
       scoop install main/python
       scoop install main/ripgrep
-      scoop install main/sed
       scoop install main/sudo
-      scoop install main/touch
       scoop install main/unrar
       scoop install main/unzip
       scoop install main/yq

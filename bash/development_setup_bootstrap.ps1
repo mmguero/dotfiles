@@ -7,5 +7,5 @@ iwr -useb get.scoop.sh -outfile 'install_scoop.ps1'
 # remove the scoop installer
 Remove-Item .\install_scoop.ps1
 
-# bootstrap bare minimum (let development_setup.sh do the rest)
-scoop install main/git main/curl main/grep main/less main/sed main/touch main/msys2
+# bootstrap bare minimum (let msys and/or development_setup.sh do the rest)
+scoop install main/msys2 main/git
