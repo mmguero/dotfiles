@@ -147,7 +147,7 @@ function InstallEssentialPackages {
       brew install git jq moreutils # since Jaguar curl is already installed in MacOS
     elif [[ -n $MSYS ]]; then
       [[ -n $HAS_SCOOP ]] && scoop install main/curl main/git main/jq || pacman -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
-      pacman -Sy moreutils
+      pacman --noconfirm -Sy moreutils
     elif [[ -n $LINUX ]]; then
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq moreutils
@@ -770,6 +770,11 @@ function InstallVirtualization {
     CONFIRMATION=${CONFIRMATION:-N}
     [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install main/vagrant
 
+    unset CONFIRMATION
+    read -p "Install Packer [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install main/packer
+
   elif [[ -n $LINUX ]] && [[ -z $WSL ]] && [[ "$LINUX_CPU" == "x86_64" ]]; then
 
     # virtualbox or kvm
@@ -1073,13 +1078,23 @@ function InstallCommonPackages {
       scoop install main/innounp
       scoop install main/7zip
       scoop install main/bat
+      scoop install main/cloc
+      scoop install main/diffutils
       scoop install main/dos2unix
       scoop install main/fd
+      scoop install main/file
+      scoop install main/findutils
+      scoop install main/gnupg
+      scoop install main/gron
+      scoop install main/jdupes
+      scoop install main/patch
       scoop install main/python
       scoop install main/ripgrep
       scoop install main/sudo
+      scoop install main/time
       scoop install main/unrar
       scoop install main/unzip
+      scoop install main/vim
       scoop install main/yq
       scoop install main/zip
       scoop install extras/age
@@ -1283,9 +1298,11 @@ function InstallCommonPackagesGUI {
       scoop install extras/conemu
       scoop install extras/cpu-z
       scoop install extras/libreoffice
+      scoop install extras/meld
       scoop install extras/sublime-text
       scoop install extras/sumatrapdf
       scoop install extras/sysinternals
+      scoop install extras/win32-disk-imager
     fi
 
   elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
@@ -1398,9 +1415,13 @@ function InstallCommonPackagesMedia {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
       scoop bucket add extras
-      scoop install extras/audacity
       scoop install main/ffmpeg
+      scoop install main/imagemagick
+      scoop install extras/audacious
+      scoop install extras/audacity
+      scoop install extras/irfanview
       scoop install extras/mkvtoolnix
+      scoop install extras/mpv
       scoop install extras/vlc
 
       unset CONFIRMATION
@@ -1476,8 +1497,17 @@ function InstallCommonPackagesNetworking {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       scoop bucket add extras
       scoop bucket add smallstep https://github.com/smallstep/scoop-bucket.git
+      scoop install main/autossh
       scoop install main/boringproxy
       scoop install main/croc
+      scoop install main/cwrsync
+      scoop install main/ffsend
+      scoop install main/netcat
+      scoop install main/nmap
+      scoop install main/ngrok
+      scoop install main/termshark
+      scoop install main/wget
+      scoop install extras/stunnel
       scoop install smallstep/step
     fi
 
@@ -1581,6 +1611,7 @@ function InstallCommonPackagesNetworkingGUI {
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         scoop bucket add nonportable
         scoop install main/sudo
+        scoop install extras/wireshark
         sudo scoop install extras/openvpn
         sudo scoop install nonportable/wireguard-np
       fi
@@ -1645,7 +1676,14 @@ function InstallCommonPackagesForensics {
     fi
 
   elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
-    echo "Todo"
+    unset CONFIRMATION
+    read -p "Install common packages (forensics/security) [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      scoop install main/adb
+      scoop install main/exiftool
+      scoop install extras/testdisk
+    fi
 
   fi # Linux vs. MSYS
 }
@@ -1671,7 +1709,8 @@ function InstallCommonPackagesForensicsGUI {
     fi
 
   elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
-    echo "Todo"
+    # nothing for now
+    true
 
   fi # Linux vs. MSYS
 }
@@ -1737,7 +1776,22 @@ EOX
     fi
 
   elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
-    echo "Todo"
+    unset CONFIRMATION
+    read -p "Create missing common local config in home [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      touch ~/.hushlogin
+
+      mkdir -p "$HOME/tmp" \
+               "$LOCAL_BIN_PATH"
+
+      [[ ! -f ~/.vimrc ]] && echo "set nocompatible" > ~/.vimrc
+
+      if [[ ! -d ~/.ssh ]]; then
+        mkdir ~/.ssh
+        chmod 700 ~/.ssh
+      fi
+    fi
 
   fi # Linux vs. MSYS
 }
@@ -1952,7 +2006,8 @@ function InstallUserLocalBinaries {
     fi
 
   elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
-    echo "Todo"
+    # nothing for now (scoop pretty much did this already)
+    true
 
   fi # Linux vs. MSYS
 }
@@ -2013,7 +2068,8 @@ EOT
     fi # ! -f /etc/sudoers.d/power_groups
 
   elif [[ -n $MSYS ]] && [[ -n $HAS_SCOOP ]]; then
-    echo "Todo"
+    scoop install main/sudo
+    sudo scoop install nonportable/virtualbox-np
 
   fi # Linux vs. MSYS
 }
