@@ -74,7 +74,6 @@ alias rg='rg --hidden --ignore-case --max-columns 512'
 # net/vpn/tunnel
 alias ov='sudo openvpn'
 alias wwg='sudo wwg.sh'
-alias ip='ip -c=auto'
 
 #development/misc
 alias pycheck='python3 -m py_compile'
