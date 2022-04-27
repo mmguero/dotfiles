@@ -23,7 +23,7 @@ export HH_CONFIG=hicolor,rawhistory,favorites   # get more colors
 shopt -s checkwinsize
 
 # make less more friendly for non-text input files, see lesspipe(1)
-[[ -x /usr/bin/lesspipe ]] && eval "$(lesspipe)"
+command -v lesspipe >/dev/null 2>&1 && eval "$(lesspipe)"
 
 # set variable identifying the chroot you work in (used in the prompt below)
 if [[ -z "$debian_chroot" ]] && [[ -r /etc/debian_chroot ]]; then
@@ -51,7 +51,7 @@ unset LC_WINDOWS10
 
 if [[ $(uname -s) = 'Darwin' ]]; then
   export MACOS=0
-elif grep -q Microsoft /proc/version 2>/dev/null || [[ -n $MSYSTEM ]]; then
+elif [[ -n $MSYSTEM ]] || grep -q Microsoft /proc/version 2>/dev/null; then
   export WINDOWS10=0
   export LC_WINDOWS10=$WINDOWS10
   alias open='explorer.exe'

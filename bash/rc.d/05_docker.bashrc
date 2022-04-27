@@ -14,7 +14,7 @@ else
   export DOCKER_SHARE_BASH_ALIASES="-v $DOCKER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z"
   export DOCKER_SHARE_BASH_FUNCTIONS="-v $DOCKER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z"
   export DOCKER_SHARE_GIT_CONFIG="-v $DOCKER_SHARE_HOME/.gitconfig:/etc/gitconfig:ro,Z"
-  xhost +SI:localuser:"$USER" >/dev/null 2>&1
+  command -v xhost >/dev/null 2>&1 && xhost +SI:localuser:"$USER" >/dev/null 2>&1
 fi
 
 ########################################################################

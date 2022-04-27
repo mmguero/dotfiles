@@ -95,7 +95,7 @@ else
   alias vpls='vagrant plugin list'
 fi
 
-VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)"
+command -v vagrant >/dev/null 2>&1 && VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)" || VAGRANT_PLUGINS=
 if [[ $MACOS ]] && [[ "$VAGRANT_PLUGINS" == *"vmware"* ]]; then
   export VAGRANT_DEFAULT_PROVIDER=vmware_fusion
 elif [[ "$VAGRANT_PLUGINS" == *"vagrant-libvirt"* ]]; then
