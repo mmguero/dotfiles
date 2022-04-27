@@ -13,6 +13,13 @@ if [[ $MACOS ]]; then
   [[ -d "/usr/local/opt/openssl@1.1/bin" ]]           && PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
 fi
 
+if [[ $WINDOWS10 ]]; then
+  command -v cygpath >/dev/null 2>&1 && \
+    [[ -n $USERPROFILE ]] && \
+    [[ -d "$(cygpath.exe -u $USERPROFILE)"/scoop/shims ]] && \
+    PATH="$(cygpath.exe -u $USERPROFILE)"/scoop/shims:"$PATH"
+fi
+
 [[ -d /snap/bin ]] && PATH="/snap/bin:$PATH"
 
 [[ -d $HOME/bin/devel ]] && PATH="$HOME/bin/devel:$PATH"
