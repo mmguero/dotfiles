@@ -2402,47 +2402,49 @@ function GueroSymlinks {
 
       mkdir -p "$LOCAL_BIN_PATH"
 
+      [[ -n $MSYSTEM ]] && LNFLAGS='-vs' || LNFLAGS='-vrs'
+
       [[ -r "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" ]] && rm -vf "$LOCAL_BIN_PATH"/"$SCRIPT_NAME" && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" "$LOCAL_BIN_PATH"/"$SCRIPT_NAME"
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" "$LOCAL_BIN_PATH"/"$SCRIPT_NAME"
 
       [[ -r "$GUERO_GITHUB_PATH"/bash/rc ]] && rm -vf "$HOME"/.bashrc && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/rc "$HOME"/.bashrc
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/bash/rc "$HOME"/.bashrc
 
       [[ -r "$GUERO_GITHUB_PATH"/bash/aliases ]] && rm -vf "$HOME"/.bash_aliases && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/aliases "$HOME"/.bash_aliases
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/bash/aliases "$HOME"/.bash_aliases
 
       [[ -r "$GUERO_GITHUB_PATH"/bash/functions ]] && rm -vf "$HOME"/.bash_functions && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/functions "$HOME"/.bash_functions
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/bash/functions "$HOME"/.bash_functions
 
       [[ -d "$GUERO_GITHUB_PATH"/bash/rc.d ]] && rm -vf "$HOME"/.bashrc.d && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/rc.d "$HOME"/.bashrc.d
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/bash/rc.d "$HOME"/.bashrc.d
 
       [[ -r "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf "$HOME"/.gitconfig && \
-        ln -vrs "$GUERO_GITHUB_PATH"/git/gitconfig "$HOME"/.gitconfig
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/git/gitconfig "$HOME"/.gitconfig
 
       [[ -r "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf "$HOME"/.gitignore_global && \
-        ln -vrs "$GUERO_GITHUB_PATH"/git/gitignore_global "$HOME"/.gitignore_global
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/git/gitignore_global "$HOME"/.gitignore_global
 
       [[ -r "$GUERO_GITHUB_PATH"/git/git_clone_all.sh ]] && rm -vf "$LOCAL_BIN_PATH"/git_clone_all.sh && \
-        ln -vrs "$GUERO_GITHUB_PATH"/git/git_clone_all.sh "$LOCAL_BIN_PATH"/git_clone_all.sh
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/git/git_clone_all.sh "$LOCAL_BIN_PATH"/git_clone_all.sh
 
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf "$HOME"/.tmux.conf && \
-        ln -vrs "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf "$HOME"/.tmux.conf
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf "$HOME"/.tmux.conf
 
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ]] && rm -vf "$HOME"/.xbindkeysrc && \
-        ln -vrs "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc "$HOME"/.xbindkeysrc
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc "$HOME"/.xbindkeysrc
 
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf "$HOME"/.xxdiffrc && \
-        ln -vrs "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc "$HOME"/.xxdiffrc
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc "$HOME"/.xxdiffrc
 
       [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf "$HOME"/.gdbinit && \
-        ln -vrs "$GUERO_GITHUB_PATH"/gdb/gdbinit "$HOME"/.gdbinit
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/gdbinit "$HOME"/.gdbinit
 
       [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p "$HOME"/.cgdb && rm -vf "$HOME"/.cgdb/cgdbrc && \
-        ln -vrs "$GUERO_GITHUB_PATH"/gdb/cgdbrc "$HOME"/.cgdb/cgdbrc
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/cgdbrc "$HOME"/.cgdb/cgdbrc
 
       [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p "$LOCAL_CONFIG_PATH"/gdb && rm -vf "$LOCAL_CONFIG_PATH"/gdb/hexdump.py && \
-        ln -vrs "$GUERO_GITHUB_PATH"/gdb/hexdump.py "$LOCAL_CONFIG_PATH"/gdb/hexdump.py
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/hexdump.py "$LOCAL_CONFIG_PATH"/gdb/hexdump.py
 
       [[ ! -d "$LOCAL_CONFIG_PATH"/gdb/peda ]] && _GitClone https://github.com/longld/peda.git "$LOCAL_CONFIG_PATH"/gdb/peda
 
@@ -2453,7 +2455,7 @@ function GueroSymlinks {
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
           while IFS= read -d $'\0' -r CONFDIR; do
             DIRNAME="$(basename "$CONFDIR")"
-            rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln -vrs "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
+            rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln $LNFLAGS "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
           done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
         fi
       fi
@@ -2465,7 +2467,7 @@ function GueroSymlinks {
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
           while IFS= read -d $'\0' -r CONFDIR; do
             DIRNAME="$(basename "$CONFDIR")"
-            rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln -vrs "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
+            rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln $LNFLAGS "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
           done < <(find "$GUERO_GITHUB_PATH"/linux/xfce-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
           XFCE_DCONF_CONFIG_B64="W29yZy9nbm9tZS9kZXNrdG9wL2ludGVyZmFjZV0KZ3RrLXRoZW1lPSdBZHdhaXRhLWRhcmsnCmljb24tdGhlbWU9J0Fkd2FpdGEnCgpbb3JnL2d0ay9zZXR0aW5ncy9jb2xvci1jaG9vc2VyXQpjdXN0b20tY29sb3JzPVsoMC4wODYyNzQ1MDk4MDM5MjE1NjcsIDAuMDg2Mjc0NTA5ODAzOTIxNTY3LCAwLjExMzcyNTQ5MDE5NjA3ODQzLCAxLjApLCAoMC41LCAwLjUsIDAuNSwgMS4wKV0Kc2VsZWN0ZWQtY29sb3I9KHRydWUsIDAuMDg2Mjc0NTA5ODAzOTIxNTY3LCAwLjA4NjI3NDUwOTgwMzkyMTU2NywgMC4xMTM3MjU0OTAxOTYwNzg0MywgMS4wKQoK"
           echo "$XFCE_DCONF_CONFIG_B64" | base64 -d > /tmp/xfce.dconf
@@ -2478,7 +2480,7 @@ function GueroSymlinks {
         mkdir -p "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User
         while IFS= read -d $'\0' -r CONFFILE; do
           FNAME="$(basename "$CONFFILE")"
-          rm -vf "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User/"$FNAME" && ln -vrs "$CONFFILE" "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User/"$FNAME"
+          rm -vf "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User/"$FNAME" && ln $LNFLAGS "$CONFFILE" "$LOCAL_CONFIG_PATH"/sublime-text-3/Packages/User/"$FNAME"
         done < <(find "$GUERO_GITHUB_PATH"/sublime -mindepth 1 -maxdepth 1 -type f -print0)
       fi
 
@@ -2488,11 +2490,11 @@ function GueroSymlinks {
         windems.sh
       )
       for i in ${LINKED_SCRIPTS[@]}; do
-        rm -vf "$LOCAL_BIN_PATH"/"$i" && ln -vrs "$GUERO_GITHUB_PATH"/scripts/"$i" "$LOCAL_BIN_PATH"/
+        rm -vf "$LOCAL_BIN_PATH"/"$i" && ln $LNFLAGS "$GUERO_GITHUB_PATH"/scripts/"$i" "$LOCAL_BIN_PATH"/
       done
 
       [[ -r "$GUERO_GITHUB_PATH"/bash/context-color/context-color ]] && rm -vf "$LOCAL_BIN_PATH"/context-color && \
-        ln -vrs "$GUERO_GITHUB_PATH"/bash/context-color/context-color "$LOCAL_BIN_PATH"/context-color
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/bash/context-color/context-color "$LOCAL_BIN_PATH"/context-color
 
     fi # dotfiles setup confirmation
   fi # dotfiles check for github checkout
