@@ -456,7 +456,7 @@ function pipup() {
 function sshi () {
 
   # is the step CLI program available?
-  if type step >/dev/null 2>&1; then
+  if command -v step >/dev/null 2>&1; then
 
     PROVISIONER_ARG=
     if [ -n "$STEP_SSH_PROVISIONER" ]; then
@@ -955,7 +955,7 @@ function tmux() {
   TMUX="$(which tmux)"
 
   # this should prevent systemd from killing our tmux sessions when we log out
-  ( type systemd-run >/dev/null 2>&1 && [ "$(uname -r 2>/dev/null | grep -c WSL)" -eq 0 ] ) && PARENTPROC="systemd-run --scope --user" || PARENTPROC=
+  ( command -v systemd-run >/dev/null 2>&1 && [ "$(uname -r 2>/dev/null | grep -c WSL)" -eq 0 ] ) && PARENTPROC="systemd-run --scope --user" || PARENTPROC=
 
   # old habits die hard, make "screen -l" and "screen -r" work the way I want them to for tmux
 

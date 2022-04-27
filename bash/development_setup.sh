@@ -85,7 +85,12 @@ if [[ $(uname -s) = 'Darwin' ]]; then
 
 elif [[ -n $MSYSTEM ]]; then
   export MSYS=0
-  scoop help >/dev/null 2>&1 && export HAS_SCOOP=0
+  command -v scoop >/dev/null 2>&1 && export HAS_SCOOP=0
+  command -v cygpath >/dev/null 2>&1 && \
+    [[ -n $HAS_SCOOP ]] && \
+    [[ -n $USERPROFILE ]] && \
+    [[ -d "$(cygpath -u "$USERPROFILE")"/scoop/shims ]] && \
+    export PATH="$(cygpath.exe -u $USERPROFILE)"/scoop/shims:"$PATH"
 
 else
   if grep -q Microsoft /proc/version; then
@@ -136,10 +141,10 @@ fi
 ###################################################################################
 # convenience function for installing curl/git/jq/moreutils for cloning/downloading
 function InstallEssentialPackages {
-  if curl -V >/dev/null 2>&1 && \
-     git --version >/dev/null 2>&1 && \
-     jq --version >/dev/null 2>&1 && \
-     type sponge >/dev/null 2>&1; then
+  if command -v curl >/dev/null 2>&1 && \
+     command -v git >/dev/null 2>&1 && \
+     command -v jq >/dev/null 2>&1 && \
+     command -v sponge >/dev/null 2>&1; then
     echo "\"curl\", \"git\", \"jq\" and \"moreutils\" are already installed!"
   else
     echo "Installing curl, git, jq and moreutils..."
@@ -206,7 +211,7 @@ function SetupMacOSBrew {
   if [[ -n $MACOS ]]; then
 
     # install brew, if needed
-    if ! brew info >/dev/null 2>&1 ; then
+    if ! command -v brew >/dev/null 2>&1 ; then
       unset CONFIRMATION
       read -p "\"brew\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
@@ -384,7 +389,7 @@ function InstallEnvPackages {
       [[ ! -d "$LOCAL_CONFIG_PATH"/chepy_plugins ]] && _GitClone https://github.com/securisec/chepy_plugins "$LOCAL_CONFIG_PATH"/chepy_plugins
     fi
 
-    if go version >/dev/null 2>&1; then
+    if command -v go >/dev/null 2>&1; then
       go get -u -v github.com/rogpeppe/godef
       go get -u -v golang.org/x/tools/cmd/goimports
       go get -u -v golang.org/x/tools/cmd/gorename
