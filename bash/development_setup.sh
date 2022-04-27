@@ -150,7 +150,7 @@ function InstallEssentialPackages {
     if [[ -n $MACOS ]]; then
       brew install git jq moreutils # since Jaguar curl is already installed in MacOS
     elif [[ -n $MSYSTEM ]]; then
-      [[ -n $HAS_SCOOP ]] && scoop install main/curl main/git main/jq || pacman -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
+      [[ -n $HAS_SCOOP ]] && scoop install main/curl main/git main/jq || pacman --noconfirm -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
       pacman --noconfirm -Sy moreutils
     elif [[ -n $LINUX ]]; then
       $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
@@ -1066,37 +1066,67 @@ function InstallCommonPackages {
       brew install neilotoole/sq/sq
     fi
 
-  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      scoop bucket add extras
-      scoop install main/dark
-      scoop install main/innounp
-      scoop install main/7zip
-      scoop install main/bat
-      scoop install main/cloc
-      scoop install main/diffutils
-      scoop install main/dos2unix
-      scoop install main/fd
-      scoop install main/file
-      scoop install main/findutils
-      scoop install main/gnupg
-      scoop install main/gron
-      scoop install main/jdupes
-      scoop install main/patch
-      scoop install main/python
-      scoop install main/ripgrep
-      scoop install main/sudo
-      scoop install main/time
-      scoop install main/unrar
-      scoop install main/unzip
-      scoop install main/vim
-      scoop install main/yq
-      scoop install main/zip
-      scoop install extras/age
+      if [[ -n $HAS_SCOOP ]]; then
+        scoop bucket add extras
+        SCOOP_PACKAGE_LIST=(
+          main/dark
+          main/innounp
+          main/7zip
+          main/bat
+          main/cloc
+          main/diffutils
+          main/dos2unix
+          main/fd
+          main/file
+          main/findutils
+          main/gnupg
+          main/gron
+          main/jdupes
+          main/patch
+          main/python
+          main/ripgrep
+          main/sudo
+          main/time
+          main/unrar
+          main/unzip
+          main/vim
+          main/yq
+          main/zip
+          extras/age
+        )
+        for i in ${SCOOP_PACKAGE_LIST[@]}; do
+          scoop install "$i"
+        done
+
+      else
+        PACMAN_PACKAGE_LIST=(
+          ${MINGW_PACKAGE_PREFIX}-bat
+          ${MINGW_PACKAGE_PREFIX}-ripgrep
+          cloc
+          diffutils
+          dos2unix
+          file
+          findutils
+          gnupg
+          p7zip
+          patch
+          patchutils
+          time
+          unrar
+          unzip
+          vim
+          zip
+        )
+        for i in ${PACMAN_PACKAGE_LIST[@]}; do
+          pacman --noconfirm -Sy "$i"
+        done
+      fi
     fi
 
   elif [[ -n $LINUX ]]; then
@@ -1292,18 +1322,23 @@ function InstallCommonPackagesGUI {
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       scoop bucket add extras
-      scoop install main/msys2
-      scoop install extras/bulk-crap-uninstaller
-      scoop install extras/conemu
+      SCOOP_PACKAGE_LIST=(
+        main/msys2
+        extras/bulk-crap-uninstaller
+        extras/conemu
+        extras/cpu-z
+        extras/libreoffice
+        extras/meld
+        extras/sublime-text
+        extras/sumatrapdf
+        extras/sysinternals
+        extras/win32-disk-imager
+      )
+      for i in ${SCOOP_PACKAGE_LIST[@]}; do
+        scoop install "$i"
+      done
       echo "conemu task for $MSYSTEM:" >&2
       echo "set \"PATH=%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin;%PATH%\" & set CHERE_INVOKING=1 & set MSYSTEM=$MSYSTEM & set MSYS2_PATH_TYPE=inherit & set MSYS=winsymlinks:nativestrict & set LC_ALL=C.UTF-8 & set LANG=C.UTF-8 & \"%homedrive%%homepath%\scoop\apps\conemu\current\ConEmu\conemu-msys2-64.exe\" \"%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin\bash.exe\" --login -i -new_console:p" >&2
-      scoop install extras/cpu-z
-      scoop install extras/libreoffice
-      scoop install extras/meld
-      scoop install extras/sublime-text
-      scoop install extras/sumatrapdf
-      scoop install extras/sysinternals
-      scoop install extras/win32-disk-imager
     fi
 
   elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
@@ -1408,37 +1443,53 @@ function InstallCommonPackagesMedia {
 
     fi
 
-  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]]; then
 
     unset CONFIRMATION
     read -p "Install common packages (media) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      if [[ -n $HAS_SCOOP ]]; then
+        scoop bucket add extras
+        SCOOP_PACKAGE_LIST=(
+          main/ffmpeg
+          main/imagemagick
+          extras/audacious
+          extras/audacity
+          extras/irfanview
+          extras/mkvtoolnix
+          extras/mpv
+          extras/vlc
+        )
+        for i in ${SCOOP_PACKAGE_LIST[@]}; do
+          scoop install "$i"
+        done
 
-      scoop bucket add extras
-      scoop install main/ffmpeg
-      scoop install main/imagemagick
-      scoop install extras/audacious
-      scoop install extras/audacity
-      scoop install extras/irfanview
-      scoop install extras/mkvtoolnix
-      scoop install extras/mpv
-      scoop install extras/vlc
+        unset CONFIRMATION
+        read -p "Install common packages (media/GIMP) [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/gimp
 
-      unset CONFIRMATION
-      read -p "Install common packages (media/GIMP) [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/gimp
+        unset CONFIRMATION
+        read -p "Install common packages (media/reaper) [y/N]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-N}
+        [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/reaper
 
-      unset CONFIRMATION
-      read -p "Install common packages (media/reaper) [y/N]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-N}
-      [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/reaper
+        unset CONFIRMATION
+        read -p "Install common packages (media/losslesscut) [y/N]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-N}
+        [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/losslesscut
 
-      unset CONFIRMATION
-      read -p "Install common packages (media/losslesscut) [y/N]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-N}
-      [[ $CONFIRMATION =~ ^[Yy] ]] && scoop install extras/losslesscut
+      else
+        PACMAN_PACKAGE_LIST=(
+          ${MINGW_PACKAGE_PREFIX}-ffmpeg
+          ${MINGW_PACKAGE_PREFIX}-imagemagick
+
+        )
+        for i in ${PACMAN_PACKAGE_LIST[@]}; do
+          pacman --noconfirm -Sy "$i"
+        done
+      fi
     fi
   fi # Linux vs. MSYS
 }
@@ -1491,29 +1542,48 @@ function InstallCommonPackagesNetworking {
       done
     fi
 
-  elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
+  elif [[ -n $MSYSTEM ]]; then
     unset CONFIRMATION
     read -p "Install common packages (networking) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      scoop bucket add extras
-      scoop bucket add smallstep https://github.com/smallstep/scoop-bucket.git
-      scoop install main/autossh
-      scoop install main/boringproxy
-      scoop install main/croc
-      scoop install main/cwrsync
-      scoop install main/ffsend
-      scoop install main/netcat
-      scoop install main/nmap
-      scoop install main/ngrok
-      scoop install main/termshark
-      scoop install main/wget
-      scoop install extras/stunnel
-      scoop install smallstep/step
-      echo '$ step ca bootstrap --ca-url https://step.example.org:9000 --fingerprint xxxxxxx --install' >&2
-      echo '$ cp ~/.step/certs/root_ca.crt /etc/pki/ca-trust/source/anchors/example.crt' >&2
-      echo '$ update-ca-trust' >&2
-      echo 'for firefox: set security.enterprise_roots.enabled to true' >&2
+
+      if [[ -n $HAS_SCOOP ]]; then
+        scoop bucket add extras
+        scoop bucket add smallstep https://github.com/smallstep/scoop-bucket.git
+
+        SCOOP_PACKAGE_LIST=(
+          main/autossh
+          main/boringproxy
+          main/croc
+          main/cwrsync
+          main/ffsend
+          main/netcat
+          main/nmap
+          main/ngrok
+          main/termshark
+          main/wget
+          extras/stunnel
+          smallstep/step
+        )
+        for i in ${SCOOP_PACKAGE_LIST[@]}; do
+          scoop install "$i"
+        done
+        echo '$ step ca bootstrap --ca-url https://step.example.org:9000 --fingerprint xxxxxxx --install' >&2
+        echo '$ cp ~/.step/certs/root_ca.crt /etc/pki/ca-trust/source/anchors/example.crt' >&2
+        echo '$ update-ca-trust' >&2
+        echo 'for firefox: set security.enterprise_roots.enabled to true' >&2
+
+      else
+        PACMAN_PACKAGE_LIST=(
+          openbsd-netcat
+          rsync
+          wget
+        )
+        for i in ${PACMAN_PACKAGE_LIST[@]}; do
+          pacman --noconfirm -Sy "$i"
+        done
+      fi
     fi
 
   fi # Linux vs. MSYS
@@ -1596,9 +1666,14 @@ function InstallCommonPackagesNetworkingGUI {
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       scoop bucket add extras
-      scoop install extras/putty
-      scoop install extras/winscp
-      scoop install extras/filezilla
+      SCOOP_PACKAGE_LIST=(
+        extras/putty
+        extras/winscp
+        extras/filezilla
+      )
+      for i in ${SCOOP_PACKAGE_LIST[@]}; do
+        scoop install "$i"
+      done
 
       unset CONFIRMATION
       read -p "Install Firefox [y/N]? " CONFIRMATION
@@ -1685,9 +1760,14 @@ function InstallCommonPackagesForensics {
     read -p "Install common packages (forensics/security) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      scoop install main/adb
-      scoop install main/exiftool
-      scoop install extras/testdisk
+      SCOOP_PACKAGE_LIST=(
+        main/adb
+        main/exiftool
+        extras/testdisk
+      )
+      for i in ${SCOOP_PACKAGE_LIST[@]}; do
+        scoop install "$i"
+      done
     fi
 
   fi # Linux vs. MSYS
@@ -1849,8 +1929,7 @@ function InstallUserLocalFonts {
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       scoop bucket add nerd-fonts
-      scoop install nerd-fonts/Hack-NF
-      scoop install nerd-fonts/Hack-NF-Mono
+      scoop install nerd-fonts/Hack-NF nerd-fonts/Hack-NF-Mono
     fi
 
   fi # Linux vs. MSYS
