@@ -818,7 +818,7 @@ EOT
         fi
 
         $SUDO_CMD mkdir -p /etc/modprobe.d
-        echo "options overlay permit_mounts_in_userns=1" | $SUDO_CMD tee /etc/modprobe.d/podman.conf
+        echo "options overlay permit_mounts_in_userns=1 metacopy=off redirect_dir=off" | $SUDO_CMD tee /etc/modprobe.d/podman.conf
 
         if [[ -d /etc/systemd/system ]]; then
           $SUDO_CMD mkdir -p /etc/systemd/system/user@.service.d
