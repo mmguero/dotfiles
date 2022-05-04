@@ -779,11 +779,26 @@ function InstallPodman {
           python3-podman-compose \
           uidmap
 
+        # slightly bump a few privileges for non-privileged user to make life with podman better:
+        # - unprivileged user namespaces
+        # - bind to ports >= 80
+        # - allow overlay2 storage driver in userspace
+        # - cgroup settings for rootless containers
+        # - set subuid/subgid ranges for user
+        # - enable loginctl enable-linger for user (to allow user-level systemd services)
+        # - add user to systemd-journal
+
         if [[ -r /etc/sysctl.conf ]]; then
           if ! grep -q unprivileged_userns_clone /etc/sysctl.conf; then
           $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
 # allow unprivileged user namespaces
 kernel.unprivileged_userns_clone=1
+EOT
+          fi
+          if ! grep -q ip_unprivileged_port_start /etc/sysctl.conf; then
+          $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
+# allow lower unprivileged port bind
+net.ipv4.ip_unprivileged_port_start=80
 EOT
           fi
         elif [[ -d /etc/sysctl.d/ ]]; then
@@ -793,10 +808,33 @@ EOT
 kernel.unprivileged_userns_clone=1
 EOT
           fi
+          if ! grep -q ip_unprivileged_port_start /etc/sysctl.d/*; then
+          $SUDO_CMD tee -a /etc/sysctl.d/80_lowport.conf > /dev/null <<'EOT'
+# allow lower unprivileged port bind
+net.ipv4.ip_unprivileged_port_start=80
+EOT
+          fi
         fi
 
         $SUDO_CMD mkdir -p /etc/modprobe.d
         echo "options overlay permit_mounts_in_userns=1" | $SUDO_CMD tee /etc/modprobe.d/podman.conf
+
+        if [[ -d /etc/systemd/system ]]; then
+          mkdir -p /etc/systemd/system/user@.service.d
+          echo -e "[Service]\\nDelegate=cpu cpuset io memory pids" | $SUDO_CMD tee /etc/systemd/system/user@.service.d/delegate.conf
+        fi
+
+        $SUDO_CMD touch /etc/subuid
+        $SUDO_CMD touch /etc/subgid
+        if ! grep --quiet "$SCRIPT_USER" /etc/subuid; then
+          $SUDO_CMD usermod --add-subuids 200000-265535 "$SCRIPT_USER"
+        fi
+        if ! grep --quiet "$SCRIPT_USER" /etc/subgid; then
+          $SUDO_CMD usermod --add-subgids 200000-265535 "$SCRIPT_USER"
+        fi
+
+        $SUDO_CMD loginctl enable-linger "$SCRIPT_USER"
+        $SUDO_CMD usermod -a -G systemd-journal "$SCRIPT_USER"
 
       fi # podman install confirmation check
 
@@ -2459,7 +2497,7 @@ EOT
       fi # limits.conf confirmation
     fi # limits.conf check
 
-    if [[ -f /etc/default/grub ]] && ! grep -q deadline /etc/default/grub; then
+    if [[ -f /etc/default/grub ]] && ! grep -q trust_cpu /etc/default/grub; then
       unset CONFIRMATION
       read -p "Tweak kernel parameters in grub (scheduler, cgroup, etc.) [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
