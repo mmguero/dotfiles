@@ -2417,6 +2417,9 @@ function GueroSymlinks {
       [[ -d "$GUERO_GITHUB_PATH"/bash/rc.d ]] && rm -vf "$HOME"/.bashrc.d && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/bash/rc.d "$HOME"/.bashrc.d
 
+      [[ -d "$GUERO_GITHUB_PATH"/linux/containers ]] && rm -vf "$LOCAL_CONFIG_PATH"/containers && \
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/containers "$LOCAL_CONFIG_PATH"/containers
+
       [[ -r "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf "$HOME"/.gitconfig && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/git/gitconfig "$HOME"/.gitconfig
 
@@ -2435,16 +2438,16 @@ function GueroSymlinks {
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc ]] && rm -vf "$HOME"/.xxdiffrc && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/xxdiff/xxdiffrc "$HOME"/.xxdiffrc
 
-      [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf "$HOME"/.gdbinit && \
-        ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/gdbinit "$HOME"/.gdbinit
+      # [[ -r "$GUERO_GITHUB_PATH"/gdb/gdbinit ]] && rm -vf "$HOME"/.gdbinit && \
+      #   ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/gdbinit "$HOME"/.gdbinit
 
-      [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p "$HOME"/.cgdb && rm -vf "$HOME"/.cgdb/cgdbrc && \
-        ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/cgdbrc "$HOME"/.cgdb/cgdbrc
+      # [[ -r "$GUERO_GITHUB_PATH"/gdb/cgdbrc ]] && mkdir -p "$HOME"/.cgdb && rm -vf "$HOME"/.cgdb/cgdbrc && \
+      #   ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/cgdbrc "$HOME"/.cgdb/cgdbrc
 
-      [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p "$LOCAL_CONFIG_PATH"/gdb && rm -vf "$LOCAL_CONFIG_PATH"/gdb/hexdump.py && \
-        ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/hexdump.py "$LOCAL_CONFIG_PATH"/gdb/hexdump.py
+      # [[ -r "$GUERO_GITHUB_PATH"/gdb/hexdump.py ]] && mkdir -p "$LOCAL_CONFIG_PATH"/gdb && rm -vf "$LOCAL_CONFIG_PATH"/gdb/hexdump.py && \
+      #   ln $LNFLAGS "$GUERO_GITHUB_PATH"/gdb/hexdump.py "$LOCAL_CONFIG_PATH"/gdb/hexdump.py
 
-      [[ ! -d "$LOCAL_CONFIG_PATH"/gdb/peda ]] && _GitClone https://github.com/longld/peda.git "$LOCAL_CONFIG_PATH"/gdb/peda
+      # [[ ! -d "$LOCAL_CONFIG_PATH"/gdb/peda ]] && _GitClone https://github.com/longld/peda.git "$LOCAL_CONFIG_PATH"/gdb/peda
 
       if [[ -n $LINUX ]] && dpkg -s lxde-core >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
         unset CONFIRMATION
