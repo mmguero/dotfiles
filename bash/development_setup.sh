@@ -820,7 +820,7 @@ EOT
         echo "options overlay permit_mounts_in_userns=1" | $SUDO_CMD tee /etc/modprobe.d/podman.conf
 
         if [[ -d /etc/systemd/system ]]; then
-          mkdir -p /etc/systemd/system/user@.service.d
+          $SUDO_CMD mkdir -p /etc/systemd/system/user@.service.d
           echo -e "[Service]\\nDelegate=cpu cpuset io memory pids" | $SUDO_CMD tee /etc/systemd/system/user@.service.d/delegate.conf
         fi
 
