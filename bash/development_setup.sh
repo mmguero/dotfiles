@@ -76,6 +76,7 @@ unset WSL
 unset HAS_SCOOP
 unset LINUX_DISTRO
 unset LINUX_RELEASE
+unset LINUX_RELEASE_NUMBER
 unset LINUX_ARCH
 unset LINUX_CPU
 
@@ -98,6 +99,7 @@ else
   if command -v lsb_release >/dev/null 2>&1 ; then
     LINUX_DISTRO="$(lsb_release -is)"
     LINUX_RELEASE="$(lsb_release -cs)"
+    LINUX_RELEASE_NUMBER="$(lsb_release -rs)"
   else
     if [[ -r '/etc/redhat-release' ]]; then
       RELEASE_FILE='/etc/redhat-release'
@@ -106,7 +108,14 @@ else
     else
       unset RELEASE_FILE
     fi
-    [[ -n "$RELEASE_FILE" ]] && LINUX_DISTRO="$( ( awk '{print $1}' < "$RELEASE_FILE" ) | head -n 1 )"
+    if [[ -n "$RELEASE_FILE" ]]; then
+      LINUX_DISTRO="$( ( awk '{print $1}' < "$RELEASE_FILE" ) | head -n 1 )"
+      if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
+        LINUX_RELEASE_NUMBER="$( ( awk '{print $2}' < "$RELEASE_FILE" ) | head -n 1 )"
+      elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
+        LINUX_RELEASE_NUMBER="$( ( awk '{print $3}' < "$RELEASE_FILE" ) | head -n 1 )"
+      fi
+    fi
   fi
 fi
 
@@ -476,17 +485,17 @@ function InstallDocker {
 
         echo "Installing Docker CE..." >&2
         if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
-          $SUDO_CMD add-apt-repository \
+          $SUDO_CMD add-apt-repository -y \
              "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/ubuntu \
              $LINUX_RELEASE \
              stable"
         elif [[ "$LINUX_DISTRO" == "Raspbian" ]]; then
-          $SUDO_CMD add-apt-repository \
+          $SUDO_CMD add-apt-repository -y \
              "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/raspbian \
              $LINUX_RELEASE \
              stable"
         elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
-          $SUDO_CMD add-apt-repository \
+          $SUDO_CMD add-apt-repository -y \
              "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/debian \
              $LINUX_RELEASE \
              stable"
@@ -550,21 +559,6 @@ function InstallDocker {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- -p "$LOCAL_BIN_PATH"
-    fi
-
-    unset CONFIRMATION
-    read -p "Configure user namespaces [y/N]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-N}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y uidmap fuse-overlayfs
-
-      $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
-
-# allow unprivileged user namespaces
-kernel.unprivileged_userns_clone=1
-EOT
-      echo "options overlay permit_mounts_in_userns=1" | $SUDO_CMD tee /etc/modprobe.d/10-docker.conf
     fi
 
   fi # MacOS vs. Linux for docker
@@ -724,6 +718,93 @@ function DockerPullImages {
     fi # docker pull docker images confirmation
 
   fi # docker is there
+}
+
+################################################################################
+function InstallPodman {
+  if [[ -n $MACOS ]]; then
+
+    # install podman, if needed
+    if ! brew list --cask --versions podman >/dev/null 2>&1 ; then
+      unset CONFIRMATION
+      read -p "\"podman\" cask is not installed, attempt to install podman via brew [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        echo "Installing Podman..." >&2
+        brew install podman
+        echo "Installed Podman." >&2
+        echo "Please modify settings as needed: https://github.com/containers/podman/blob/main/docs/tutorials/mac_experimental.md" >&2
+      fi # podman install confirmation check
+    else
+      echo "\"podman\" is already installed!" >&2
+    fi # podman install check
+
+  elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
+
+    # install podman, if needed
+    if ! podman info >/dev/null 2>&1 ; then
+      unset CONFIRMATION
+      read -p "\"podman info\" failed, attempt to install podman [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+        InstallEssentialPackages
+
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+                                                   apt-transport-https \
+                                                   ca-certificates \
+                                                   curl \
+                                                   gnupg2 \
+                                                   software-properties-common
+
+        echo "Installing Podman..." >&2
+        if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
+          curl -fsSL "http://download.opensuse.org/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/Release.key" | $SUDO_CMD apt-key add -
+          $SUDO_CMD add-apt-repository -y \
+             "deb [arch=$LINUX_ARCH] http://download.opensuse.org/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/ /"
+        elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
+          curl -fsSL "http://download.opensuse.org/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/Release.key" | $SUDO_CMD apt-key add -
+          $SUDO_CMD add-apt-repository -y \
+             "deb [arch=$LINUX_ARCH] http://download.opensuse.org/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /"
+        fi
+
+        $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+          buildah \
+          catatonit \
+          fuse-overlayfs \
+          podman \
+          podman-aardvark-dns \
+          podman-netavark \
+          python3-podman-compose \
+          uidmap
+
+        if [[ -r /etc/sysctl.conf ]]; then
+          if ! grep -q unprivileged_userns_clone /etc/sysctl.conf; then
+          $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
+# allow unprivileged user namespaces
+kernel.unprivileged_userns_clone=1
+EOT
+          fi
+        elif [[ -d /etc/sysctl.d/ ]]; then
+          if ! grep -q unprivileged_userns_clone /etc/sysctl.d/*; then
+          $SUDO_CMD tee -a /etc/sysctl.d/80_userns.conf > /dev/null <<'EOT'
+# allow unprivileged user namespaces
+kernel.unprivileged_userns_clone=1
+EOT
+          fi
+        fi
+
+        $SUDO_CMD mkdir -p /etc/modprobe.d
+        echo "options overlay permit_mounts_in_userns=1" | $SUDO_CMD tee /etc/modprobe.d/podman.conf
+
+      fi # podman install confirmation check
+
+    else
+      echo "\"podman\" is already installed!" >&2
+    fi # podman install check
+
+  fi # MacOS vs. Linux for podman
 }
 
 ################################################################################
@@ -2554,6 +2635,7 @@ if (( $USER_FUNCTION_IDX == 0 )); then
   _EnvSetup
   SetupAptSources
   InstallDocker
+  InstallPodman
   DockerPullImages
   InstallVirtualization
   InstallCommonPackages
