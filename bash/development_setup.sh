@@ -777,6 +777,7 @@ function InstallPodman {
           podman-aardvark-dns \
           podman-netavark \
           python3-podman-compose \
+          slirp4netns \
           uidmap
 
         # slightly bump a few privileges for non-privileged user to make life with podman better:
