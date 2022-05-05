@@ -139,7 +139,7 @@ function ytmusic() {
   if [[ "$search" =~ ^http ]]; then
     yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 "$search"
   else
-    yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
+    yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 --no-playlist --default-search ytsearch "$search"
   fi
 }
 

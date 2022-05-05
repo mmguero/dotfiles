@@ -126,7 +126,7 @@ function ytmusicc() {
   if [[ "$search" =~ ^http ]]; then
     ytdlpc -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 "$search"
   else
-    ytdlpc -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$search"
+    ytdlpc -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 --no-playlist --default-search ytsearch "$search"
   fi
 }
 function ytmusicd() { CONTAINER_ENGINE=docker ytmusicc "$@"; }
