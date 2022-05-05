@@ -27,7 +27,7 @@ export ZEEK_DOCKER_IMAGE=ghcr.io/mmguero/zeek:plus
 # spotify (jess/spotify) via x11docker
 function spotify() {
   mkdir -p "$HOME/.config/spotify/config" "$HOME/.config/spotify/cache"
-  nohup x11docker --backend=$CONTAINER_ENGINE --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify </dev/null >/dev/null 2>&1 &
+  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify </dev/null >/dev/null 2>&1 &
 }
 
 # audacity (ghcr.io/mmguero/audacity) via x11docker
@@ -147,14 +147,14 @@ function ytoggp() { CONTAINER_ENGINE=podman ytoggc "$@"; }
 #}
 
 #function teams() {
-#  nohup x11docker --backend=$CONTAINER_ENGINE --gpu --alsa --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" -- ghcr.io/mmguero/teams "$@" </dev/null >/dev/null 2>&1 &
+#  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --alsa --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" -- ghcr.io/mmguero/teams "$@" </dev/null >/dev/null 2>&1 &
 #}
 
 # signal (ghcr.io/mmguero/signal) via x11docker
 function signal() {
   mkdir -p "$HOME/.config/Signal"
   # --pulseaudio --webcam
-  nohup x11docker --backend=$CONTAINER_ENGINE --hostuser=$USER -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- ghcr.io/mmguero/signal </dev/null >/dev/null 2>&1 &
+  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- ghcr.io/mmguero/signal </dev/null >/dev/null 2>&1 &
 }
 
 ########################################################################
@@ -162,7 +162,7 @@ function signal() {
 ########################################################################
 # tor (jess/tor-browser) via x11docker
 function tor() {
-  nohup x11docker --backend=$CONTAINER_ENGINE --hostuser=$USER -- "--tmpfs" "/dev/shm" -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
+  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER -- "--tmpfs" "/dev/shm" -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
 }
 
 # cyberchef (mpepping/cyberchef) containerized
@@ -183,7 +183,7 @@ function kodi() {
   else
     MEDIA_FOLDER="$(realpath $(pwd))"
   fi
-  nohup x11docker --backend=$CONTAINER_ENGINE --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
+  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
 }
 
 # full XFCE-based desktop (ghcr.io/mmguero/xfce-ext) via x11docker
@@ -191,6 +191,7 @@ function x11desktop() {
   if [[ "$CONTAINER_ENGINE" == "docker" ]]; then
     nohup x11docker \
       --backend=$CONTAINER_ENGINE \
+      --network \
       --clipboard \
       --dbus \
       --desktop \
@@ -209,6 +210,7 @@ function x11desktop() {
   elif [[ "$CONTAINER_ENGINE" == "podman" ]]; then
     nohup x11docker \
       --backend=$CONTAINER_ENGINE \
+      --network \
       --clipboard \
       --dbus \
       --desktop \
