@@ -122,7 +122,7 @@ function ytdlpp() { CONTAINER_ENGINE=podman ytdlpc "$@"; }
 function ytmusicc() {
   format="$1"
   search="$2"
-  quality="${3:-0}"
+  quality="${3:-2}"
   if [[ "$search" =~ ^http ]]; then
     ytdlpc -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 "$search"
   else
