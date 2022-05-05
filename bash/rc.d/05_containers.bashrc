@@ -274,7 +274,7 @@ function deblive() {
     fi
 }
 function deblived() { CONTAINER_ENGINE=docker deblive "$@"; }
-function deblivec() { CONTAINER_ENGINE=podman deblive "$@"; }
+function deblivep() { CONTAINER_ENGINE=podman deblive "$@"; }
 
 ########################################################################
 # helper functions for docker / podman
