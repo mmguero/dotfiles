@@ -34,6 +34,7 @@ SCRIPT_NAME="$(basename $($REALPATH -e "${BASH_SOURCE[0]}"))"
 LOCAL_DATA_PATH=${XDG_DATA_HOME:-$HOME/.local/share}
 LOCAL_BIN_PATH=$HOME/.local/bin
 LOCAL_CONFIG_PATH=${XDG_CONFIG_HOME:-$HOME/.config}
+CONTAINER_ENGINE=${CONTAINER_ENGINE:-docker}
 
 # see if this has been cloned from github.com/mmguero/dotfiles
 # (so we can assume other stuff might be here for symlinking)
@@ -566,9 +567,9 @@ function InstallDocker {
 
 ################################################################################
 function DockerPullImages {
-  if $SUDO_CMD docker info >/dev/null 2>&1 ; then
+  if command -v ${CONTAINER_ENGINE} >/dev/null 2>&1 ; then
     unset CONFIRMATION
-    read -p "Pull common docker images (Linux distributions) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (Linux distributions) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -578,12 +579,12 @@ function DockerPullImages {
         ubuntu:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull images confirmation
+    fi # pull images confirmation
 
     unset CONFIRMATION
-    read -p "Pull common docker images (media) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (media) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -595,12 +596,12 @@ function DockerPullImages {
         mwader/static-ffmpeg:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull media images confirmation
+    fi # pull media images confirmation
 
     unset CONFIRMATION
-    read -p "Pull common docker images (web services) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (web services) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -614,12 +615,12 @@ function DockerPullImages {
         traefik:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull web images confirmation
+    fi # pull web images confirmation
 
     unset CONFIRMATION
-    read -p "Pull common docker images (web browsers) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (web browsers) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -627,12 +628,12 @@ function DockerPullImages {
         ghcr.io/mmguero/firefox:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull web images confirmation
+    fi # pull web images confirmation
 
     unset CONFIRMATION
-    read -p "Pull common docker images (office) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (office) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -640,12 +641,12 @@ function DockerPullImages {
         woahbase/alpine-gimp:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull office confirmation
+    fi # pull office confirmation
 
     unset CONFIRMATION
-    read -p "Pull common docker images (desktop environment) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (desktop environment) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -654,12 +655,12 @@ function DockerPullImages {
         ghcr.io/mmguero/xfce:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull desktop environment
+    fi # pull desktop environment
 
     unset CONFIRMATION
-    read -p "Pull common docker images (deblive) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (deblive) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -667,12 +668,12 @@ function DockerPullImages {
         tianon/qemu:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull desktop environment
+    fi # pull desktop environment
 
     unset CONFIRMATION
-    read -p "Pull common docker images (communication) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (communication) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -684,12 +685,12 @@ function DockerPullImages {
         mdouchement/zoom-us:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull communication images confirmation
+    fi # pull communication images confirmation
 
     unset CONFIRMATION
-    read -p "Pull common docker images (forensics) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (forensics) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -699,12 +700,12 @@ function DockerPullImages {
         mpepping/cyberchef:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull forensics images confirmation
+    fi # pull forensics images confirmation
 
     unset CONFIRMATION
-    read -p "Pull common docker images (docker) [y/N]? " CONFIRMATION
+    read -p "Pull common ${CONTAINER_ENGINE} images (docker) [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
@@ -713,9 +714,9 @@ function DockerPullImages {
         wagoodman/dive:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
-        docker pull "$i"
+        ${CONTAINER_ENGINE} pull "$i"
       done
-    fi # docker pull docker images confirmation
+    fi # pull docker images confirmation
 
   fi # docker is there
 }
@@ -1009,12 +1010,12 @@ function InstallVirtualization {
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y vagrant
 
-      elif $SUDO_CMD docker info >/dev/null 2>&1 ; then
+      elif $SUDO_CMD ${CONTAINER_ENGINE} info >/dev/null 2>&1 ; then
         unset CONFIRMATION
         read -p "Pull ghcr.io/mmguero/vagrant-libvirt:latest instead [Y/n]? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-Y}
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          docker pull ghcr.io/mmguero/vagrant-libvirt:latest
+          ${CONTAINER_ENGINE} pull ghcr.io/mmguero/vagrant-libvirt:latest
         fi
       fi
     fi
