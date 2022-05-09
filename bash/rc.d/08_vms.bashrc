@@ -12,7 +12,7 @@ alias vls='virsh list --all'
 ########################################################################
 if [[ $LINUX ]]; then
   function vagrantd() {
-    docker run -it --rm \
+    ${CONTAINER_ENGINE:-podman} run -it --rm \
       -e LIBVIRT_DEFAULT_URI \
       -e USER_UID=$(id -u) \
       -e USER_GID=$(id -g) \
