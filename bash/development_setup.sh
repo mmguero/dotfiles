@@ -773,6 +773,7 @@ function InstallPodman {
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
           buildah \
           catatonit \
+          containernetworking-dnsname \
           fuse-overlayfs \
           podman \
           podman-aardvark-dns \
