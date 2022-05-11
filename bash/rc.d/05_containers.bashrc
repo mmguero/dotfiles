@@ -104,6 +104,7 @@ function ytdlpc() {
     -e PGID=$CONTAINER_PGID \
     -v "$DIR:$DIR:rw" \
     -w "$DIR" \
+    --pull=never \
     ghcr.io/mmguero/yt-dlp "$@"
 }
 function ytdlpd() { CONTAINER_ENGINE=docker ytdlpc "$@"; }
@@ -165,8 +166,8 @@ function tor() {
 # cyberchef (mpepping/cyberchef) containerized
 function cyberchef() {
   CHEF_PORT="${1:-8000}"
-  $CONTAINER_ENGINE run -d --rm -p $CHEF_PORT:8000 --name cyberchef mpepping/cyberchef && \
-    o http://localhost:$CHEF_PORT
+  $CONTAINER_ENGINE run -d --rm -p $CHEF_PORT:8000 --name cyberchef --pull=never mpepping/cyberchef && \
+  o http://localhost:$CHEF_PORT
 }
 
 ########################################################################
@@ -238,6 +239,7 @@ function ciso() {
             -e QEMU_RAM=${QEMU_RAM:-4096} \
             --device /dev/kvm \
             --volume "$(realpath "$1")":/image/live.iso:ro \
+            --pull=never \
             ghcr.io/mmguero/qemu-live-iso
         else
             echo "No image file specified" >&2
@@ -260,6 +262,7 @@ function deblive() {
       -e QEMU_RAM=${QEMU_RAM:-4096} \
       -e QEMU_CDROM=/image/live.iso \
       --device /dev/kvm \
+      --pull=never \
       ghcr.io/mmguero/deblive
     else
       echo "/dev/kvm not found" >&2
@@ -302,6 +305,7 @@ function crun() {
     $CONTAINER_SHARE_BASH_ALIASES \
     $CONTAINER_SHARE_BASH_FUNCTIONS \
     $CONTAINER_SHARE_GIT_CONFIG \
+    --pull=never \
     "$@"
 }
 function drun() { CONTAINER_ENGINE=docker crun "$@"; }
@@ -421,6 +425,7 @@ function dive () {
   if [[ "$CONTAINER_ENGINE" == "docker" ]]; then
     $CONTAINER_ENGINE run --rm -it \
       -v /var/run/docker.sock:/var/run/docker.sock \
+      --pull=never \
       wagoodman/dive "$@"
   else
     echo "wagoodman/dive requires docker (/var/run/docker.sock)" >&2

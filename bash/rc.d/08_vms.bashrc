@@ -12,19 +12,41 @@ alias vls='virsh list --all'
 ########################################################################
 if [[ $LINUX ]]; then
   function vagrantd() {
-    ${CONTAINER_ENGINE:-podman} run -it --rm \
-      -e LIBVIRT_DEFAULT_URI \
-      -e USER_UID=$(id -u) \
-      -e USER_GID=$(id -g) \
-      -e VAGRANT_DEFAULT_PROVIDER=libvirt \
-      -v /var/run/libvirt/:/var/run/libvirt/ \
-      -v "${VAGRANT_HOME:-$HOME/.vagrant.d}":/.vagrant.d \
-      -v "$(realpath "${PWD}")":"${PWD}" \
-      -w "${PWD}" \
-      --network host \
-      --pull=never \
-      ghcr.io/mmguero/vagrant-libvirt:latest \
-      vagrant "$@"
+    ENGINE=${CONTAINER_ENGINE:-podman}
+    if [[ "$ENGINE" == "podman" ]]; then
+      MOUNT_HOME="${VAGRANT_HOME:-$HOME/.vagrant.d}"
+      mkdir -p "$MOUNT_HOME"/{boxes,data,tmp}
+      $ENGINE run -it --rm \
+        -e LIBVIRT_DEFAULT_URI \
+        -e IGNORE_RUN_AS_ROOT=true \
+        -e VAGRANT_DEFAULT_PROVIDER=libvirt \
+        -v /var/run/libvirt/:/var/run/libvirt/ \
+        -v "$MOUNT_HOME"/boxes:/vagrant/boxes \
+        -v "$MOUNT_HOME"/data:/vagrant/data \
+        -v "$MOUNT_HOME"/tmp:/vagrant/tmp \
+        -v "$(realpath "${PWD}")":"${PWD}" \
+        -w "${PWD}" \
+        --network host \
+        --pull=never \
+        --entrypoint /bin/bash \
+        --security-opt label=disable \
+        ghcr.io/mmguero/vagrant-libvirt:latest \
+        vagrant "$@"
+    else
+      $ENGINE run -it --rm \
+        -e LIBVIRT_DEFAULT_URI \
+        -e USER_UID=$(id -u) \
+        -e USER_GID=$(id -g) \
+        -e VAGRANT_DEFAULT_PROVIDER=libvirt \
+        -v /var/run/libvirt/:/var/run/libvirt/ \
+        -v "${VAGRANT_HOME:-$HOME/.vagrant.d}":/.vagrant.d \
+        -v "$(realpath "${PWD}")":"${PWD}" \
+        -w "${PWD}" \
+        --network host \
+        --pull=never \
+        ghcr.io/mmguero/vagrant-libvirt:latest \
+        vagrant "$@"
+    fi
   }
   function vagd() {
     vagrantd "$@"
