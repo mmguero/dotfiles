@@ -80,6 +80,7 @@ unset LINUX_RELEASE
 unset LINUX_RELEASE_NUMBER
 unset LINUX_ARCH
 unset LINUX_CPU
+unset LINUX_BACKPORTS_REPO_APT_FLAG
 
 if [[ $(uname -s) = 'Darwin' ]]; then
   export MACOS=0
@@ -145,6 +146,15 @@ else
   LINUX_CPU="$(uname -m)"
 fi
 
+###################################################################################
+function _AptUpdate {
+  if command -v apt-get >/dev/null 2>&1; then
+    DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    if [[ -n "$LINUX_RELEASE" ]]; then
+      LINUX_BACKPORTS_REPO_APT_FLAG="-t $($SUDO_CMD apt-cache policy | grep -o "$LINUX_RELEASE-backports" | sort -u | head -n 1)"
+    fi
+  fi
+}
 
 ###################################################################################
 # convenience function for installing curl/git/jq/moreutils for cloning/downloading
@@ -162,8 +172,8 @@ function InstallEssentialPackages {
       [[ -n $HAS_SCOOP ]] && scoop install main/curl main/git main/jq || pacman --noconfirm -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
       pacman --noconfirm -Sy moreutils
     elif [[ -n $LINUX ]]; then
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1 && \
-        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq moreutils
+      _AptUpdate
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq moreutils
     fi
   fi
 }
@@ -467,9 +477,9 @@ function InstallDocker {
   elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
     # install docker-ce, if needed
-    if ! $SUDO_CMD docker info >/dev/null 2>&1 ; then
+    if ! command -v docker >/dev/null 2>&1 ; then
       unset CONFIRMATION
-      read -p "\"docker info\" failed, attempt to install docker [Y/n]? " CONFIRMATION
+      read -p "Attempt to install docker [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
@@ -502,7 +512,7 @@ function InstallDocker {
              stable"
         fi
 
-        $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+        _AptUpdate
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y docker-ce
 
         if [[ "$SCRIPT_USER" != "root" ]]; then
@@ -743,7 +753,7 @@ function InstallPodman {
   elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
     # install podman, if needed
-    if ! podman info >/dev/null 2>&1 ; then
+    if ! command -v podman >/dev/null 2>&1 ; then
       unset CONFIRMATION
       read -p "\"podman info\" failed, attempt to install podman [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
@@ -769,7 +779,7 @@ function InstallPodman {
              "deb [arch=$LINUX_ARCH] http://download.opensuse.org/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /"
         fi
 
-        $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+        _AptUpdate
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
           buildah \
           catatonit \
@@ -780,6 +790,9 @@ function InstallPodman {
           python3-podman-compose \
           slirp4netns \
           uidmap
+
+        dpkg -s cockpit >/dev/null 2>&1 && \
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y cockpit-podman
 
         # slightly bump a few privileges for non-privileged user to make life with podman better:
         # - unprivileged user namespaces
@@ -837,6 +850,14 @@ EOT
 
         $SUDO_CMD loginctl enable-linger "$SCRIPT_USER"
         $SUDO_CMD usermod -a -G systemd-journal "$SCRIPT_USER"
+
+        unset CONFIRMATION
+        read -p "Enable and start podman socket service with \"systemctl --user\" [y/N]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-N}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          systemctl --user enable podman.service
+          systemctl --user start podman.service
+        fi # enable podman socket check
 
       fi # podman install confirmation check
 
@@ -896,9 +917,9 @@ function InstallVirtualization {
 
   elif [[ -n $LINUX ]] && [[ -z $WSL ]] && [[ "$LINUX_CPU" == "x86_64" ]]; then
 
-    # virtualbox or kvm
-    $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+    _AptUpdate
 
+    # virtualbox or kvm
     unset CONFIRMATION
     read -p "Install kvm/libvirt/qemu [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
@@ -1010,7 +1031,7 @@ function InstallVirtualization {
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y vagrant
 
-      elif $SUDO_CMD ${CONTAINER_ENGINE} info >/dev/null 2>&1 ; then
+      elif command -v ${CONTAINER_ENGINE} >/dev/null 2>&1 ; then
         unset CONFIRMATION
         read -p "Pull ghcr.io/mmguero/vagrant-libvirt:latest instead [Y/n]? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-Y}
@@ -1254,7 +1275,7 @@ function InstallCommonPackages {
     read -p "Install common packages [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      _AptUpdate
       DEBIAN_PACKAGE_LIST=(
         apt-file
         apt-listchanges
@@ -1467,7 +1488,7 @@ function InstallCommonPackagesGUI {
     read -p "Install common packages (GUI) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      _AptUpdate
       DEBIAN_PACKAGE_LIST=(
         arandr
         dconf-cli
@@ -1525,7 +1546,7 @@ function InstallCommonPackagesMedia {
     read -p "Install common packages (media) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      _AptUpdate
       DEBIAN_PACKAGE_LIST=(
         audacious
         audacity
@@ -1549,7 +1570,7 @@ function InstallCommonPackagesMedia {
       read -p "Install common packages (media/GIMP) [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+        _AptUpdate
         DEBIAN_PACKAGE_LIST=(
           gimp
           gimp-gmic
@@ -1622,7 +1643,7 @@ function InstallCommonPackagesNetworking {
     read -p "Install common packages (networking) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      _AptUpdate
       DEBIAN_PACKAGE_LIST=(
         apache2-utils
         autossh
@@ -1753,7 +1774,7 @@ function InstallCommonPackagesNetworkingGUI {
     read -p "Install common packages (networking, GUI) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      _AptUpdate
       DEBIAN_PACKAGE_LIST=(
         wireshark
         x2goclient
@@ -1827,7 +1848,7 @@ function InstallCommonPackagesForensics {
     read -p "Install common packages (forensics/security) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      _AptUpdate
       DEBIAN_PACKAGE_LIST=(
         android-tools-adb
         android-tools-fastboot
@@ -1900,7 +1921,7 @@ function InstallCommonPackagesForensicsGUI {
     read -p "Install common packages (forensics/security, GUI) [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      $SUDO_CMD apt-get update -qq >/dev/null 2>&1
+      _AptUpdate
       DEBIAN_PACKAGE_LIST=(
         ettercap-graphical
         forensics-all
@@ -1917,6 +1938,29 @@ function InstallCommonPackagesForensicsGUI {
     true
 
   fi # Linux vs. MSYS
+}
+
+################################################################################
+function InstallCockpit {
+  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
+    unset CONFIRMATION
+    read -p "Install cockpit [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+      _AptUpdate
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install \
+        -y --no-install-recommends $LINUX_BACKPORTS_REPO_APT_FLAG cockpit
+
+      [[ -f /usr/lib/systemd/system/cockpit.service ]] && \
+        ! grep -q '^\[Install\]' /usr/lib/systemd/system/cockpit.service && \
+        echo -e "\n[Install]\nWantedBy=multi-user.target" | $SUDO_CMD tee /usr/lib/systemd/system/cockpit.service
+
+      $SUDO_CMD systemctl daemon-reload && \
+        $SUDO_CMD systemctl start cockpit && \
+        $SUDO_CMD systemctl enable cockpit
+    fi
+  fi # Linux
 }
 
 ################################################################################
@@ -2390,7 +2434,7 @@ function SetupFirewall {
 
       # ufw/docker
       UFWDOCKER=0
-      if $SUDO_CMD docker info >/dev/null 2>&1 ; then
+      if command -v docker >/dev/null 2>&1 ; then
         read -p "Configure UFW/docker interaction and docker address pools? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-Y}
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
@@ -2674,6 +2718,7 @@ if (( $USER_FUNCTION_IDX == 0 )); then
   InstallEnvs
   _EnvSetup
   SetupAptSources
+  InstallCockpit
   InstallDocker
   InstallPodman
   DockerPullImages
