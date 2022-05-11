@@ -12,9 +12,6 @@ command -v xhost >/dev/null 2>&1 && xhost +SI:localuser:"$USER" >/dev/null 2>&1
 # global
 ########################################################################
 export CONTAINER_ENGINE=podman
-export MONKEYPLUG_DOCKER_IMAGE=ghcr.io/mmguero/monkeyplug:large
-export VOSK_MODEL=/home/tlacuache/devel/github/mmguero/monkeyplug/src/monkeyplug/model
-export ZEEK_DOCKER_IMAGE=ghcr.io/mmguero/zeek:plus
 
 ########################################################################
 # aliases and helper functions for docker / podman
