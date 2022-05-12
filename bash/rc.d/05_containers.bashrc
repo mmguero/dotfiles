@@ -184,7 +184,7 @@ function kodi() {
   nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
 }
 
-# full XFCE-based desktop (ghcr.io/mmguero/xfce-ext) via x11docker
+# full XFCE-based desktop (ghcr.io/mmguero/xfce) via x11docker
 function x11desktop() {
   if [[ "$CONTAINER_ENGINE" == "docker" ]]; then
     nohup x11docker \
@@ -203,7 +203,7 @@ function x11desktop() {
       --group-add=docker \
       --group-add=fuse \
       --group-add=libvirt \
-    ghcr.io/mmguero/xfce-ext </dev/null >/dev/null 2>&1 &
+    ghcr.io/mmguero/xfce </dev/null >/dev/null 2>&1 &
 
   elif [[ "$CONTAINER_ENGINE" == "podman" ]]; then
     nohup x11docker \
@@ -220,7 +220,7 @@ function x11desktop() {
       --share /var/run/libvirt/ \
       --group-add=fuse \
       --group-add=libvirt \
-    ghcr.io/mmguero/xfce-ext </dev/null >/dev/null 2>&1 &
+    ghcr.io/mmguero/xfce </dev/null >/dev/null 2>&1 &
 
   else
     echo "\$CONTAINER_ENGINE invalid or unspecified" >&2
