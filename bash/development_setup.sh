@@ -1964,11 +1964,9 @@ function InstallCockpit {
           libpwquality-tools \
           sssd-dbus
 
-      for SYSTEMD_SERVICE_PATH in /usr/lib/systemd /lib/systemd; do
-        [[ -f "$SYSTEMD_SERVICE_PATH"/system/cockpit.service ]] && \
-          ! grep -q '^\[Install\]' "$SYSTEMD_SERVICE_PATH"/system/cockpit.service && \
-          echo -e "\n[Install]\nWantedBy=multi-user.target" | $SUDO_CMD tee "$SYSTEMD_SERVICE_PATH"/system/cockpit.service
-      done
+      [[ -f /usr/lib/systemd/system/cockpit.service ]] && \
+        ! grep -q '^\[Install\]' /usr/lib/systemd/system/cockpit.service && \
+        echo -e "\n[Install]\nWantedBy=multi-user.target" | $SUDO_CMD tee /usr/lib/systemd/system/cockpit.service
 
       $SUDO_CMD systemctl daemon-reload && \
         $SUDO_CMD systemctl start cockpit && \
