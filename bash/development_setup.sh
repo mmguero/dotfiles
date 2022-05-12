@@ -1950,7 +1950,19 @@ function InstallCockpit {
 
       _AptUpdate
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install \
-        -y --no-install-recommends $LINUX_BACKPORTS_REPO_APT_FLAG cockpit
+        -y --no-install-recommends $LINUX_BACKPORTS_REPO_APT_FLAG \
+          cockpit \
+          cockpit-bridge \
+          cockpit-networkmanager \
+          cockpit-packagekit \
+          cockpit-storaged \
+          cockpit-system \
+          cockpit-ws \
+          libblockdev-mdraid2 \
+          libbytesize-common \
+          libbytesize1 \
+          libpwquality-tools \
+          sssd-dbus
 
       [[ -f /usr/lib/systemd/system/cockpit.service ]] && \
         ! grep -q '^\[Install\]' /usr/lib/systemd/system/cockpit.service && \
