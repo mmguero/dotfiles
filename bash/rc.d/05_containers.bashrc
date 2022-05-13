@@ -131,6 +131,21 @@ function ytoggc() { ytmusicc vorbis "$@"; }
 function ytoggd() { CONTAINER_ENGINE=docker ytoggc "$@"; }
 function ytoggp() { CONTAINER_ENGINE=podman ytoggc "$@"; }
 
+function ytplaylistc() {
+  format="$1"
+  quality="$2"
+  playlist="$3"
+  ytdlpc -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality "$playlist"
+}
+function ytplaylistd() { CONTAINER_ENGINE=docker ytplaylistc "$@"; }
+function ytplaylistp() { CONTAINER_ENGINE=podman ytplaylistc "$@"; }
+
+function ytplaylistoggd() { ytplaylistd vorbis 2 "$@"; }
+function ytplaylistoggp() { ytplaylistp vorbis 2 "$@"; }
+
+function ytplaylistmp3d() { ytplaylistd mp3 2 "$@"; }
+function ytplaylistmp3p() { ytplaylistp mp3 2 "$@"; }
+
 ########################################################################
 # communications
 ########################################################################
