@@ -13,6 +13,11 @@ command -v xhost >/dev/null 2>&1 && xhost +SI:localuser:"$USER" >/dev/null 2>&1
 ########################################################################
 export CONTAINER_ENGINE=podman
 
+command -v podman >/dev/null 2>&1 && \
+  [[ -n "$UID" ]] && \
+  [[ -e "/run/user/$UID/podman/podman.sock" ]] && \
+  export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
+
 ########################################################################
 # aliases and helper functions for docker / podman
 ########################################################################

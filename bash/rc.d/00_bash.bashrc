@@ -78,8 +78,6 @@ function o() {
 
 ###############################################################################
 
-command -v direnv >/dev/null 2>&1 && eval "$(direnv hook bash)"
-
 if [[ $LINUX ]]; then
 
   [[ -r "/etc/bash_completion" ]] && . "/etc/bash_completion"

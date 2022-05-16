@@ -47,3 +47,5 @@ else
   PS1="\u\[\$(${ERROR_TEST})\]@\[$COLOR_RESET\]$(/usr/bin/env bash context-color -c "echo $PROMPT_SEED" -e "$EXCLUDE_CONTEXT_COLORS" -p 2>/dev/null)\h \[$COLOR_CYAN\]\W \[$COLOR_DARK_BLUE\]\$(parse_git_branch 2>/dev/null)\[$COLOR_RESET\]› "
   [[ $WINDOWS10 ]] && cd ~
 fi
+
+command -v direnv >/dev/null 2>&1 && eval "$(direnv hook bash)"
