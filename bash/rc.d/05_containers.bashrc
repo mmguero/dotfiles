@@ -340,20 +340,43 @@ function prun() { CONTAINER_ENGINE=podman crun "$@"; }
 
 # compose
 function compose() {
-  OLD_DOCKER_HOST="$DOCKER_HOST"
+  if [[ -n "$MACOS" ]] && \
+     [[ "$CONTAINER_ENGINE" == "podman" ]] && \
+   command -v podman >/dev/null 2>&1 && \
+   command -v docker-compose >/dev/null 2>&1; then
+    # MacOS with podman machine and docker-compose compatibility
+    PODMAN_CONN_INFO="$(podman system connection ls | grep "^podman-machine-default ")"
+    PODMAN_CONN_PORT="$(echo "$PODMAN_CONN_INFO" | awk '{print $2}' | grep -P -o "@localhost:\d+" | cut -d: -f2)"
+    PODMAN_CONN_SOCK="$(echo "$PODMAN_CONN_INFO" | awk '{print $2}' | sed "s@.*/run@/run@")"
+    PODMAN_CONN_KEY="$(echo "$PODMAN_CONN_INFO" | awk '{print $3}')"
+    PODMAN_LOCAL_SOCK="/tmp/$USER-podman.sock"
+    if [[ ! -e "$PODMAN_LOCAL_SOCK" ]] || (( $( ps ax 2>/dev/null | grep -P "$PODMAN_CONN_KEY.*core@localhost" | grep -v 'gre[p]' | wc -l ) == 0 )); then
+      rm -f "$PODMAN_LOCAL_SOCK"
+      ssh -fnNT \
+        -o StreamLocalBindUnlink=yes \
+        -o StrictHostKeyChecking=no \
+        -o ExitOnForwardFailure=yes \
+        -L "$PODMAN_LOCAL_SOCK":"$PODMAN_CONN_SOCK" \
+        -i "$PODMAN_CONN_KEY" \
+        ssh://core@localhost:$PODMAN_CONN_PORT
+    fi
+    DOCKER_HOST="unix:///tmp/podman.sock" docker-compose "$@"
 
-  [[ -n "$UID" ]] && \
-    [[ -e "/run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock" ]] && \
-    export DOCKER_HOST="unix:///run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock"
-
-  # as podman now has docker-compose support, we'll default to that for either if available
-  if command -v docker-compose >/dev/null 2>&1; then
-      docker-compose "$@"
   else
-    ${CONTAINER_ENGINE}-compose "$@"
-  fi
+    # Linux
+    OLD_DOCKER_HOST="$DOCKER_HOST"
+    [[ -n "$UID" ]] && \
+      [[ -e "/run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock" ]] && \
+      export DOCKER_HOST="unix:///run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock"
 
-  [[ -n "$OLD_DOCKER_HOST" ]] && export DOCKER_HOST="$OLD_DOCKER_HOST" || unset DOCKER_HOST
+    # as podman now has docker-compose support, we'll default to that for either if available
+    if command -v docker-compose >/dev/null 2>&1; then
+        docker-compose "$@"
+    else
+      ${CONTAINER_ENGINE}-compose "$@"
+    fi
+      [[ -n "$OLD_DOCKER_HOST" ]] && export DOCKER_HOST="$OLD_DOCKER_HOST" || unset DOCKER_HOST
+  fi
 }
 function dc() { CONTAINER_ENGINE=docker compose "$@"; }
 function pc() { CONTAINER_ENGINE=podman compose "$@"; }
