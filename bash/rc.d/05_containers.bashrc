@@ -13,10 +13,15 @@ command -v xhost >/dev/null 2>&1 && xhost +SI:localuser:"$USER" >/dev/null 2>&1
 ########################################################################
 export CONTAINER_ENGINE=podman
 
-command -v podman >/dev/null 2>&1 && \
-  [[ -n "$UID" ]] && \
-  [[ -e "/run/user/$UID/podman/podman.sock" ]] && \
-  export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
+# If you're using just podman, you could uncomment this to have
+# docker/podman clients work more cleanly together. See the
+# compose() function for how I'm dealing with this for docker-compose
+# specifically, which now supports docker-compose.
+#
+# command -v podman >/dev/null 2>&1 && \
+#   [[ -n "$UID" ]] && \
+#   [[ -e "/run/user/$UID/podman/podman.sock" ]] && \
+#   export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
 
 ########################################################################
 # aliases and helper functions for docker / podman
@@ -332,7 +337,17 @@ function drun() { CONTAINER_ENGINE=docker crun "$@"; }
 function prun() { CONTAINER_ENGINE=podman crun "$@"; }
 
 # compose
-function compose() { ${CONTAINER_ENGINE}-compose "$@"; }
+function compose() {
+  if [[ -n "$UID" ]] && \
+     [[ -e "/run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock" ]]; then
+    export DOCKER_HOST="unix:///run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock"
+  fi
+  if command -v "${CONTAINER_ENGINE}-compose" >/dev/null 2>&1; then
+    "$(command -v "${CONTAINER_ENGINE}-compose")" "$@"
+  else
+    ${CONTAINER_ENGINE}-compose "$@"
+  fi
+}
 function dc() { CONTAINER_ENGINE=docker compose "$@"; }
 function pc() { CONTAINER_ENGINE=podman compose "$@"; }
 
