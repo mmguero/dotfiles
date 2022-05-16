@@ -338,15 +338,19 @@ function prun() { CONTAINER_ENGINE=podman crun "$@"; }
 
 # compose
 function compose() {
-  if [[ -n "$UID" ]] && \
-     [[ -e "/run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock" ]]; then
+  OLD_DOCKER_HOST="$DOCKER_HOST"
+
+  [[ -n "$UID" ]] && \
+    [[ -e "/run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock" ]] && \
     export DOCKER_HOST="unix:///run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock"
-  fi
+
   if command -v "${CONTAINER_ENGINE}-compose" >/dev/null 2>&1; then
     "$(command -v "${CONTAINER_ENGINE}-compose")" "$@"
   else
     ${CONTAINER_ENGINE}-compose "$@"
   fi
+
+  [[ -n "$OLD_DOCKER_HOST" ]] && export DOCKER_HOST="$OLD_DOCKER_HOST" || unset DOCKER_HOST
 }
 function dc() { CONTAINER_ENGINE=docker compose "$@"; }
 function pc() { CONTAINER_ENGINE=podman compose "$@"; }
