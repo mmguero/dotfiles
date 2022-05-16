@@ -565,7 +565,6 @@ function InstallDockerCompose {
             COMPOSE_BIN="$(dpkg -L docker-compose-plugin | grep "/docker-compose$" | head -n 1)"
             if [[ -n "$COMPOSE_BIN" ]] && [[ -f "$COMPOSE_BIN" ]]; then
               $SUDO_CMD ln -s -r -f "$COMPOSE_BIN" /usr/local/bin/docker-compose
-              command -v podman >/dev/null 2>&1 && $SUDO_CMD ln -s -r -f "$COMPOSE_BIN" /usr/local/bin/podman-compose
             else
               echo "Installing docker-compose-plugin succeeded but could not find docker-compose" >&2
             fi
@@ -591,7 +590,6 @@ function InstallDockerCompose {
           $SUDO_CMD chmod +x "$COMPOSE_BIN"
           if "$COMPOSE_BIN" version >/dev/null 2>&1 ; then
             $SUDO_CMD ln -s -r -f "$COMPOSE_BIN" /usr/local/bin/docker-compose
-            command -v podman >/dev/null 2>&1 && $SUDO_CMD ln -s -r -f "$COMPOSE_BIN" /usr/local/bin/podman-compose
           else
             echo "Installing docker-compose failed" >&2
             exit 1
