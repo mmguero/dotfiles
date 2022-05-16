@@ -34,7 +34,7 @@ fi
 command -v ip >/dev/null 2>&1 && PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1,3}.){4}' | sed "s/ //g") || PRIMARY_IP='127.0.0.1'
 PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
-if [[ -f /.dockerenv ]]; then
+if [[ -f /.dockerenv ]] || ( mount | grep -q "overlay on /" ); then
   PS1="\[$COLOR_BLUE\].\[$COLOR_RESET\]\u \[$COLOR_GREEN\]\h \[$COLOR_DARK_BLUE\]\W\[$COLOR_RESET\]> "
   unalias cat
 

@@ -1,11 +1,12 @@
 unset DOCKER_HOST
 export WINDOWS_USER=$USER
 export CONTAINER_SHARE_HOME=$HOME
-export CONTAINER_SHARE_TMP="-v $CONTAINER_SHARE_HOME/tmp:/host:rw,Z"
-export CONTAINER_SHARE_BASH_RC="-v $CONTAINER_SHARE_HOME/.bashrc:/etc/bash.bashrc:ro,Z -v $CONTAINER_SHARE_HOME/.bashrc.d:/etc/bashrc.d:ro,Z"
-export CONTAINER_SHARE_BASH_ALIASES="-v $CONTAINER_SHARE_HOME/.bash_aliases:/etc/bash.bash_aliases:ro,Z"
-export CONTAINER_SHARE_BASH_FUNCTIONS="-v $CONTAINER_SHARE_HOME/.bash_functions:/etc/bash.bash_functions:ro,Z"
-export CONTAINER_SHARE_GIT_CONFIG="-v $CONTAINER_SHARE_HOME/.gitconfig:/etc/gitconfig:ro,Z"
+[[ -d "$CONTAINER_SHARE_HOME"/tmp ]] && export CONTAINER_SHARE_TMP="-v "$(realpath "$CONTAINER_SHARE_HOME"/tmp)":/host:rw"
+[[ -f "$CONTAINER_SHARE_HOME"/.bashrc ]] && export CONTAINER_SHARE_BASH_RC="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bashrc)":/etc/bash.bashrc:ro"
+[[ -d "$CONTAINER_SHARE_HOME"/.bashrc.d ]] && export CONTAINER_SHARE_BASH_RC_D="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bashrc.d)":/etc/bashrc.d:ro"
+[[ -f "$CONTAINER_SHARE_HOME"/.bash_aliases ]] && export CONTAINER_SHARE_BASH_ALIASES="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bash_aliases)":/etc/bash.bash_aliases:ro"
+[[ -f "$CONTAINER_SHARE_HOME"/.bash_functions ]] && export CONTAINER_SHARE_BASH_FUNCTIONS="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bash_functions)":/etc/bash.bash_functions:ro"
+[[ -f "$CONTAINER_SHARE_HOME"/.gitconfig ]] && export CONTAINER_SHARE_GIT_CONFIG="-v "$(realpath "$CONTAINER_SHARE_HOME"/.gitconfig)":/etc/gitconfig:ro"
 command -v xhost >/dev/null 2>&1 && xhost +SI:localuser:"$USER" >/dev/null 2>&1
 
 ########################################################################
@@ -327,6 +328,7 @@ function crun() {
     -e HISTFILE=/tmp/.bash_history \
     $CONTAINER_SHARE_TMP \
     $CONTAINER_SHARE_BASH_RC \
+    $CONTAINER_SHARE_BASH_RC_D \
     $CONTAINER_SHARE_BASH_ALIASES \
     $CONTAINER_SHARE_BASH_FUNCTIONS \
     $CONTAINER_SHARE_GIT_CONFIG \
