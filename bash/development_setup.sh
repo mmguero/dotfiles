@@ -1169,6 +1169,7 @@ function InstallCommonPackages {
       brew install coreutils
 
       brew install diffutils
+      brew install direnv
       brew install dos2unix
 
       # All commands have been installed with the prefix "g".
@@ -1251,6 +1252,7 @@ function InstallCommonPackages {
           main/bat
           main/cloc
           main/diffutils
+          main/direnv
           main/dos2unix
           main/fd
           main/file
@@ -1331,6 +1333,7 @@ function InstallCommonPackages {
         cryptsetup
         dialog
         diffutils
+        direnv
         dirmngr
         eject
         exfat-fuse
