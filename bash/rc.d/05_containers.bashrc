@@ -26,6 +26,13 @@ export DBX_NON_INTERACTIVE="0"
 #   [[ -n "$UID" ]] && \
 #   [[ -e "/run/user/$UID/podman/podman.sock" ]] && \
 #   export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
+#
+# Or, for macOS with podman machine:
+#
+# command -v podman >/dev/null 2>&1 && \
+#   [[ -e "$HOME/.local/share/containers/podman/machine/podman-machine-default/podman.sock" ]] && \
+#   export DOCKER_HOST="unix://$HOME/.local/share/containers/podman/machine/podman-machine-default/podman.sock"
+#
 
 ########################################################################
 # aliases and helper functions for docker / podman
