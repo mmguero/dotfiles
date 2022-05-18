@@ -1473,6 +1473,7 @@ function InstallCommonPackagesGUI {
     read -p "Install common casks [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      brew install --cask barrier
       brew install --cask diskwave
       brew install --cask firefox
       brew install --cask homebrew/cask-fonts/font-hack
@@ -1808,17 +1809,17 @@ function InstallCommonPackagesNetworkingGUI {
       DEBIAN_PACKAGE_LIST=(
         wireshark
         x2goclient
-        zenmap
       )
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
       done
 
-      if [[ "$LINUX_ARCH" == "amd64" ]]; then
-        curl -sSL -o /tmp/synergy_debian_amd64.deb "https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/synergy_debian_amd64.deb"
-        $SUDO_CMD dpkg -i /tmp/synergy_debian_amd64.deb
-        rm -f /tmp/synergy_debian_amd64.deb
-      fi
+      DEBIAN_PACKAGE_LIST=(
+        barrier
+      )
+      for i in ${DEBIAN_PACKAGE_LIST[@]}; do
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y $LINUX_BACKPORTS_REPO_APT_FLAG "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
+      done
     fi
 
     if [[ "$LINUX_ARCH" == "amd64" ]]; then
@@ -1861,6 +1862,7 @@ function InstallCommonPackagesNetworkingGUI {
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         scoop bucket add nonportable
         scoop install main/sudo
+        scoop install extras/barrier
         scoop install extras/wireshark
         sudo scoop install extras/openvpn
         sudo scoop install nonportable/wireguard-np
