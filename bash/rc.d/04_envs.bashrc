@@ -8,6 +8,7 @@ if [[ -d "${ASDF_DIR:-$HOME/.asdf}" ]]; then
 fi
 
 export PYTHONDONTWRITEBYTECODE=1
+export BAT_THEME='Monokai Extended'
 
 if [[ -n $ASDF_DIR ]]; then
   if asdf plugin list | grep -q golang; then
