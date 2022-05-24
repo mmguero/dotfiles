@@ -1772,7 +1772,7 @@ function InstallLatestFirefoxLinuxAmd64 {
         rm -vf /tmp/firefox.tar.bz2
         if [[ -f /opt/firefox/firefox ]]; then
           $SUDO_CMD rm -vf /usr/local/bin/firefox
-          $SUDO_CMD ln -vrs /opt/firefox/firefox /usr/local/bin/firefox
+          $SUDO_CMD ln -rs /opt/firefox/firefox /usr/local/bin/firefox
           $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
 [Desktop Entry]
 Name=Firefox
@@ -2084,17 +2084,17 @@ EOX
         WIN_HOME="$(cygpath -u "$USERPROFILE")"
 
         [[ -d "$WIN_HOME"/Downloads ]] && \
-          ln -vs "$WIN_HOME"/Downloads "$HOME"/download
+          ln -s "$WIN_HOME"/Downloads "$HOME"/download
         [[ -d "$WIN_HOME"/Documents ]] && \
-          ln -vs "$WIN_HOME"/Documents "$HOME"/Documents
+          ln -s "$WIN_HOME"/Documents "$HOME"/Documents
         [[ -d "$WIN_HOME"/Desktop ]] && \
-          ln -vs "$WIN_HOME"/Desktop "$HOME"/Desktop
+          ln -s "$WIN_HOME"/Desktop "$HOME"/Desktop
         [[ -d "$WIN_HOME"/Pictures ]] && \
-          ln -vs "$WIN_HOME"/Pictures "$HOME"/media/images
+          ln -s "$WIN_HOME"/Pictures "$HOME"/media/images
         [[ -d "$WIN_HOME"/Music ]] && \
-          ln -vs "$WIN_HOME"/Music "$HOME"/media/music
+          ln -s "$WIN_HOME"/Music "$HOME"/media/music
         [[ -d "$WIN_HOME"/Videos ]] && \
-          ln -vs "$WIN_HOME"/Videos "$HOME"/media/video
+          ln -s "$WIN_HOME"/Videos "$HOME"/media/video
       fi
 
       [[ ! -f "$HOME"/.vimrc ]] && echo "set nocompatible" > "$HOME"/.vimrc
@@ -2611,7 +2611,7 @@ function GueroSymlinks {
 
       mkdir -p "$LOCAL_BIN_PATH"
 
-      [[ -n $MSYSTEM ]] && LNFLAGS='-vs' || LNFLAGS='-vrs'
+      [[ -n $MSYSTEM ]] && LNFLAGS='-s' || LNFLAGS='-vrs'
 
       [[ -r "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" ]] && rm -vf "$LOCAL_BIN_PATH"/"$SCRIPT_NAME" && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/bash/"$SCRIPT_NAME" "$LOCAL_BIN_PATH"/"$SCRIPT_NAME"
