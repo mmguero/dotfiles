@@ -8,7 +8,7 @@ iwr -useb get.scoop.sh -outfile 'install_scoop.ps1'
 Remove-Item .\install_scoop.ps1
 
 # bootstrap bare minimum (let msys and/or development_setup.sh do the rest)
-scoop install main/msys2 main/git
+scoop install main/msys2 main/git main/ln
 
 # enable permission to create symlinks
 # from https://dbondarchuk.com/2016/09/23/adding-permission-for-creating-symlink-using-powershell/

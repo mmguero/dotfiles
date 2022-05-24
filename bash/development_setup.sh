@@ -169,7 +169,7 @@ function InstallEssentialPackages {
     if [[ -n $MACOS ]]; then
       brew install git jq moreutils # since Jaguar curl is already installed in MacOS
     elif [[ -n $MSYSTEM ]]; then
-      [[ -n $HAS_SCOOP ]] && scoop install main/curl main/git main/jq || pacman --noconfirm -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
+      [[ -n $HAS_SCOOP ]] && scoop install main/curl main/ln main/git main/jq || pacman --noconfirm -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
       pacman --noconfirm -Sy moreutils
     elif [[ -n $LINUX ]]; then
       _AptUpdate
