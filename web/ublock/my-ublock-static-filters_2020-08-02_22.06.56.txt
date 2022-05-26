@@ -14,3 +14,28 @@ www.facebook.com###pagelet_pymk_timeline
 ! 5/26/2020 https://my.keepsolid.com
 ||my.keepsolid.com/img/banners/paypal-discount/background.png$image
 my.keepsolid.com##.paypal-discount
+
+! 2021-11-13 https://www.reddit.com
+www.reddit.com##.premium-banner-outer
+
+! remove Shorts shelf on channel pages; example: https://imgur.com/a/CTIr512
+youtube.com##+js(json-prune, contents.twoColumnBrowseResultsRenderer.tabs.0.tabRenderer.content.sectionListRenderer.contents.*.itemSectionRenderer.contents.0.reelShelfRenderer)
+
+! remove Shorts button on the left sidebar
+youtube.com##+js(json-prune, items.0.guideSectionRenderer.items.2.guideEntryRenderer)
+
+! remove trending shorts tab
+##.ytd-item-section-renderer.style-scope > .ytd-shelf-renderer.style-scope:has-text(Trending Shorts)
+
+! remove shorts from search results as well as videos with shorts in the title
+youtube.com##ytd-browse ytd-rich-item-renderer:has(ytd-thumbnail-overlay-time-status-renderer[overlay-style="UPCOMING"])
+youtube.com##ytd-browse ytd-grid-video-renderer:has(ytd-thumbnail-overlay-time-status-renderer[overlay-style="UPCOMING"])
+youtube.com##ytd-browse[page-subtype="subscriptions"] #buttons:not(:empty):upward(ytd-grid-video-renderer)
+youtube.com##ytd-browse.ytd-grid-video-renderer:has(#video-title[title~="#shorts" i])
+youtube.com##ytd-browse.ytd-rich-item-renderer:has(#video-title-link[title~="#shorts" i])
+youtube.com##ytd-search.ytd-video-renderer:has(#video-title[title~="#shorts" i])
+youtube.com##ytd-watch-next-secondary-results-renderer.ytd-compact-video-renderer:has(#video-title[title~="#shorts" i])
+youtube.com##ytd-video-renderer.ytd-expanded-shelf-contents-renderer.style-scope:has-text(#shorts)
+youtube.com###dismissible.ytd-video-renderer.style-scope:has-text(#shorts)
+youtube.com###dismissible.ytd-video-renderer.style-scope:has-text(#Shorts)
+youtube.com###dismissible.ytd-video-renderer.style-scope:has-text(#SHORTS)
