@@ -186,11 +186,18 @@ function _GitClone {
 ###################################################################################
 function _GitLatestRelease {
   if [[ -n "$1" ]]; then
-    (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases/latest" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
-      (set -o pipefail && curl -sL -f "https://api.github.com/repos/$1/releases" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
+    GITHUB_API_CURL_ARGS=()
+    GITHUB_API_CURL_ARGS+=( -fsSL )
+    GITHUB_API_CURL_ARGS+=( -H )
+    GITHUB_API_CURL_ARGS+=( "Accept: application/vnd.github.v3+json" )
+    [[ -n "$GITHUB_OAUTH_TOKEN" ]] && \
+      GITHUB_API_CURL_ARGS+=( -H ) && \
+      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_OAUTH_TOKEN" )
+    (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases/latest" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
+      (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
       echo unknown
   else
-    echo "unknown">&2
+    echo unknown>&2
   fi
 }
 
