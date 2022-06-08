@@ -10,7 +10,7 @@ GIT_CLONE_URL_PREFIX="https://github.com/"
 GIT_CLONE_URL_SUFFIX=""
 UPSTREAM_NAME=upstream
 REMOTE_NAME=
-TOKEN=${GITHUB_OAUTH_TOKEN:-""}
+TOKEN=${GITHUB_TOKEN:-""}
 API_ENTITY_NAME=
 API_ENTITY_TYPE=
 CLONE_ARCHIVED=false
@@ -26,7 +26,7 @@ function print_usage() {
   echo -e "\t -m #\t(optional)\tMaximum repo size (MB)\tdefault $MAX_MEGABYTES" >&2
   echo -e "\t -g\t(optional)\tgit@ vs. https:// clone\tdefault https://" >&2
   echo >&2
-  echo -e "\t -t XXX\t\t\tGitHub OAUTH token\tdefault \$GITHUB_OAUTH_TOKEN env. variable" >&2
+  echo -e "\t -t XXX\t\t\tGitHub OAUTH token\tdefault \$GITHUB_TOKEN env. variable" >&2
   echo >&2
   echo -e "\t -o\torganization name" >&2
   echo -e "\t OR" >&2
@@ -69,7 +69,7 @@ while getopts 'vaegt:d:m:o:u:r:p:' OPTION; do
       MAX_MEGABYTES="$OPTARG"
       ;;
 
-    # specify GitHub OAUTH token (defaulted to $GITHUB_OAUTH_TOKEN above)
+    # specify GitHub OAUTH token (defaulted to $GITHUB_TOKEN above)
     t)
       TOKEN="$OPTARG"
       ;;

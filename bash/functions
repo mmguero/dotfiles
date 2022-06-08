@@ -656,9 +656,9 @@ function git_latest_release () {
     GITHUB_API_CURL_ARGS+=( -fsSL )
     GITHUB_API_CURL_ARGS+=( -H )
     GITHUB_API_CURL_ARGS+=( "Accept: application/vnd.github.v3+json" )
-    [[ -n "$GITHUB_OAUTH_TOKEN" ]] && \
+    [[ -n "$GITHUB_TOKEN" ]] && \
       GITHUB_API_CURL_ARGS+=( -H ) && \
-      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_OAUTH_TOKEN" )
+      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
     (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases/latest" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
       (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
       echo unknown
@@ -678,31 +678,31 @@ function git_deep_search () {
 
 
 function git_list_packages () {
-  if [[ -n $GITHUB_OAUTH_TOKEN ]]; then
-    curl -sSL  -H "Authorization: token $GITHUB_OAUTH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+  if [[ -n $GITHUB_TOKEN ]]; then
+    curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
       https://api.github.com/user/packages?package_type=container \
       | jq -r '.[] | .repository.full_name,.name' \
       | sed '$!N;s/\n/:/' \
       | sort -f
   else
-    echo "\$GITHUB_OAUTH_TOKEN not defined">&2
+    echo "\$GITHUB_TOKEN not defined">&2
   fi
 }
 
 function git_trigger_repo_dispatch () {
-  if [[ -n $GITHUB_OAUTH_TOKEN ]]; then
+  if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     echo "Issuing repository_dispatch on $REPO"
-    curl -sSL  -H "Authorization: token $GITHUB_OAUTH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+    curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
       --data '{"event_type": "CLI trigger"}' \
       "https://api.github.com/repos/$REPO/dispatches"
   else
-    echo "\$GITHUB_OAUTH_TOKEN not defined">&2
+    echo "\$GITHUB_TOKEN not defined">&2
   fi
 }
 
 function git_trigger_packages_build () {
-  if [[ -n $GITHUB_OAUTH_TOKEN ]]; then
+  if [[ -n $GITHUB_TOKEN ]]; then
     # present the menu to our customer and get their selection
     printf "%s\t%s\n" "0" "ALL"
     readarray -t PACKAGES < <(git_list_packages)
@@ -735,7 +735,7 @@ function git_trigger_packages_build () {
       echo "Invalid operation selected">&2
     fi
   else
-    echo "\$GITHUB_OAUTH_TOKEN not defined">&2
+    echo "\$GITHUB_TOKEN not defined">&2
   fi
 }
 
