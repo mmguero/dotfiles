@@ -73,6 +73,31 @@ function losslesscut() {
   nohup x11docker --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- ghcr.io/mmguero/lossless-cut </dev/null >/dev/null 2>&1 &
 }
 
+function fluentbit() {
+  DIR="$(pwd)"
+
+  if [[ "$CONTAINER_ENGINE" == "podman" ]]; then
+    CONTAINER_PUID=0
+    CONTAINER_PGID=0
+  else
+    CONTAINER_PUID=$(id -u)
+    CONTAINER_PGID=$(id -g)
+  fi
+
+  if $CONTAINER_ENGINE images 2>/dev/null | grep -q fluent/fluent-bit >/dev/null 2>&1; then
+    $CONTAINER_ENGINE run -i -t --rm \
+      -u $CONTAINER_PUID:$CONTAINER_PGID \
+      -v "$DIR:$DIR:rw" \
+      -w "$DIR" \
+      cr.fluentbit.io/fluent/fluent-bit:latest "$@"
+
+  else
+    echo "Please pull either cr.fluentbit.io/fluent/fluent-bit:latest" >&2
+  fi
+}
+function fluentbitd() { CONTAINER_ENGINE=docker fluentbit "$@"; }
+function fluentbitp() { CONTAINER_ENGINE=podman fluentbit "$@"; }
+
 # ffmpeg (mwader/static-ffmpeg or linuxserver/ffmpeg) containerized
 function ffmpegc() {
   DIR="$(pwd)"
