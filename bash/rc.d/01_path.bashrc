@@ -18,6 +18,8 @@ if [[ $WINDOWS10 ]]; then
     [[ -n $USERPROFILE ]] && \
     [[ -d "$(cygpath -u $USERPROFILE)"/scoop/shims ]] && \
     PATH="$(cygpath -u $USERPROFILE)"/scoop/shims:"$PATH"
+    [[ -d "$(cygpath -u $USERPROFILE)"/scoop/apps/python/current/Scripts ]] && \
+    PATH="$(cygpath -u $USERPROFILE)"/scoop/apps/python/current/Scripts:"$PATH"
 fi
 
 [[ -d /snap/bin ]] && PATH="/snap/bin:$PATH"
