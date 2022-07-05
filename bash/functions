@@ -156,7 +156,7 @@ function ytsearch() {
 }
 
 function conv2mp4() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "HandBrakeCLI -nostdin -y -i \"XXX\" -c:a aac -strict experimental -ac 2 -ab 192K -filter_complex \"scale=iw*min(1\,min(1280/iw\,720/ih)):-1\" -c:v libx264 -preset medium -crf 24 -movflags +faststart -threads 1 -loglevel 0 \"XXX.mp4\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "ffmpeg -nostdin -y -i \"XXX\" -c:a aac -strict experimental -ac 2 -ab 192K -filter_complex \"scale=iw*min(1\,min(1280/iw\,720/ih)):-1\" -c:v libx264 -preset medium -crf 24 -movflags +faststart -threads 1 -loglevel 0 \"XXX.mp4\""
 }
 
 function conv2nook() {

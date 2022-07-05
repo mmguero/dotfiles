@@ -241,7 +241,7 @@ function kodi() {
   else
     MEDIA_FOLDER="$(realpath $(pwd))"
   fi
-  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
+  nohup x11docker --backend=$CONTAINER_ENGINE --home "$HOME/.config/kodi" --network --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
 }
 
 # full XFCE-based desktop (ghcr.io/mmguero/xfce) via x11docker
