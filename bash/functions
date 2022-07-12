@@ -176,6 +176,35 @@ function matrix() {
   while :;do echo $LINES $COLUMNS $(( $RANDOM % $COLUMNS)) $(printf "\U$(($RANDOM % 500))");sleep 0.05;done|gawk '{a[$3]=0;for (x in a){o=a[x];a[x]=a[x]+1;printf "\033[%s;%sH\033[2;32m%s",o,x,$4;printf "\033[%s;%sH\033[1;37m%s\033[0;0H",a[x],x,$4;if (a[x] >= $1){a[x]=0;} }}'
 }
 
+function media_history_purge() {
+  for TERM in \
+      1080p \
+      720p \
+      _clean \
+      cleanvid \
+      ffmpeg \
+      mediasus \
+      mkv \
+      monkeyplug \
+      montag \
+      movies \
+      mp3 \
+      mp4 \
+      mpv \
+      music \
+      ogg \
+      plex \
+      RARBG\
+      season \
+      srt \
+      torrent \
+      webrip \
+      yify \
+   ; do \
+      while read n; do history -d $n; done < <(history | tac | awk "/${TERM}/{print \$1}" IGNORECASE=1); \
+  done && history -w
+}
+
 ########################################################################
 # reference
 ########################################################################
