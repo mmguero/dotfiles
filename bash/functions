@@ -442,9 +442,11 @@ function pidstart () {
 ########################################################################
 # language
 ########################################################################
-function say() { echo "$1" | festival --tts >/dev/null 2>&1; }
-
-function saygoog() { if [[ "${1}" =~ -[a-z]{2} ]]; then local lang=${1#-}; local text="${*#$1}"; else local lang=${LANG%_*}; local text="$*";fi; mpv "http://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&q=${text}" &> /dev/null ; }
+function say() {
+  MIMIC_URL=${MIMIC_URL:-http://localhost:59125}
+  MIMIC_VOICE=${MIMIC_VOICE:-en_US/vctk_low}
+  curl -sSL -XPOST --data "$1" --output - "${MIMIC_URL}/api/tts?voice=${MIMIC_VOICE}" | aplay 2>/dev/null
+}
 
 ########################################################################
 # news/weather
