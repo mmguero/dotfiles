@@ -885,9 +885,9 @@ function ddisousb() {
 # language
 ########################################################################
 function say() {
-  MIMIC_URL=${MIMIC_URL:-http://localhost:59125}
-  MIMIC_VOICE="$(urlencode "${MIMIC_VOICE:-en_US/vctk_low}")"
-  curl -sSL -XPOST --data "$1" --output - "${MIMIC_URL}/api/tts?voice=${MIMIC_VOICE}" | aplay 2>/dev/null
+  MIMIC_URL="${MIMIC_URL:-http://localhost:59125}"
+  MIMIC_VOICE="${MIMIC_VOICE:-en_US/vctk_low}"
+  curl -sSL -XPOST --data "$1" --output - "${MIMIC_URL}/api/tts?voice=$(urlencode "${MIMIC_VOICE}")" | aplay 2>/dev/null
 }
 
 ########################################################################
