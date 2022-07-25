@@ -182,11 +182,13 @@ function media_history_purge() {
       720p \
       _clean \
       cleanvid \
+      epub \
       ffmpeg \
       mediasus \
       mkv \
       monkeyplug \
       montag \
+      mobi \
       movies \
       mp3 \
       mp4 \
@@ -195,6 +197,7 @@ function media_history_purge() {
       ogg \
       plex \
       RARBG\
+      searchbot \
       season \
       srt \
       torrent \
