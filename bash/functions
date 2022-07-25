@@ -890,6 +890,10 @@ function say() {
   curl -sSL -XPOST --data "$1" --output - "${MIMIC_URL}/api/tts?voice=$(urlencode "${MIMIC_VOICE}")" | aplay 2>/dev/null
 }
 
+function saysel () {
+  say "$(xsel)"
+}
+
 ########################################################################
 # media
 ########################################################################
