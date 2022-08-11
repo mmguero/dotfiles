@@ -8,6 +8,7 @@ iwr -useb get.scoop.sh -outfile 'install_scoop.ps1'
 Remove-Item .\install_scoop.ps1
 
 # bootstrap bare minimum (let msys and/or development_setup.sh do the rest)
+scoop bucket add mmguero https://github.com/mmguero/scoop-bucket
 scoop install main/msys2 main/git main/ln
 
 # enable permission to create symlinks
