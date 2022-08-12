@@ -67,8 +67,6 @@ ENV_LIST=(
   tmux
 )
 
-DOCKER_COMPOSE_INSTALL_VERSION=( 2.5.0 )
-
 ###################################################################################
 # determine OS
 unset MACOS
@@ -564,45 +562,18 @@ function InstallDockerCompose {
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-        COMPOSE_CANDIDATE="$(apt-cache policy docker-compose-plugin | grep Candidate: | awk '{print $2}' | grep -v '(none)')"
-        if [[ -n $COMPOSE_CANDIDATE ]]; then
-          echo "Installing docker-compose-plugin via apt-get..." >&2
-          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y docker-compose-plugin
-          if dpkg -s docker-compose-plugin >/dev/null 2>&1; then
-            COMPOSE_BIN="$(dpkg -L docker-compose-plugin | grep "/docker-compose$" | head -n 1)"
-            if [[ -n "$COMPOSE_BIN" ]] && [[ -f "$COMPOSE_BIN" ]]; then
-              $SUDO_CMD ln -s -r -f "$COMPOSE_BIN" /usr/local/bin/docker-compose
-            else
-              echo "Installing docker-compose-plugin succeeded but could not find docker-compose" >&2
-            fi
-          else
-            echo "Installing docker-compose-plugin failed" >&2
-            exit 1
-          fi
-
-        elif python3 -m pip -V >/dev/null 2>&1 ; then
-          echo "Installing Docker Compose via pip..." >&2
-          python3 -m pip install -U docker-compose
-          if ! docker-compose version >/dev/null 2>&1 ; then
-            echo "Installing docker-compose failed" >&2
-            exit 1
-          fi
-
+        DOCKER_COMPOSE_VERSION="$(_GitLatestRelease docker/compose | sed 's/^v//')"
+        DOCKER_COMPOSE_BIN=/usr/libexec/docker/cli-plugins/docker-compose
+        DOCKER_COMPOSE_URL="https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
+        $SUDO_CMD curl -L -o "$DOCKER_COMPOSE_BIN" "$DOCKER_COMPOSE_URL"
+        $SUDO_CMD chmod +x "$DOCKER_COMPOSE_BIN"
+        if "$DOCKER_COMPOSE_BIN" version >/dev/null 2>&1 ; then
+          $SUDO_CMD ln -s -r -f "$DOCKER_COMPOSE_BIN" /usr/local/bin/docker-compose
         else
-          echo "Installing Docker Compose via curl to /usr/local/lib/docker/cli-plugins..." >&2
-          InstallEssentialPackages
-          COMPOSE_BIN=/usr/local/lib/docker/cli-plugins/docker-compose
-          mkdir -p "$(dirname "$COMPOSE_BIN")"
-          $SUDO_CMD curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_INSTALL_VERSION/docker-compose-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)" -o "$COMPOSE_BIN"
-          $SUDO_CMD chmod +x "$COMPOSE_BIN"
-          if "$COMPOSE_BIN" version >/dev/null 2>&1 ; then
-            $SUDO_CMD ln -s -r -f "$COMPOSE_BIN" /usr/local/bin/docker-compose
-          else
-            echo "Installing docker-compose failed" >&2
-            exit 1
-          fi
+          echo "Installing docker-compose failed" >&2
+          exit 1
+        fi
 
-        fi # pip3 vs. curl for docker-compose install
       fi # docker-compose install confirmation check
     else
       echo "\"docker-compose\" is already installed!" >&2
@@ -821,6 +792,7 @@ function InstallPodman {
           fuse-overlayfs \
           podman \
           podman-aardvark-dns \
+          python3-podman-compose \
           podman-netavark \
           slirp4netns \
           uidmap
