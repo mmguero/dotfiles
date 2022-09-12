@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+shopt -s nocasematch
+
 toolPath=''
 
 # =============================================================================
@@ -10,6 +12,12 @@ if [ "$1" = "" ]; then
   DIR="."
 else
   DIR="$1"
+fi
+
+if [ "$2" = "" ]; then
+  ONLY_LANG=
+else
+  ONLY_LANG="$2"
 fi
 
 # Get all the MKV/MP4 files in this dir and its subdirs
@@ -27,14 +35,16 @@ do
   do
     # optional: process only some types of subtitle tracks (according to $trackCodecID)
     #   See codec types here: https://tools.ietf.org/id/draft-lhomme-cellar-codec-00.html#rfc.section.6.5
-    if [[ $trackCodecID == 'S_VOBSUB' || $trackCodecID == 'unwantedID_#2' ]] ; then
+    if [[ $trackCodecID == 'S_VOBSUB' || $trackCodecID == 'unwantedID_#2' ]] || ( [[ -n "$ONLY_LANG" ]] && [[ "$ONLY_LANG" != "$trackLanguage" ]] ); then
       echo "  skipping track #${trackNumber}: $trackLanguage ($trackCodec, $trackCodecID)"
       continue;
     fi
 
     echo "  extracting track #${trackNumber}: $trackLanguage ($trackCodec, $trackCodecID)"
 
+    trackSuffix="$(echo "$trackCodec" | tr '[:upper:]' '[:lower:]' | cut -d'/' -f2)"
+
     # extract track with language and track id
-    `"${toolPath}mkvextract" tracks "$filename" $trackNumber:"$fileBasename $trackNumber($trackLanguage)" > /dev/null 2>&1`
+    `"${toolPath}mkvextract" tracks "$filename" $trackNumber:"$fileBasename.$trackNumber.$trackLanguage.$trackSuffix" > /dev/null 2>&1`
   done
 done
