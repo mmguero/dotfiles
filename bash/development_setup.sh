@@ -562,9 +562,8 @@ function InstallDockerCompose {
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-        DOCKER_COMPOSE_VERSION="$(_GitLatestRelease docker/compose | sed 's/^v//')"
         DOCKER_COMPOSE_BIN=/usr/libexec/docker/cli-plugins/docker-compose
-        DOCKER_COMPOSE_URL="https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
+        DOCKER_COMPOSE_URL="https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
         $SUDO_CMD curl -L -o "$DOCKER_COMPOSE_BIN" "$DOCKER_COMPOSE_URL"
         $SUDO_CMD chmod +x "$DOCKER_COMPOSE_BIN"
         if "$DOCKER_COMPOSE_BIN" version >/dev/null 2>&1 ; then
@@ -2108,10 +2107,9 @@ function InstallUserLocalFonts {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       mkdir -p "$LOCAL_DATA_PATH"/fonts "$LOCAL_CONFIG_PATH"/fontconfig/conf.d
 
-      LATEST_NERDFONT_RELEASE="$(_GitLatestRelease ryanoasis/nerd-fonts)"
       pushd "$LOCAL_DATA_PATH"/fonts >/dev/null 2>&1
       for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Incosolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
-        curl -L -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/download/$LATEST_NERDFONT_RELEASE/$NERDFONT.zip"
+        curl -L -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/$NERDFONT.zip"
         unzip -o ./$NERDFONT.zip
       done
       rm -f "$LOCAL_DATA_PATH"/fonts/*Nerd*Windows*.ttf "$LOCAL_DATA_PATH"/fonts/*.zip "$LOCAL_DATA_PATH"/fonts/*Nerd*.otf
@@ -2187,9 +2185,8 @@ function InstallUserLocalBinaries {
       rm -rf "$TMP_CLONE_DIR"
 
       if [[ "$LINUX_ARCH" == "amd64" ]]; then
-        SQ_RELEASE="$(_GitLatestRelease neilotoole/sq | sed 's/^v//')"
         TMP_CLONE_DIR="$(mktemp -d)"
-        curl -L "https://github.com/neilotoole/sq/releases/download/v${SQ_RELEASE}/sq-linux-${LINUX_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
+        curl -L "https://github.com/neilotoole/sq/releases/latest/download/sq-linux-${LINUX_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
         cp -f "${TMP_CLONE_DIR}"/sq "$LOCAL_BIN_PATH"/sq
         chmod 755 "$LOCAL_BIN_PATH"/sq
         rm -rf "$TMP_CLONE_DIR"
@@ -2230,7 +2227,6 @@ function InstallUserLocalBinaries {
       chmod 755 "$LOCAL_BIN_PATH"/termshark
       rm -rf "$TMP_CLONE_DIR"
 
-      SUPERCRONIC_RELEASE="$(_GitLatestRelease aptible/supercronic | sed 's/^v//')"
       if [[ "$LINUX_ARCH" =~ ^arm ]]; then
         if [[ "$LINUX_CPU" == "aarch64" ]]; then
           RELEASE_ARCH=arm64
@@ -2240,12 +2236,11 @@ function InstallUserLocalBinaries {
       else
         RELEASE_ARCH=amd64
       fi
-      curl -o "$LOCAL_BIN_PATH"/supercronic.new -L "https://github.com/aptible/supercronic/releases/download/v${SUPERCRONIC_RELEASE}/supercronic-linux-${RELEASE_ARCH}"
+      curl -o "$LOCAL_BIN_PATH"/supercronic.new -L "https://github.com/aptible/supercronic/releases/latest/download/supercronic-linux-${RELEASE_ARCH}"
       chmod 755 "$LOCAL_BIN_PATH"/supercronic.new
       [[ -f "$LOCAL_BIN_PATH"/supercronic ]] && rm -f "$LOCAL_BIN_PATH"/supercronic
       mv "$LOCAL_BIN_PATH"/supercronic.new "$LOCAL_BIN_PATH"/supercronic
 
-      BORINGPROXY_RELEASE="$(_GitLatestRelease boringproxy/boringproxy | sed 's/^v//')"
       if [[ "$LINUX_ARCH" =~ ^arm ]]; then
         if [[ "$LINUX_CPU" == "aarch64" ]]; then
           RELEASE_ARCH=arm64
@@ -2255,7 +2250,7 @@ function InstallUserLocalBinaries {
       else
         RELEASE_ARCH=x86_64
       fi
-      curl -o "$LOCAL_BIN_PATH"/boringproxy.new -L "https://github.com/boringproxy/boringproxy/releases/download/v${BORINGPROXY_RELEASE}/boringproxy-linux-${RELEASE_ARCH}"
+      curl -o "$LOCAL_BIN_PATH"/boringproxy.new -L "https://github.com/boringproxy/boringproxy/releases/latest/download/boringproxy-linux-${RELEASE_ARCH}"
       chmod 755 "$LOCAL_BIN_PATH"/boringproxy.new
       [[ -f "$LOCAL_BIN_PATH"/boringproxy ]] && rm -f "$LOCAL_BIN_PATH"/boringproxy
       mv "$LOCAL_BIN_PATH"/boringproxy.new "$LOCAL_BIN_PATH"/boringproxy
@@ -2296,13 +2291,6 @@ function InstallUserLocalBinaries {
         chmod 755 ./ffsend
         cp -f ./ffsend "$LOCAL_BIN_PATH"/ffsend
         popd >/dev/null 2>&1
-        rm -rf "$TMP_CLONE_DIR"
-
-        DRA_RELEASE="$(_GitLatestRelease devmatteini/dra)"
-        TMP_CLONE_DIR="$(mktemp -d)"
-        curl -L "https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
-        cp -f "${TMP_CLONE_DIR}"/dra "$LOCAL_BIN_PATH"/dra
-        chmod 755 "$LOCAL_BIN_PATH"/dra
         rm -rf "$TMP_CLONE_DIR"
       fi
     fi
