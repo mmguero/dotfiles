@@ -18,12 +18,12 @@ if [[ $LINUX ]]; then
       mkdir -p "$MOUNT_HOME"/{boxes,data,tmp}
       $ENGINE run -it --rm \
         -e LIBVIRT_DEFAULT_URI \
-        -e IGNORE_RUN_AS_ROOT=true \
+        -e IGNORE_RUN_AS_ROOT=1 \
         -e VAGRANT_DEFAULT_PROVIDER=libvirt \
         -v /var/run/libvirt/:/var/run/libvirt/ \
-        -v "$MOUNT_HOME"/boxes:/vagrant/boxes \
-        -v "$MOUNT_HOME"/data:/vagrant/data \
-        -v "$MOUNT_HOME"/tmp:/vagrant/tmp \
+        -v "$MOUNT_HOME"/boxes:/.vagrant.d/boxes \
+        -v "$MOUNT_HOME"/data:/.vagrant.d/data \
+        -v "$MOUNT_HOME"/tmp:/.vagrant.d/tmp \
         -v "$(realpath "${PWD}")":"${PWD}" \
         -w "${PWD}" \
         --network host \
