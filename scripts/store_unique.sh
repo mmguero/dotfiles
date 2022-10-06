@@ -73,4 +73,8 @@ EOF
     popd >/dev/null 2>&1
     finish
     trap - EXIT
+    exit 0
+
+else
+  exit 1
 fi # singleton lock check
