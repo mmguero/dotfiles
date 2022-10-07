@@ -83,7 +83,7 @@ SELECT * FROM \`$TABLE_NAME\` WHERE (\`$FIELD_NAME\` == '$VALUE');
 EOF
 
     else
-        # retrieve an entry from the database (rather, count its lines)
+        # retrieve an entry from the database
         mapfile -t OUTPUT < <(sqlite3 "$(basename "$DATABASE_FILESPEC")" <<EOF
 CREATE TABLE IF NOT EXISTS \`$TABLE_NAME\` (id INTEGER PRIMARY KEY, timestamp DATE DEFAULT (datetime('now','localtime')), \`$FIELD_NAME\` text UNIQUE);
 SELECT * FROM \`$TABLE_NAME\` WHERE (\`$FIELD_NAME\` == '$VALUE');
