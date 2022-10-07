@@ -75,6 +75,7 @@ if mkdir -- "$LOCK_DIR" 2>/dev/null; then
     pushd "$DATABASE_DIR" >/dev/null 2>&1
 
     if [[ "$OPERATION" == "set" ]]; then
+        # store an entry in the database
         sqlite3 "$(basename "$DATABASE_FILESPEC")" <<EOF
 CREATE TABLE IF NOT EXISTS \`$TABLE_NAME\` (id INTEGER PRIMARY KEY, timestamp DATE DEFAULT (datetime('now','localtime')), \`$FIELD_NAME\` text UNIQUE);
 INSERT INTO \`$TABLE_NAME\` (\`$FIELD_NAME\`) VALUES ('$VALUE') ON CONFLICT(\`$FIELD_NAME\`) DO UPDATE SET timestamp=datetime('now','localtime');
@@ -82,14 +83,15 @@ SELECT * FROM \`$TABLE_NAME\` WHERE (\`$FIELD_NAME\` == '$VALUE');
 EOF
 
     else
-        OUTPUT_COUNT=$((sqlite3 "$(basename "$DATABASE_FILESPEC")" <<EOF
+        # retrieve an entry from the database (rather, count its lines)
+        mapfile -t OUTPUT < <(sqlite3 "$(basename "$DATABASE_FILESPEC")" <<EOF
 CREATE TABLE IF NOT EXISTS \`$TABLE_NAME\` (id INTEGER PRIMARY KEY, timestamp DATE DEFAULT (datetime('now','localtime')), \`$FIELD_NAME\` text UNIQUE);
 SELECT * FROM \`$TABLE_NAME\` WHERE (\`$FIELD_NAME\` == '$VALUE');
 EOF
-        ) | wc -l)
-        ( [[ -z "$OUTPUT_COUNT" ]] || (( $OUTPUT_COUNT == 0 )) ) && ECODE=1
-
-        (( $ECODE == 0 )) && echo "\"$VALUE\" found" >&2 || echo "\"$VALUE\" not found" >&2
+        )
+        OUTPUT_COUNT=${#OUTPUT[@]}
+        ( [[ -z "$OUTPUT_COUNT" ]] || (( $OUTPUT_COUNT == 0 )) ) && ECODE=1 || printf "%s\n" "${OUTPUT[@]}"
+        (( $ECODE == 0 )) || echo "\"$VALUE\" not found" >&2
     fi
 
     popd >/dev/null 2>&1
