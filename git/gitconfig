@@ -13,6 +13,8 @@
   prune = true
   recurse-submodules = true
   autoStash = true
+[rerere]
+  enabled = true
 [push]
 	default = simple
 [diff]
