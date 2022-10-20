@@ -43,9 +43,16 @@ done
 shift "$(($OPTIND -1))"
 
 RUN_PATH="$(pwd)"
+[[ "$(uname -s)" = 'Darwin' ]] && REALPATH=grealpath || REALPATH=realpath
+if ! command -v "$REALPATH" >/dev/null 2>&1; then
+  echo "$(basename "${BASH_SOURCE[0]}") requires $REALPATH" >&2
+  exit 1
+fi
+
 if [[ -z "$OUTPUT_PATH" ]]; then
   OUTPUT_PATH="$(pwd)"/certs_$(date "+%Y-%m-%d_%H:%M:%S")
 fi
+OUTPUT_PATH=$($REALPATH "${OUTPUT_PATH}")
 
 # create a temporary directory to store our results in
 WORKDIR="$(mktemp -d -t keygen-XXXXXX)"
