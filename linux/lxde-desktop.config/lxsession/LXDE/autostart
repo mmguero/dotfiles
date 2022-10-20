@@ -1,7 +1,0 @@
-@lxpanel --profile LXDE
-@thunar --daemon
-@xfdesktop
-@xscreensaver -no-splash
-@bash -c "~/.local/bin/keepassxc_delay.sh"
-@xbindkeys -p
-

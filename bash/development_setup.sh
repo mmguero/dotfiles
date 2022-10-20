@@ -2640,18 +2640,6 @@ function GueroSymlinks {
 
       # [[ ! -d "$LOCAL_CONFIG_PATH"/gdb/peda ]] && _GitClone https://github.com/longld/peda.git "$LOCAL_CONFIG_PATH"/gdb/peda
 
-      if [[ -n $LINUX ]] && dpkg -s lxde-core >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config ]]; then
-        unset CONFIRMATION
-        read -p "Setup symlinks for LXDE config [y/N]? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-N}
-        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          while IFS= read -d $'\0' -r CONFDIR; do
-            DIRNAME="$(basename "$CONFDIR")"
-            rm -vf "$LOCAL_CONFIG_PATH"/"$DIRNAME" && ln $LNFLAGS "$CONFDIR" "$LOCAL_CONFIG_PATH"/"$DIRNAME"
-          done < <(find "$GUERO_GITHUB_PATH"/linux/lxde-desktop.config -mindepth 1 -maxdepth 1 -type d -print0)
-        fi
-      fi
-
       if [[ -n $LINUX ]] && dpkg -s xfce4 >/dev/null 2>&1 && [[ -d "$GUERO_GITHUB_PATH"/linux/xfce-desktop.config ]]; then
         unset CONFIRMATION
         read -p "Setup symlinks for XFCE config [y/N]? " CONFIRMATION
