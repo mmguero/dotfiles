@@ -3,6 +3,8 @@
 # "git clone" all of a GitHub user's or organization's repositories (up to 100)
 # if the repo is a GitHub fork, add the parent fork as an upstream remote.
 
+# https://gist.github.com/mmguero/04bbbc8660e0b554740cae938069d527/edit
+
 ENCODING="utf-8"
 
 GIT_API_URL_PREFIX="https://api.github.com"

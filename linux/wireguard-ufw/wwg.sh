@@ -3,6 +3,8 @@
 # wwg.sh
 # a wrapper script for wg/wg-quick/systemctl wireguard operations
 
+# https://gist.github.com/mmguero/53f4c9c04ac49c330800e463e4620808/edit
+
 # The idea is you create your wireguard config file (eg, `wg0.conf`),
 # then run `wwg.sh enc wg0.conf` to encrypt it. Then, you can use `wwg.sh up wg0.conf`
 # which will temporarily decrypt the file, run `wg-quick up` for that interface with
