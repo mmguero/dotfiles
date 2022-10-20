@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 [[ -e /etc/profile.d/vte.sh ]] && source /etc/profile.d/vte.sh >/dev/null 2>&1 || source /etc/profile.d/vte-*.sh >/dev/null 2>&1
 

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# change/set the password of a PEM file
+
+# https://gist.github.com/mmguero/6f576e45266ff370732dd7b1e2bf9777
+
 set -e
 
 WORKDIR="$(mktemp -d)"

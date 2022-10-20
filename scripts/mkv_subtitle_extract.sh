@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# extract all subtitles from an MKV/MP4 file
+
+# https://gist.github.com/mmguero/efea277a272aacceca60bcccf1a15563
+
 shopt -s nocasematch
 
 toolPath=''

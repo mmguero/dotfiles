@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# https://gist.github.com/mmguero/4afe9db7d9da60c89b5145a60ba669e8
+
 # Get the coordinates of the active window's
 #    top-left corner, and the window's size.
 #    This excludes the window decoration.

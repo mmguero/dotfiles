@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ## List all manually installed packages on a debian/ubuntu system
 ## manually installed means:

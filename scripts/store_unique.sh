@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# create an SQLite3 database and store a unique value in it
+# https://gist.github.com/mmguero/29e93d47bc7b967e2dc85dbfd352c9d1
+
+# create an SQLite3 database and store (or retrieve) a unique value in it
 
 set -e
 set -u

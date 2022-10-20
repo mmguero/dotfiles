@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 [[ -r "$HOME"/.bashrc.d/04_envs.bashrc ]] && . "$HOME"/.bashrc.d/04_envs.bashrc
 

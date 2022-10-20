@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# https://gist.github.com/mmguero/ee69524da6a93296d888530f1a55c178
+
 # generate self-signed CA, server, and client .crt/.key files and dhparam.pem
 
 # can test with:
