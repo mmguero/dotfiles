@@ -2679,7 +2679,8 @@ function GueroSymlinks {
       LINKED_SCRIPTS=(
         pem_passwd.sh
         self_signed_key_gen.sh
-        windems.sh
+        store_unique.sh
+        window_dimensions.sh
       )
       for i in ${LINKED_SCRIPTS[@]}; do
         rm -vf "$LOCAL_BIN_PATH"/"$i" && ln $LNFLAGS "$GUERO_GITHUB_PATH"/scripts/"$i" "$LOCAL_BIN_PATH"/
