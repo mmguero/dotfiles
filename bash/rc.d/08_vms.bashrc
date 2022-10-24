@@ -72,6 +72,9 @@ if [[ $LINUX ]]; then
   function vplsd() {
     vagrantd plugin list "$@"
   }
+  function vbud() {
+    vagrantd box outdated --global | grep "is outdated" | cols 2 | xargs -r -l vagrantd box update --box
+  }
 
   function vagrant() {
     if which vagrant >/dev/null 2>&1; then
@@ -104,6 +107,21 @@ if [[ $LINUX ]]; then
   function vpls() {
     vagrant plugin list "$@"
   }
+  function vbu() {
+    vagrant box outdated --global | grep "is outdated" | cols 2 | xargs -r -l vagrant box update --box
+  }
+  function vbak() {
+    while read BOX_INFO; do
+      BOX_NAME="$(echo "${BOX_INFO}" | cut -d " " -f 1)"
+      BOX_PROVIDER="$(echo "${BOX_INFO}" | cut -d " " -f 2)"
+      BOX_VERSION="$(echo "${BOX_INFO}" | cut -d " " -f 3)"
+      FN="$(echo "${BOX_NAME}"_"${BOX_PROVIDER}"_"${BOX_VERSION}" | tr -c "[:alnum:]." "_" | sed "s/_*$/.box/")"
+      echo "Repackaging ${BOX_NAME} (${BOX_PROVIDER}, ${BOX_VERSION}) to ${FN}..."
+      vagrant box repackage "$BOX_NAME" "$BOX_PROVIDER" "$BOX_VERSION" && \
+        mv -v package.box "$FN" || \
+        echo "Failed to repackage ${BOX_NAME} (${BOX_PROVIDER}, ${BOX_VERSION})"
+    done <<<$(vagrant box list --no-tty --no-color | tr -d ',()' | tr -s ' ' | tr -s '\n' )
+  }
 
 else
   alias vag='vagrant'
@@ -129,11 +147,6 @@ elif [[ "$VAGRANT_PLUGINS" == *"vagrant-vbguest"* ]]; then
 else
   unset VAGRANT_DEFAULT_PROVIDER
 fi
-
-# update all outdated vagrant boxes
-function vbu() {
-  vagrant box outdated --global | grep "is outdated" | cols 2 | xargs -r -l vagrant box update --box
-}
 
 # boot an ISO in qemu
 function qemuiso() {

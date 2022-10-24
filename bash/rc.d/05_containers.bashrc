@@ -440,11 +440,18 @@ function dhealth() { CONTAINER_ENGINE=docker chealth "$@"; }
 function phealth() { CONTAINER_ENGINE=podman chealth "$@"; }
 
 # backup *all* images!
-function container_backup() {
-  for IMAGE in $($CONTAINER_ENGINE images | tail -n +2 | cols 1 2 | sed "s/ /:/" | grep -Pv "(docker-osx|android-build-box|malcolmnetsec)"); do export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g') ; $CONTAINER_ENGINE save "$IMAGE" | pv | pigz > "$FN.tgz"  ; done
+function docker_backup() {
+  for IMAGE in $(docker images | tail -n +2 | cols 1 2 | sed "s/ /:/" | grep -Pv "(malcolmnetsec)"); do
+    export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g')
+    docker save "$IMAGE" | pv | pigz > "$FN.tgz"
+  done
 }
-function docker_backup() { CONTAINER_ENGINE=docker container_backup "$@"; }
-function podman_backup() { CONTAINER_ENGINE=podman container_backup "$@"; }
+function podman_backup() {
+  for IMAGE in $(podman images | tail -n +2 | cols 1 2 | sed "s/ /:/"); do
+    export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g')
+    podman save --compress --format docker-dir -o "$FN" "$IMAGE"
+  done
+}
 
 # pull updates for images
 function contup() {
