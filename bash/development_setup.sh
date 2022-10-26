@@ -2273,6 +2273,18 @@ function InstallUserLocalBinaries {
       popd >/dev/null 2>&1
       rm -rf "$TMP_CLONE_DIR"
 
+      WATCHEXEC_RELEASE="$(_GitLatestRelease watchexec/watchexec | sed 's/^v//')"
+      TMP_CLONE_DIR="$(mktemp -d)"
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
+        RELEASE_ARCH="$LINUX_CPU"
+      else
+        RELEASE_ARCH=x86_64
+      fi
+      curl -L "https://github.com/watchexec/watchexec/releases/download/v${WATCHEXEC_RELEASE}/watchexec-${WATCHEXEC_RELEASE}-${RELEASE_ARCH}-unknown-linux-gnu.tar.xz" | tar xvJf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      cp -f "${TMP_CLONE_DIR}"/watchexec "$LOCAL_BIN_PATH"/watchexec
+      chmod 755 "$LOCAL_BIN_PATH"/watchexec
+      rm -rf "$TMP_CLONE_DIR"
+
       if [[ "$LINUX_ARCH" == "amd64" ]]; then
         ASTREE_RELEASE="$(_GitLatestRelease jez/as-tree | sed 's/^v//')"
         TMP_CLONE_DIR="$(mktemp -d)"
