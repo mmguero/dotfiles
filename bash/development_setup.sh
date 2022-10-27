@@ -439,7 +439,7 @@ function SetupAptSources {
       fi
     fi
 
-    # sources.list.d entries for this release
+    # sources.list.d and preferences.d entries for this release
     if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d /etc/apt/sources.list.d ]] && [[ -d "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE" ]]; then
       unset CONFIRMATION
       read -p "Install sources.list.d entries for $LINUX_RELEASE [Y/n]? " CONFIRMATION
@@ -454,6 +454,14 @@ function SetupAptSources {
         for i in ${GPG_KEY_URLS[@]}; do
           curl -fsSL "$i" | $SUDO_CMD apt-key add -
         done
+      fi
+    fi
+    if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d /etc/apt/preferences.d ]] && [[ -d "$GUERO_GITHUB_PATH/linux/apt/preferences.d/$LINUX_RELEASE" ]]; then
+      unset CONFIRMATION
+      read -p "Install preferences.d entries for $LINUX_RELEASE [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD cp -iv "$GUERO_GITHUB_PATH/linux/apt/preferences.d/$LINUX_RELEASE"/* /etc/apt/preferences.d/
       fi
     fi
 
