@@ -445,7 +445,8 @@ function SetupAptSources {
       read -p "Install sources.list.d entries for $LINUX_RELEASE [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        # some manual ones
+        command -v gpg >/dev/null 2>&1 || \
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends gpg
         GPG_KEY_URLS=(
           "https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg"
           "https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
