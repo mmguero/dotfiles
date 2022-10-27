@@ -382,6 +382,8 @@ function InstallEnvPackages {
     _EnvSetup
 
     if python3 -m pip -V >/dev/null 2>&1; then
+      python3 -m pip install -U pip
+      python3 -m pip install -U wheel
       python3 -m pip install -U \
         beautifulsoup4 \
         black \
@@ -406,6 +408,7 @@ function InstallEnvPackages {
         pyshark \
         python-dateutil \
         python-magic \
+        python-slugify \
         pythondialog \
         pyunpack \
         requests\[security\] \
