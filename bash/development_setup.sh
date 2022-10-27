@@ -445,6 +445,7 @@ function SetupAptSources {
       read -p "Install sources.list.d entries for $LINUX_RELEASE [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD cp -iv "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE"/* /etc/apt/sources.list.d/
         InstallEssentialPackages
         command -v gpg >/dev/null 2>&1 || \
           DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends gpg
