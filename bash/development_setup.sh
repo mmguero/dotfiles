@@ -60,11 +60,16 @@ ENV_LIST=(
   rust
   age
   bat
+  difftastic
+  direnv
+  exa
   fd
+  ghorg
+  packer
   jq
-  yq
   ripgrep
   tmux
+  yq
 )
 
 ###################################################################################
@@ -1066,19 +1071,6 @@ function InstallVirtualization {
       fi
     fi
 
-    unset CONFIRMATION
-    read -p "Attempt to download and install latest version of Packer from releases.hashicorp.com [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      curl -sSL -o /tmp/packer.zip "$(curl -sSL https://www.packer.io/downloads|grep -oP '"url":"https://releases\.hashicorp\.com/packer/.*?_linux_amd64\.zip"' | grep -v '{' | sort --version-sort | tail -n 1 | cut -d: -f2- | tr -d '"')"
-      pushd /tmp >/dev/null 2>&1
-      gunzip -f -S .zip packer.zip
-      chmod 755 ./packer
-      mkdir -p "$LOCAL_BIN_PATH"
-      mv ./packer "$LOCAL_BIN_PATH"
-      popd >/dev/null 2>&1
-    fi
-
   fi # MacOS vs. Linux for virtualbox/kvm/vagrant
 
   # see if we want to install vagrant plugins
@@ -1329,7 +1321,6 @@ function InstallCommonPackages {
         cryptsetup
         dialog
         diffutils
-        direnv
         dirmngr
         eject
         exfat-fuse
