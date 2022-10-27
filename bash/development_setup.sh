@@ -445,6 +445,7 @@ function SetupAptSources {
       read -p "Install sources.list.d entries for $LINUX_RELEASE [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        InstallEssentialPackages
         command -v gpg >/dev/null 2>&1 || \
           DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends gpg
         GPG_KEY_URLS=(
