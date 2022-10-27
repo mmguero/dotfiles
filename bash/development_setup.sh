@@ -447,12 +447,12 @@ function SetupAptSources {
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         # some manual ones
         GPG_KEY_URLS=(
-          https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg
-          https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg
-          https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg
-          https://download.opensuse.org/repositories/home:alvistack/Debian_Testing/Release.key|/usr/share/keyrings/home_alvistack.gpg
-          https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg
-          deb:fasttrack-archive-keyring
+          "https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg"
+          "https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
+          "https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg"
+          "https://download.opensuse.org/repositories/home:alvistack/Debian_Testing/Release.key|/usr/share/keyrings/home_alvistack.gpg"
+          "https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg"
+          "deb:fasttrack-archive-keyring"
         )
         for i in ${GPG_KEY_URLS[@]}; do
           SOURCE_URL="$(echo "$i" | cut -d'|' -f1)"
