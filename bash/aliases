@@ -16,6 +16,13 @@ alias debkeys='sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.c
 alias watch='watch --color '
 
 #convenience
+alias exa="exa --group-directories-first"
+alias ea="exa --group-directories-first --all"
+alias e="exa --group-directories-first --all --long"
+alias el="exa --group-directories-first --all --long --group"
+alias et="exa --group-directories-first --long --group --sort modified"
+alias esize="exa --group-directories-first --long --group --sort size"
+alias eld="exa --long --group --all --only-dirs --sort name"
 alias ls="ls --block-size=\"'1\" --color=auto --group-directories-first"
 alias la='ls -A'
 alias l='ls -oah'
