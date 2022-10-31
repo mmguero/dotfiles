@@ -34,6 +34,11 @@ fi
 command -v ip >/dev/null 2>&1 && PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1,3}.){4}' | sed "s/ //g") || PRIMARY_IP='127.0.0.1'
 PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
+[[ $WINDOWS10 ]] && \
+  command -v cygpath >/dev/null 2>&1 && \
+  [[ -f ~/.config/starship.toml ]] && \
+  export STARSHIP_CONFIG="$(cygpath -a -w ~/.config/starship.toml)"
+
 if command -v starship >/dev/null 2>&1; then
   eval "$(starship init bash)"
 else
