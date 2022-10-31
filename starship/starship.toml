@@ -2,7 +2,7 @@
 
 format = "$all"
 
-add_newline = false
+add_newline = true
 
 [line_break]
 disabled = false
@@ -29,7 +29,7 @@ disabled = false
 
 [directory]
 truncation_symbol = "…/"
-home_symbol = "🏠"
+home_symbol = "~"
 
 [git_branch]
 always_show_remote = true
@@ -40,6 +40,9 @@ format = "[$symbol($remote_name:)$branch]($style) "
 disabled = true
 
 [cmake]
+disabled = true
+
+[docker_context]
 disabled = true
 
 [golang]
