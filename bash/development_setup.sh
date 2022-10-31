@@ -1254,6 +1254,7 @@ function InstallCommonPackages {
           main/7zip
           main/bat
           main/cloc
+          main/difftastic
           main/diffutils
           main/direnv
           main/dos2unix
@@ -1264,16 +1265,22 @@ function InstallCommonPackages {
           main/gron
           main/jdupes
           main/patch
+          main/peco
           main/python
           main/ripgrep
+          main/sops
+          main/sqlite
+          main/starship
           main/sudo
           main/time
           main/unrar
           main/unzip
           main/vim
+          main/watchexec
           main/yq
           main/zip
           extras/age
+          extras/viddy
         )
         for i in ${SCOOP_PACKAGE_LIST[@]}; do
           scoop install "$i"
@@ -1746,10 +1753,13 @@ function InstallCommonPackagesNetworking {
           main/croc
           main/cwrsync
           main/ffsend
+          main/ghorg
           main/netcat
-          main/nmap
           main/ngrok
+          main/nmap
+          main/rclone
           main/wget
+          main/xh
           extras/stunnel
           smallstep/step
         )
