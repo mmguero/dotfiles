@@ -66,10 +66,22 @@ ENV_LIST=(
   fd
   ghorg
   packer
+  peco
   jq
+  rclone
   ripgrep
+  sops
+  sopstool
+  sqlite
+  starship
+  step
   tmux
+  viddy
+  websocat
+  wtfutil
+  xh
   yq
+  yj
 )
 
 ###################################################################################
@@ -2636,6 +2648,9 @@ function GueroSymlinks {
 
       [[ -d "$GUERO_GITHUB_PATH"/linux/containers ]] && rm -vf "$LOCAL_CONFIG_PATH"/containers && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/containers "$LOCAL_CONFIG_PATH"/containers
+
+      [[ -r "$GUERO_GITHUB_PATH"/starship/starship.toml ]] && rm -vf "$LOCAL_CONFIG_PATH"/starship.toml && \
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/starship/starship.toml "$LOCAL_CONFIG_PATH"/starship.toml
 
       [[ -r "$GUERO_GITHUB_PATH"/git/gitconfig ]] && rm -vf "$HOME"/.gitconfig && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/git/gitconfig "$HOME"/.gitconfig
