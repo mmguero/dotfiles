@@ -87,7 +87,7 @@ format = "[$duration](bold yellow bg:#33658A)"
 
 [time]
 disabled = false
-time_format = "%T"
+time_format = "%R"
 style = "bg:#33658A"
 format = '[  $time ]($style)'
 
