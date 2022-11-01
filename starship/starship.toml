@@ -115,8 +115,8 @@ disabled = false
 
 [git_branch]
 always_show_remote = true
-format = "[ $symbol ($remote_name:)$branch ]($style)"
-symbol = ""
+format = "[ $symbol($remote_name:)$branch ]($style)"
+symbol = "\ue0a0"
 style = "bg:warmlightbrown"
 
 [git_status]
