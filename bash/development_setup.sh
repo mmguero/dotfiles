@@ -2181,167 +2181,139 @@ function InstallUserLocalBinaries {
 
       if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WSL ]]; then
         PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
-        curl -L "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud
-        chmod 755 "$LOCAL_BIN_PATH"/pcloud
+        curl -L "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud.new
+        chmod 755 "$LOCAL_BIN_PATH"/pcloud.new
+        [[ -f "$LOCAL_BIN_PATH"/pcloud ]] && mv "$LOCAL_BIN_PATH"/pcloud "$LOCAL_BIN_PATH"/pcloud.old
+        mv "$LOCAL_BIN_PATH"/pcloud.new "$LOCAL_BIN_PATH"/pcloud && rm -f "$LOCAL_BIN_PATH"/pcloud.old
       fi
 
-      CROC_RELEASE="$(_GitLatestRelease schollz/croc | sed 's/^v//')"
+      # dra will be used to download other release/tag assets from GitHub
+      DRA_RELEASE="$(_GitLatestRelease devmatteini/dra)"
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-        if [[ "$LINUX_CPU" == "aarch64" ]]; then
-          RELEASE_ARCH=ARM64
-        else
-          RELEASE_ARCH=ARM
-        fi
-      else
-        RELEASE_ARCH=64bit
-      fi
-      curl -L "https://github.com/schollz/croc/releases/download/v${CROC_RELEASE}/croc_${CROC_RELEASE}_Linux-${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
-      cp -f "${TMP_CLONE_DIR}"/croc "$LOCAL_BIN_PATH"/croc
-      cp -f "${TMP_CLONE_DIR}"/bash_autocomplete "$LOCAL_DATA_PATH"/bash-completion/completions/croc.bash
-      chmod 755 "$LOCAL_BIN_PATH"/croc
+      curl -sSL "https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}-x86_64-unknown-linux-gnu.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      cp -f "${TMP_CLONE_DIR}"/dra "$LOCAL_BIN_PATH"/dra
+      chmod 755 "$LOCAL_BIN_PATH"/dra
       rm -rf "$TMP_CLONE_DIR"
 
-      # curl -o "$LOCAL_BIN_PATH"/makesure -L "https://raw.githubusercontent.com/xonixx/makesure/main/makesure.awk"
-      # chmod 755 "$LOCAL_BIN_PATH"/makesure
-
-      GRON_RELEASE="$(_GitLatestRelease tomnomnom/gron | sed 's/^v//')"
-      TMP_CLONE_DIR="$(mktemp -d)"
       if [[ "$LINUX_ARCH" =~ ^arm ]]; then
         if [[ "$LINUX_CPU" == "aarch64" ]]; then
-          RELEASE_ARCH=arm64
-        else
-          RELEASE_ARCH=arm
-        fi
-      else
-        RELEASE_ARCH=amd64
-      fi
-      curl -L "https://github.com/tomnomnom/gron/releases/download/v${GRON_RELEASE}/gron-linux-${RELEASE_ARCH}-${GRON_RELEASE}.tgz" | tar xvzf - -C "${TMP_CLONE_DIR}"
-      cp -f "${TMP_CLONE_DIR}"/gron "$LOCAL_BIN_PATH"/gron
-      chmod 755 "$LOCAL_BIN_PATH"/gron
-      rm -rf "$TMP_CLONE_DIR"
-
-      if [[ "$LINUX_ARCH" == "amd64" ]]; then
-        TMP_CLONE_DIR="$(mktemp -d)"
-        curl -L "https://github.com/neilotoole/sq/releases/latest/download/sq-linux-${LINUX_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}"
-        cp -f "${TMP_CLONE_DIR}"/sq "$LOCAL_BIN_PATH"/sq
-        chmod 755 "$LOCAL_BIN_PATH"/sq
-        rm -rf "$TMP_CLONE_DIR"
-      fi
-
-      STEPCLI_RELEASE="$(_GitLatestRelease smallstep/cli | sed 's/^v//')"
-      TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-        if [[ "$LINUX_CPU" == "aarch64" ]]; then
-          RELEASE_ARCH=arm64
+          ASSETS=(
+            "aptible/supercronic|supercronic-linux-arm64|$LOCAL_BIN_PATH/supercronic|755"
+            "boringproxy/boringproxy|boringproxy-linux-arm64|$LOCAL_BIN_PATH/boringproxy|755"
+            "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
+            "FiloSottile/age|age-v{tag}-linux-arm64.tar.gz|/tmp/age.tar.gz"
+            "gabrie30/ghorg|ghorg_{tag}_Linux_arm64.tar.gz|/tmp/ghorg.tar.gz"
+            "gcla/termshark|termshark_{tag}_linux_arm64.tar.gz|/tmp/termshark.tar.gz"
+            "mikefarah/yq|yq_linux_arm64|$LOCAL_BIN_PATH/yq|755"
+            "ogham/exa|exa-linux-armv7-v{tag}.zip|/tmp/exa.zip"
+            "peco/peco|peco_linux_arm64.tar.gz|/tmp/peco.tar.gz"
+            "rclone/rclone|rclone-v{tag}-linux-arm64.zip|/tmp/rclone.zip"
+            "sachaos/viddy|viddy_{tag}_Linux_arm64.tar.gz|/tmp/viddy.tar.gz"
+            "schollz/croc|croc_{tag}_Linux-ARM64.tar.gz|/tmp/croc.tar.gz"
+            "sharkdp/bat|bat-v{tag}-aarch64-unknown-linux-gnu.tar.gz|/tmp/bat.tar.gz"
+            "sharkdp/fd|fd-v{tag}-aarch64-unknown-linux-gnu.tar.gz|/tmp/fd.tar.gz"
+            "smallstep/cli|step_linux_{tag}_arm64.tar.gz|/tmp/step.tar.gz"
+            "starship/starship|starship-aarch64-unknown-linux-musl.tar.gz|/tmp/starship.tar.gz"
+            "tomnomnom/gron|gron-linux-arm64-{tag}.tgz|/tmp/gron.tgz"
+            "watchexec/watchexec|watchexec-{tag}-aarch64-unknown-linux-musl.tar.xz|/tmp/watchexec.tar.xz"
+          )
         elif [[ "$LINUX_CPU" == "armv6l" ]]; then
-          RELEASE_ARCH=armv6
+          ASSETS=(
+            "aptible/supercronic|supercronic-linux-arm|$LOCAL_BIN_PATH/supercronic|755"
+            "boringproxy/boringproxy|boringproxy-linux-arm|$LOCAL_BIN_PATH/boringproxy|755"
+            "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
+            "FiloSottile/age|age-v{tag}-linux-arm.tar.gz|/tmp/age.tar.gz"
+            "gcla/termshark|termshark_{tag}_linux_armv6.tar.gz|/tmp/termshark.tar.gz"
+            "mikefarah/yq|yq_linux_arm|$LOCAL_BIN_PATH/yq|755"
+            "ogham/exa|exa-linux-armv7-v{tag}.zip|/tmp/exa.zip"
+            "peco/peco|peco_linux_arm.tar.gz|/tmp/peco.tar.gz"
+            "rclone/rclone|rclone-v{tag}-linux-arm.zip|/tmp/rclone.zip"
+            "sachaos/viddy|viddy_{tag}_Linux_armv6.tar.gz|/tmp/viddy.tar.gz"
+            "schollz/croc|croc_{tag}_Linux-ARM.tar.gz|/tmp/croc.tar.gz"
+            "sharkdp/bat|bat-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/bat.tar.gz"
+            "sharkdp/fd|fd-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/fd.tar.gz"
+            "smallstep/cli|step_linux_{tag}_armv6.tar.gz|/tmp/step.tar.gz"
+            "starship/starship|starship-arm-unknown-linux-musleabihf.tar.gz|/tmp/starship.tar.gz"
+            "watchexec/watchexec|watchexec-{tag}-armv7-unknown-linux-gnueabihf.tar.xz|/tmp/watchexec.tar.xz"
+          )
         else
-          RELEASE_ARCH=armv7
+          ASSETS=(
+            "aptible/supercronic|supercronic-linux-arm|$LOCAL_BIN_PATH/supercronic|755"
+            "boringproxy/boringproxy|boringproxy-linux-arm|$LOCAL_BIN_PATH/boringproxy|755"
+            "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
+            "FiloSottile/age|age-v{tag}-linux-arm.tar.gz|/tmp/age.tar.gz"
+            "gcla/termshark|termshark_{tag}_linux_armv6.tar.gz|/tmp/termshark.tar.gz"
+            "mikefarah/yq|yq_linux_arm|$LOCAL_BIN_PATH/yq|755"
+            "ogham/exa|exa-linux-armv7-v{tag}.zip|/tmp/exa.zip"
+            "peco/peco|peco_linux_arm.tar.gz|/tmp/peco.tar.gz"
+            "rclone/rclone|rclone-v{tag}-linux-arm-v7.zip|/tmp/rclone.zip"
+            "sachaos/viddy|viddy_{tag}_Linux_armv6.tar.gz|/tmp/viddy.tar.gz"
+            "schollz/croc|croc_{tag}_Linux-ARM.tar.gz|/tmp/croc.tar.gz"
+            "sharkdp/bat|bat-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/bat.tar.gz"
+            "sharkdp/fd|fd-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/fd.tar.gz"
+            "smallstep/cli|step_linux_{tag}_armv7.tar.gz|/tmp/step.tar.gz"
+            "starship/starship|starship-arm-unknown-linux-musleabihf.tar.gz|/tmp/starship.tar.gz"
+            "watchexec/watchexec|watchexec-{tag}-armv7-unknown-linux-gnueabihf.tar.xz|/tmp/watchexec.tar.xz"
+          )
         fi
       else
-        RELEASE_ARCH=amd64
+        ASSETS=(
+          "aptible/supercronic|supercronic-linux-amd64|$LOCAL_BIN_PATH/supercronic|755"
+          "boringproxy/boringproxy|boringproxy-linux-x86_64|$LOCAL_BIN_PATH/boringproxy|755"
+          "BurntSushi/ripgrep|ripgrep-{tag}-x86_64-unknown-linux-musl.tar.gz|/tmp/ripgrep.tar.gz"
+          "FiloSottile/age|age-v{tag}-linux-amd64.tar.gz|/tmp/age.tar.gz"
+          "fireeye/capa|capa-v{tag}-linux.zip|/tmp/capa.zip"
+          "gabrie30/ghorg|ghorg_{tag}_Linux_x86_64.tar.gz|/tmp/ghorg.tar.gz"
+          "gcla/termshark|termshark_{tag}_linux_x64.tar.gz|/tmp/termshark.tar.gz"
+          "jez/as-tree|as-tree-{tag}-linux.zip|/tmp/as-tree.zip"
+          "mikefarah/yq|yq_linux_amd64|$LOCAL_BIN_PATH/yq|755"
+          "neilotoole/sq|sq-linux-amd64.tar.gz|/tmp/sq.tar.gz"
+          "ogham/exa|exa-linux-x86_64-v{tag}.zip|/tmp/exa.zip"
+          "peco/peco|peco_linux_amd64.tar.gz|/tmp/peco.tar.gz"
+          "rclone/rclone|rclone-v{tag}-linux-amd64.zip|/tmp/rclone.zip"
+          "sachaos/viddy|viddy_{tag}_Linux_x86_64.tar.gz|/tmp/viddy.tar.gz"
+          "schollz/croc|croc_{tag}_Linux-64bit.tar.gz|/tmp/croc.tar.gz"
+          "sharkdp/bat|bat-v{tag}-x86_64-unknown-linux-gnu.tar.gz|/tmp/bat.tar.gz"
+          "sharkdp/fd|fd-v{tag}-x86_64-unknown-linux-gnu.tar.gz|/tmp/fd.tar.gz"
+          "smallstep/cli|step_linux_{tag}_amd64.tar.gz|/tmp/step.tar.gz"
+          "starship/starship|starship-x86_64-unknown-linux-gnu.tar.gz|/tmp/starship.tar.gz"
+          "timvisee/ffsend|ffsend-v{tag}-linux-x64-static|$LOCAL_BIN_PATH/ffsend|755"
+          "tomnomnom/gron|gron-linux-amd64-{tag}.tgz|/tmp/gron.tgz"
+          "watchexec/watchexec|watchexec-{tag}-x86_64-unknown-linux-gnu.tar.xz|/tmp/watchexec.tar.xz"
+          "Wilfred/difftastic|difft-x86_64-unknown-linux-gnu.tar.gz|/tmp/difft.tar.gz"
+        )
       fi
-      curl -L "https://github.com/smallstep/cli/releases/download/v${STEPCLI_RELEASE}/step_linux_${STEPCLI_RELEASE}_${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
-      cp -f "${TMP_CLONE_DIR}"/bin/step "$LOCAL_BIN_PATH"/step
-      cp -f "${TMP_CLONE_DIR}"/autocomplete/bash_autocomplete "$LOCAL_DATA_PATH"/bash-completion/completions/step.bash
-      chmod 755 "$LOCAL_BIN_PATH"/step
-      rm -rf "$TMP_CLONE_DIR"
 
-      TERMSHARK_RELEASE="$(_GitLatestRelease gcla/termshark | sed 's/^v//')"
-      TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-        if [[ "$LINUX_CPU" == "aarch64" ]]; then
-          RELEASE_ARCH=arm64
-        else
-          RELEASE_ARCH=armv6
+      for i in ${ASSETS[@]}; do
+        REPO="$(echo "$i" | cut -d'|' -f1)"
+        UNTAG="$(echo "$i" | cut -d'|' -f2)"
+        OUTPUT_FILE="$(echo "$i" | cut -d'|' -f3)"
+        OUTPUT_FILE_PERMS="$(echo "$i" | cut -d'|' -f4)"
+        echo "Downloading asset for $REPO..." >&2
+        "$LOCAL_BIN_PATH"/dra download \
+          -s "$UNTAG" \
+          -o "$OUTPUT_FILE" \
+          "$REPO"
+        if [[ -f "$OUTPUT_FILE" ]]; then
+          chmod "${OUTPUT_FILE_PERMS:-644}" "$OUTPUT_FILE"
+          if [[ "$OUTPUT_FILE" == *.tar.gz ]] || [[ "$OUTPUT_FILE" == *.tgz ]]; then
+            UNPACK_DIR="$(mktemp -d)"
+            tar xzf "$OUTPUT_FILE" -C "$UNPACK_DIR"
+          elif [[ "$OUTPUT_FILE" == *.tar.xz ]] || [[ "$OUTPUT_FILE" == *.xz ]]; then
+            UNPACK_DIR="$(mktemp -d)"
+            tar xJf "$OUTPUT_FILE" -C "$UNPACK_DIR" --strip-components 1
+          elif [[ "$OUTPUT_FILE" == *.zip ]]; then
+            UNPACK_DIR="$(mktemp -d)"
+            unzip -q "$OUTPUT_FILE" -d "$UNPACK_DIR"
+          fi
+          if [[ -d "$UNPACK_DIR" ]]; then
+            find "$UNPACK_DIR" -type f -exec file --mime-type "{}" \; | \
+              grep -P ":\s+application/.*executable" | \
+              cut -d: -f 1 | xargs -I XXX -r mv -v "XXX" "$LOCAL_BIN_PATH"/
+            rm -rf "$UNPACK_DIR" "$OUTPUT_FILE"
+          fi
         fi
-      else
-        RELEASE_ARCH=x64
-      fi
-      curl -L "https://github.com/gcla/termshark/releases/download/v${TERMSHARK_RELEASE}/termshark_${TERMSHARK_RELEASE}_linux_${RELEASE_ARCH}.tar.gz" | tar xvzf - -C "${TMP_CLONE_DIR}" --strip-components 1
-      cp -f "${TMP_CLONE_DIR}"/termshark "$LOCAL_BIN_PATH"/termshark
-      chmod 755 "$LOCAL_BIN_PATH"/termshark
-      rm -rf "$TMP_CLONE_DIR"
-
-      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-        if [[ "$LINUX_CPU" == "aarch64" ]]; then
-          RELEASE_ARCH=arm64
-        else
-          RELEASE_ARCH=arm
-        fi
-      else
-        RELEASE_ARCH=amd64
-      fi
-      curl -o "$LOCAL_BIN_PATH"/supercronic.new -L "https://github.com/aptible/supercronic/releases/latest/download/supercronic-linux-${RELEASE_ARCH}"
-      chmod 755 "$LOCAL_BIN_PATH"/supercronic.new
-      [[ -f "$LOCAL_BIN_PATH"/supercronic ]] && rm -f "$LOCAL_BIN_PATH"/supercronic
-      mv "$LOCAL_BIN_PATH"/supercronic.new "$LOCAL_BIN_PATH"/supercronic
-
-      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-        if [[ "$LINUX_CPU" == "aarch64" ]]; then
-          RELEASE_ARCH=arm64
-        else
-          RELEASE_ARCH=arm
-        fi
-      else
-        RELEASE_ARCH=x86_64
-      fi
-      curl -o "$LOCAL_BIN_PATH"/boringproxy.new -L "https://github.com/boringproxy/boringproxy/releases/latest/download/boringproxy-linux-${RELEASE_ARCH}"
-      chmod 755 "$LOCAL_BIN_PATH"/boringproxy.new
-      [[ -f "$LOCAL_BIN_PATH"/boringproxy ]] && rm -f "$LOCAL_BIN_PATH"/boringproxy
-      mv "$LOCAL_BIN_PATH"/boringproxy.new "$LOCAL_BIN_PATH"/boringproxy
-
-      TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-        if [[ "$LINUX_CPU" == "aarch64" ]]; then
-          RELEASE_ARCH=arm64
-        else
-          RELEASE_ARCH=arm
-        fi
-      else
-        RELEASE_ARCH=amd64
-      fi
-      curl -o "${TMP_CLONE_DIR}"/ngrok.zip -L "https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-${RELEASE_ARCH}.zip"
-      pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
-      unzip ./ngrok.zip
-      chmod 755 ./ngrok
-      cp -f ./ngrok "$LOCAL_BIN_PATH"/ngrok
-      popd >/dev/null 2>&1
-      rm -rf "$TMP_CLONE_DIR"
-
-      WATCHEXEC_RELEASE="$(_GitLatestRelease watchexec/watchexec | sed 's/^v//')"
-      TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-        RELEASE_ARCH="$LINUX_CPU"
-      else
-        RELEASE_ARCH=x86_64
-      fi
-      curl -L "https://github.com/watchexec/watchexec/releases/download/v${WATCHEXEC_RELEASE}/watchexec-${WATCHEXEC_RELEASE}-${RELEASE_ARCH}-unknown-linux-gnu.tar.xz" | tar xvJf - -C "${TMP_CLONE_DIR}" --strip-components 1
-      cp -f "${TMP_CLONE_DIR}"/watchexec "$LOCAL_BIN_PATH"/watchexec
-      chmod 755 "$LOCAL_BIN_PATH"/watchexec
-      rm -rf "$TMP_CLONE_DIR"
-
-      if [[ "$LINUX_ARCH" == "amd64" ]]; then
-        ASTREE_RELEASE="$(_GitLatestRelease jez/as-tree | sed 's/^v//')"
-        TMP_CLONE_DIR="$(mktemp -d)"
-        curl -o "${TMP_CLONE_DIR}"/as-tree.zip -L "https://github.com/jez/as-tree/releases/download/${ASTREE_RELEASE}/as-tree-${ASTREE_RELEASE}-linux.zip"
-        pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
-        unzip ./as-tree.zip
-        chmod 755 ./as-tree
-        cp -f ./as-tree "$LOCAL_BIN_PATH"/as-tree
-        popd >/dev/null 2>&1
-        rm -rf "$TMP_CLONE_DIR"
-
-        FFSEND_RELEASE="$(_GitLatestRelease timvisee/ffsend | sed 's/^v//')"
-        TMP_CLONE_DIR="$(mktemp -d)"
-        curl -o "${TMP_CLONE_DIR}"/ffsend -L "https://github.com/timvisee/ffsend/releases/download/v${FFSEND_RELEASE}/ffsend-v${FFSEND_RELEASE}-linux-x64-static"
-        pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
-        chmod 755 ./ffsend
-        cp -f ./ffsend "$LOCAL_BIN_PATH"/ffsend
-        popd >/dev/null 2>&1
-        rm -rf "$TMP_CLONE_DIR"
-      fi
+      done
     fi
 
   elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
