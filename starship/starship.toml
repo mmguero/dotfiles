@@ -113,8 +113,8 @@ disabled = false
 
 [git_branch]
 always_show_remote = true
-format = "[$symbol($remote_name:)$branch ]($style)"
-symbol = " "
+format = "[ $symbol ($remote_name:)$branch ]($style)"
+symbol = ""
 style = "bg:#a28089"
 
 [git_status]
@@ -134,11 +134,13 @@ up_to_date = "[](green bg:#a28089)"
 
 [directory]
 style = "bg:#8458B3"
-format = "[ $path ]($style)"
+read_only_style = "bg:#8458B3"
+format = "[ $path]($style)[$read_only]($read_only_style)"
 truncation_length = 3
 truncation_symbol = "…/"
+truncate_to_repo = true
 home_symbol = "ﴤ "
-read_only = " "
+read_only = "  "
 
 [directory.substitutions]
 "Audio" = " "
