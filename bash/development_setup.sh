@@ -631,6 +631,7 @@ function DockerPullImages {
         alpine:latest
         amazonlinux:2
         debian:stable-slim
+        ghcr.io/mmguero/debian:stable-slim
         ubuntu:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
