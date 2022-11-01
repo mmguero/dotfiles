@@ -15,7 +15,7 @@ $git_commit\
 $git_state\
 $git_metrics\
 $git_status\
-[\ue0c8](fg:warmlightbrown bg:seagull)\
+[\ue0c8 ](fg:warmlightbrown bg:seagull)\
 $c\
 $cmake\
 $cobol\
@@ -183,42 +183,44 @@ read_only = " \ue0a2"
 # disabled modules (generally because I don't want the via ... whatever cluttering things)
 [aws]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [bun]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-disabled = true
+format = "[$symbol ]($style)"
+symbol = ""
+disabled = false
 
 [buf]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [c]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [cmake]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-disabled = true
+format = "[$symbol ]($style)"
+symbol = "喝"
+disabled = false
 
 [cobol]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-disabled = true
+format = "[$symbol ]($style)"
+disabled = false
 
 [conda]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [container]
 style = "bg:lightteal"
@@ -228,226 +230,226 @@ disabled = false
 
 [crystal]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-disabled = true
+format = "[$symbol ]($style)"
+disabled = false
 
 [daml]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-disabled = true
+format = "[$symbol ]($style)"
+disabled = false
 
 [dart]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [deno]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-disabled = true
+format = "[$symbol ]($style)"
+disabled = false
 
 [dotnet]
 style = "bg:seagull"
 format = "[$symbol(🎯 $tfm )]($style)"
-disabled = true
+disabled = false
 
 [docker_context]
 style = "bg:lightteal"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = "  "
 disabled = false
 only_with_files = true
 
 [elixir]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [elm]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [erlang]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [golang]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [haskell]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [helm]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [hg_branch]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [java]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [julia]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [kotlin]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [lua]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [memory_usage]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [meson]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-symbol = "喝"
-disabled = true
+format = "[$symbol ]($style)"
+disabled = false
 
 [nim]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [nix_shell]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [nodejs]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [ocaml]
 style = "bg:seagull"
 format = '[$symbol(\($switch_indicator$switch_name\) )]($style)'
-disabled = true
+disabled = false
 
 [package]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [perl]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [php]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-disabled = true
+format = "[$symbol ]($style)"
+disabled = false
 
 [pulumi]
 style = "bg:seagull"
 format = '[$symbol$stack]($style)'
-disabled = true
+disabled = false
 
 [purescript]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [python]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [raku]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [red]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [rlang]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = "ﳒ"
-disabled = true
+disabled = false
 
 [ruby]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [rust]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [scala]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = ""
-disabled = true
+disabled = false
 
 [spack]
 style = "bg:seagull"
-format = "[$symbol]($style)"
+format = "[$symbol ]($style)"
 symbol = "🅢"
-disabled = true
+disabled = false
 
 [swift]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [vagrant]
 style = "bg:seagull"
-format = "[$symbol]($style)"
-disabled = true
+format = "[$symbol ]($style)"
+symbol = ""
+disabled = false
 
 [vlang]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [zig]
 style = "bg:seagull"
-format = '[$symbol]($style)'
-disabled = true
+format = '[$symbol ]($style)'
+disabled = false
 
 [palettes.seth]
 cyanblue = "#a0d2eb"
