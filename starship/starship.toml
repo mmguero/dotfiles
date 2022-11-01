@@ -1,73 +1,442 @@
 # see https://starship.rs/config/
 
-format = "$all"
+format = """
+[](fg:#a0d2eb)\
+$username\
+$hostname\
+$localip\
+[](fg:#a0d2eb bg:#8458B3)\
+$directory\
+[](fg:#8458B3 bg:#a28089)\
+$git_branch\
+$git_commit\
+$git_state\
+$git_metrics\
+$git_status\
+[](fg:#a28089 bg:#86BBD8)\
+$c\
+$cmake\
+$cobol\
+$daml\
+$dart\
+$deno\
+$dotnet\
+$elixir\
+$elm\
+$erlang\
+$golang\
+$haskell\
+$helm\
+$java\
+$julia\
+$kotlin\
+$lua\
+$nim\
+$nodejs\
+$ocaml\
+$perl\
+$php\
+$pulumi\
+$purescript\
+$python\
+$raku\
+$rlang\
+$red\
+$ruby\
+$rust\
+$scala\
+$swift\
+$terraform\
+$vlang\
+$vagrant\
+$zig\
+$buf\
+$nix_shell\
+$conda\
+$meson\
+$spack\
+$aws\
+$gcloud\
+$openstack\
+$azure\
+$crystal\
+$package\
+[](fg:#86BBD8 bg:#06969A)\
+$container\
+$docker_context\
+[](fg:#06969A bg:#33658A)\
+$cmd_duration\
+$time\
+$character\
+[ ](fg:#33658A)
+"""
 
-add_newline = true
+add_newline = false
 
 [line_break]
 disabled = false
 
 [character]
-success_symbol = "[➜](bold green)"
-error_symbol = "[✗](bold red)"
+format = "$symbol"
+success_symbol = "[ ](fg:green bg:#33658A)"
+error_symbol = "[ ](fg:red bg:#33658A)"
+
+[cmd_duration]
+min_time = 2000
+format = "[$duration](bold yellow bg:#33658A)"
+
+[time]
+disabled = false
+time_format = "%T"
+style = "bg:#33658A"
+format = '[  $time ]($style)'
 
 [username]
-style_user = "green bold"
-style_root = "black bold"
-format = "[$user]($style) "
 show_always = false
+style_user = "fg:#16161d bg:#a0d2eb"
+style_root = "fg:#4f5f76 bg:#f2b1d8"
+format = '[ $user ]($style)'
+disabled = false
 
 [hostname]
 ssh_only = true
-format = "[$ssh_symbol](bold blue)[$hostname](white) "
-trim_at = ".companyname.com"
+style = "bg:#a0d2eb"
+format = "[$ssh_symbol$hostname ](fg:#16161d bg:#a0d2eb)"
+disabled = false
+ssh_symbol = " "
 
 [localip]
 ssh_only = true
-format = "🖧  [$localipv4](yellow) "
+style = "bg:#a0d2eb"
+format = "[ $localipv4 ](fg:#16161d bg:#a0d2eb)"
 disabled = false
-
-[directory]
-truncation_symbol = "…/"
-home_symbol = "~"
 
 [git_branch]
 always_show_remote = true
-format = "[$symbol($remote_name:)$branch]($style) "
+format = "[$symbol($remote_name:)$branch ]($style)"
+symbol = " "
+style = "bg:#a28089"
+
+[git_status]
+style = "bg:#a28089"
+format = '([$all_status$ahead_behind ]($style))'
+ahead = "[${count}](green bg:#a28089)"
+behind = "[丹${count}](blue bg:#a28089)"
+conflicted = "[ ](red bg:#a28089)"
+deleted = "[﫨 ](red bg:#a28089)"
+diverged = "${ahead_count}${behind_count}"
+modified = "[繁](red bg:#a28089)"
+renamed = "[凜 ](blue bg:#a28089)"
+staged = '[++$count ](green bg:#a28089)'
+stashed = "[ ](blue bg:#a28089)"
+untracked = "[ ](yellow bg:#a28089)"
+up_to_date = "[](green bg:#a28089)"
+
+[directory]
+style = "bg:#8458B3"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+home_symbol = "ﴤ "
+read_only = " "
+
+[directory.substitutions]
+"Audio" = " "
+"audio" = " "
+"backup" = " "
+"Backup" = " "
+"bak" = " "
+"Books" = " "
+"books" = " "
+".config" = " "
+".local" = " "
+"Desktop" = " "
+"devel" = " "
+"Documents" = " "
+"download" = " "
+"Downloads" = " "
+"images" = " "
+"Images" = " "
+"media" = " "
+"Media" = " "
+"Music" = " "
+"music" = " "
+"photo" = " "
+"Photo" = " "
+"photos" = " "
+"Photos" = " "
+"Pictures" = " "
+"pictures" = " "
+"Public" = " "
+"pCloudDrive" = " "
+"video" = "辶 "
+"videos" = "辶 "
+"Video" = "辶 "
+"Videos" = "辶 "
+"tmp" = " "
+"temp" = " "
 
 # disabled modules (generally because I don't want the via ... whatever cluttering things)
+[aws]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[bun]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+disabled = true
+
+[buf]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
 [c]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
 disabled = true
 
 [cmake]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+disabled = true
+
+[cobol]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+disabled = true
+
+[conda]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[container]
+disabled = true
+
+[crystal]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+disabled = true
+
+[daml]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+disabled = true
+
+[dart]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[deno]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+disabled = true
+
+[dotnet]
+style = "bg:#86BBD8"
+format = "[$symbol(🎯 $tfm )]($style)"
 disabled = true
 
 [docker_context]
+style = "bg:#06969A"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[elixir]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[elm]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[erlang]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
 disabled = true
 
 [golang]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[haskell]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[helm]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
+disabled = true
+
+[hg_branch]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
 disabled = true
 
 [java]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[julia]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[kotlin]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
+disabled = true
+
+[lua]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[memory_usage]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[meson]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = "喝"
+disabled = true
+
+[nim]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[nix_shell]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
 disabled = true
 
 [nodejs]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[ocaml]
+style = "bg:#86BBD8"
+format = '[$symbol(\($switch_indicator$switch_name\) )]($style)'
 disabled = true
 
 [package]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[perl]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
 disabled = true
 
 [php]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+disabled = true
+
+[pulumi]
+style = "bg:#86BBD8"
+format = '[$symbol$stack]($style)'
+disabled = true
+
+[purescript]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
 disabled = true
 
 [python]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[raku]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
+disabled = true
+
+[red]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
+disabled = true
+
+[rlang]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = "ﳒ"
 disabled = true
 
 [ruby]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
 disabled = true
 
 [rust]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[scala]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = ""
+disabled = true
+
+[spack]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+symbol = "🅢"
+disabled = true
+
+[swift]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
 disabled = true
 
 [vagrant]
+style = "bg:#86BBD8"
+format = "[$symbol]($style)"
+disabled = true
+
+[vlang]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
+disabled = true
+
+[zig]
+style = "bg:#86BBD8"
+format = '[$symbol]($style)'
 disabled = true
