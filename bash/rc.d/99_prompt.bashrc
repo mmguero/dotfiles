@@ -2,45 +2,47 @@
 # BASH PROMPT
 ###############################################################################
 
-##### Colors ###################################################################
-COLOR_RED=$(tput sgr0 && tput setaf 1)
-COLOR_GREEN=$(tput sgr0 && tput setaf 2)
-COLOR_YELLOW=$(tput sgr0 && tput setaf 3)
-COLOR_DARK_BLUE=$(tput sgr0 && tput setaf 4)
-COLOR_BLUE=$(tput sgr0 && tput setaf 6)
-COLOR_PURPLE=$(tput sgr0 && tput setaf 5)
-COLOR_PINK=$(tput sgr0 && tput bold && tput setaf 5)
-COLOR_LIGHT_GREEN=$(tput sgr0 && tput bold && tput setaf 2)
-COLOR_LIGHT_RED=$(tput sgr0 && tput bold && tput setaf 1)
-COLOR_LIGHT_CYAN=$(tput sgr0 && tput bold && tput setaf 6)
-COLOR_CYAN=$(tput sgr0 && tput setaf 6)
-COLOR_RESET=$(tput sgr0)
-BOLD=$(tput bold)
-
-EXCLUDE_CONTEXT_COLORS="0,1,7,15,235"
-
-ERROR_TEST="
-  if [[ \$? = \"0\" ]]; then
-    RESULT_COLOR=\$COLOR_GREEN
-  else
-    RESULT_COLOR=\$COLOR_RED
-  fi
-  echo -e \"\$RESULT_COLOR\""
-
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]] ; then
   command -v neofetch >/dev/null 2>&1 && neofetch || ( command -v screenfetch >/dev/null 2>&1 && screenfetch )
 fi
 
 PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
-[[ $WINDOWS10 ]] && \
-  command -v cygpath >/dev/null 2>&1 && \
-  [[ -f ~/.config/starship.toml ]] && \
-  export STARSHIP_CONFIG="$(cygpath -a -w ~/.config/starship.toml)"
-
 if command -v starship >/dev/null 2>&1; then
+
+  [[ $WINDOWS10 ]] && \
+    command -v cygpath >/dev/null 2>&1 && \
+    [[ -f ~/.config/starship.toml ]] && \
+    export STARSHIP_CONFIG="$(cygpath -a -w ~/.config/starship.toml)"
+
   eval "$(starship init bash)"
+
 else
+  ##### Colors ###################################################################
+  COLOR_RED=$(tput sgr0 && tput setaf 1)
+  COLOR_GREEN=$(tput sgr0 && tput setaf 2)
+  COLOR_YELLOW=$(tput sgr0 && tput setaf 3)
+  COLOR_DARK_BLUE=$(tput sgr0 && tput setaf 4)
+  COLOR_BLUE=$(tput sgr0 && tput setaf 6)
+  COLOR_PURPLE=$(tput sgr0 && tput setaf 5)
+  COLOR_PINK=$(tput sgr0 && tput bold && tput setaf 5)
+  COLOR_LIGHT_GREEN=$(tput sgr0 && tput bold && tput setaf 2)
+  COLOR_LIGHT_RED=$(tput sgr0 && tput bold && tput setaf 1)
+  COLOR_LIGHT_CYAN=$(tput sgr0 && tput bold && tput setaf 6)
+  COLOR_CYAN=$(tput sgr0 && tput setaf 6)
+  COLOR_RESET=$(tput sgr0)
+  BOLD=$(tput bold)
+
+  EXCLUDE_CONTEXT_COLORS="0,1,7,15,235"
+
+  ERROR_TEST="
+    if [[ \$? = \"0\" ]]; then
+      RESULT_COLOR=\$COLOR_GREEN
+    else
+      RESULT_COLOR=\$COLOR_RED
+    fi
+    echo -e \"\$RESULT_COLOR\""
+
   if [[ -f /.dockerenv ]] || ( mount | grep -q "overlay on / " ); then
     PS1="\[$COLOR_BLUE\].\[$COLOR_RESET\]\u \[$COLOR_GREEN\]\h \[$COLOR_DARK_BLUE\]\W\[$COLOR_RESET\]> "
     unalias cat
