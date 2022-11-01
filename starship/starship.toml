@@ -221,7 +221,10 @@ symbol = ""
 disabled = true
 
 [container]
-disabled = true
+style = "bg:lightteal"
+format = "[ $symbol ]($style)"
+symbol = ""
+disabled = false
 
 [crystal]
 style = "bg:seagull"
@@ -252,8 +255,9 @@ disabled = true
 [docker_context]
 style = "bg:lightteal"
 format = "[$symbol]($style)"
-symbol = ""
-disabled = true
+symbol = "  "
+disabled = false
+only_with_files = true
 
 [elixir]
 style = "bg:seagull"

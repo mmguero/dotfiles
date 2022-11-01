@@ -7,6 +7,7 @@ export CONTAINER_SHARE_HOME=$HOME
 [[ -f "$CONTAINER_SHARE_HOME"/.bash_aliases ]] && export CONTAINER_SHARE_BASH_ALIASES="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bash_aliases)":/etc/bash.bash_aliases:ro"
 [[ -f "$CONTAINER_SHARE_HOME"/.bash_functions ]] && export CONTAINER_SHARE_BASH_FUNCTIONS="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bash_functions)":/etc/bash.bash_functions:ro"
 [[ -f "$CONTAINER_SHARE_HOME"/.gitconfig ]] && export CONTAINER_SHARE_GIT_CONFIG="-v "$(realpath "$CONTAINER_SHARE_HOME"/.gitconfig)":/etc/gitconfig:ro"
+[[ -f "$CONTAINER_SHARE_HOME"/.config/starship.toml ]] && export CONTAINER_SHARE_GIT_CONFIG="-v "$(realpath "$CONTAINER_SHARE_HOME"/.config/starship.toml)":/etc/starship.toml:ro -e STARSHIP_CONFIG=/etc/starship.toml"
 command -v xhost >/dev/null 2>&1 && xhost +SI:localuser:"$USER" >/dev/null 2>&1
 
 ########################################################################
