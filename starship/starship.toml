@@ -142,7 +142,7 @@ truncation_length = 3
 truncation_symbol = "…/"
 truncate_to_repo = true
 home_symbol = "ﴤ "
-read_only = "  "
+read_only = " \ue0a2"
 
 [directory.substitutions]
 "Audio" = " "
