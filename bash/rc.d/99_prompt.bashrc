@@ -31,7 +31,6 @@ if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]] ; then
   command -v neofetch >/dev/null 2>&1 && neofetch || ( command -v screenfetch >/dev/null 2>&1 && screenfetch )
 fi
 
-command -v ip >/dev/null 2>&1 && PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1,3}.){4}' | sed "s/ //g") || PRIMARY_IP='127.0.0.1'
 PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
 [[ $WINDOWS10 ]] && \
@@ -47,6 +46,7 @@ else
     unalias cat
 
   else
+    command -v ip >/dev/null 2>&1 && PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1,3}.){4}' | sed "s/ //g") || PRIMARY_IP='127.0.0.1'
     unset HASHER
     HASHERS=(sha512sum sha384sum sha256sum sha224sum sha1sum md5sum)
     for i in ${HASHERS[@]}; do command -v "$i" >/dev/null 2>&1 && HASHER="$i" && break; done
