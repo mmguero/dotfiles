@@ -3,7 +3,7 @@
 palette = "seth"
 
 format = """
-[\ue0b6](fg:cyanblue)\
+[\ue0ca ](fg:cyanblue)\
 $username\
 $hostname\
 $localip\
@@ -143,44 +143,6 @@ truncation_symbol = "…/"
 truncate_to_repo = true
 home_symbol = "ﴤ "
 read_only = " \ue0a2"
-
-[directory.substitutions]
-"Audio" = " "
-"audio" = " "
-"backup" = " "
-"Backup" = " "
-"bak" = " "
-"Books" = " "
-"books" = " "
-".config" = " "
-".local" = " "
-"Desktop" = " "
-"devel" = " "
-"Documents" = " "
-"download" = " "
-"Downloads" = " "
-"images" = " "
-"Images" = " "
-"Malcolm" = " "
-"malcolm" = " "
-"media" = " "
-"Media" = " "
-"Music" = " "
-"music" = " "
-"photo" = " "
-"Photo" = " "
-"photos" = " "
-"Photos" = " "
-"Pictures" = " "
-"pictures" = " "
-"Public" = " "
-"pCloudDrive" = " "
-"video" = "辶 "
-"videos" = "辶 "
-"Video" = "辶 "
-"Videos" = "辶 "
-"tmp" = " "
-"temp" = " "
 
 # disabled modules (generally because I don't want the via ... whatever cluttering things)
 [aws]
@@ -452,6 +414,47 @@ disabled = false
 style = "bg:seagull"
 format = '[$symbol ]($style)'
 disabled = false
+
+[directory.substitutions]
+"Audio" = " "
+"audio" = " "
+"backup" = " "
+"Backup" = " "
+"bak" = " "
+"Books" = " "
+"books" = " "
+".config" = " "
+".local" = " "
+"Desktop" = " "
+"devel" = " "
+"Documents" = " "
+"download" = " "
+"Downloads" = " "
+"github" = " "
+"Github" = " "
+"GitHub" = " "
+"images" = " "
+"Images" = " "
+"Malcolm" = " "
+"malcolm" = " "
+"media" = " "
+"Media" = " "
+"Music" = " "
+"music" = " "
+"photo" = " "
+"Photo" = " "
+"photos" = " "
+"Photos" = " "
+"Pictures" = " "
+"pictures" = " "
+"Public" = " "
+"pCloudDrive" = " "
+"video" = "辶 "
+"videos" = "辶 "
+"Video" = "辶 "
+"Videos" = "辶 "
+"tmp" = " "
+"temp" = " "
 
 [palettes.seth]
 cyanblue = "#a0d2eb"
