@@ -1,6 +1,7 @@
 # see https://starship.rs/config/
+# https://gist.github.com/mmguero/730775739384895e84874320c1f9af66
 
-palette = "seth"
+palette = "tlacuache"
 
 format = """
 [\ue0b6](fg:machine_info_bg)\
@@ -457,7 +458,7 @@ disabled = false
 "tmp" = " "
 "temp" = " "
 
-[palettes.seth]
+[palettes.tlacuache]
 burgundy = "#800020"
 container_bg = "#06969A"
 directory_bg = "#8458B3"
