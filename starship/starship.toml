@@ -16,7 +16,7 @@ $git_commit\
 $git_state\
 $git_metrics\
 $git_status\
-[\ue0b0 ](fg:git_bg bg:tool_bg)\
+[\ue0b0](fg:git_bg bg:tool_bg)\
 $c\
 $cmake\
 $cobol\
@@ -149,42 +149,42 @@ read_only = " \ue0a2"
 # disabled modules (generally because I don't want the via ... whatever cluttering things)
 [aws]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [bun]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [buf]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [c]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [cmake]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = "喝"
 disabled = false
 
 [cobol]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 disabled = false
 
 [conda]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
@@ -196,225 +196,225 @@ disabled = false
 
 [crystal]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 disabled = false
 
 [daml]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 disabled = false
 
 [dart]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [deno]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 disabled = false
 
 [dotnet]
 style = "bg:tool_bg"
-format = "[$symbol(🎯 $tfm )]($style)"
+format = "[ $symbol(🎯 $tfm )]($style)"
 disabled = false
 
 [docker_context]
 style = "bg:container_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = "  "
 disabled = false
 only_with_files = true
 
 [elixir]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [elm]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [erlang]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [golang]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [haskell]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [helm]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [hg_branch]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [java]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [julia]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [kotlin]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [lua]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [memory_usage]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [meson]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 disabled = false
 
 [nim]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [nix_shell]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [nodejs]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [ocaml]
 style = "bg:tool_bg"
-format = '[$symbol(\($switch_indicator$switch_name\) )]($style)'
+format = '[ $symbol(\($switch_indicator$switch_name\) )]($style)'
 disabled = false
 
 [package]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [perl]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [php]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 disabled = false
 
 [pulumi]
 style = "bg:tool_bg"
-format = '[$symbol$stack]($style)'
+format = '[ $symbol$stack]($style)'
 disabled = false
 
 [purescript]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [python]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [raku]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [red]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [rlang]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = "ﳒ"
 disabled = false
 
 [ruby]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [rust]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [scala]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [spack]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = "🅢"
 disabled = false
 
 [swift]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [vagrant]
 style = "bg:tool_bg"
-format = "[$symbol ]($style)"
+format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [vlang]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [zig]
 style = "bg:tool_bg"
-format = '[$symbol ]($style)'
+format = '[ $symbol ]($style)'
 disabled = false
 
 [directory.substitutions]
