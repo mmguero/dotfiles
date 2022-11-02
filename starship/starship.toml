@@ -3,19 +3,19 @@
 palette = "seth"
 
 format = """
-[\ue0b6](fg:cyanblue)\
+[\ue0b6](fg:machine_info_bg)\
 $username\
 $hostname\
 $localip\
-[\ue0c8](fg:cyanblue bg:lavender)\
+[\ue0c8](fg:machine_info_bg bg:directory_bg)\
 $directory\
-[\ue0c8](fg:lavender bg:warmlightbrown)\
+[\ue0c8](fg:directory_bg bg:git_bg)\
 $git_branch\
 $git_commit\
 $git_state\
 $git_metrics\
 $git_status\
-[\ue0c8 ](fg:warmlightbrown bg:seagull)\
+[\ue0c8 ](fg:git_bg bg:tool_bg)\
 $c\
 $cmake\
 $cobol\
@@ -63,14 +63,14 @@ $openstack\
 $azure\
 $crystal\
 $package\
-[\ue0c8](fg:seagull bg:lightteal)\
+[\ue0c8](fg:tool_bg bg:container_bg)\
 $container\
 $docker_context\
-[\ue0c8](fg:lightteal bg:astral)\
+[\ue0c8](fg:container_bg bg:status_bg)\
 $cmd_duration\
 $time\
 $character\
-[\ue0c8 ](fg:astral)
+[\ue0c8 ](fg:status_bg)
 """
 
 add_newline = false
@@ -80,63 +80,63 @@ disabled = false
 
 [character]
 format = "$symbol"
-success_symbol = "[ ](fg:green bg:astral)"
-error_symbol = "[ ](fg:red bg:astral)"
+success_symbol = "[ ](fg:success_fg bg:status_bg)"
+error_symbol = "[ ](fg:error_fg bg:status_bg)"
 
 [cmd_duration]
 min_time = 2000
-format = "[$duration](bold yellow bg:astral)"
+format = "[$duration](bold duration_fg bg:status_bg)"
 
 [time]
 disabled = false
 time_format = "%R"
-style = "bg:astral"
+style = "bg:status_bg"
 format = '[  $time ]($style)'
 
 [username]
 show_always = false
-style_user = "fg:eigengrau bg:cyanblue"
-style_root = "fg:grayblue bg:pinky"
+style_user = "fg:machine_info_fg bg:machine_info_bg"
+style_root = "fg:error_fg bg:machine_info_bg"
 format = '[ $user ]($style)'
 disabled = false
 
 [hostname]
 ssh_only = true
-style = "bg:cyanblue"
-format = "[$ssh_symbol$hostname ](fg:eigengrau bg:cyanblue)"
+style = "bg:machine_info_bg"
+format = "[$ssh_symbol$hostname ](fg:machine_info_fg bg:machine_info_bg)"
 disabled = false
 ssh_symbol = " "
 
 [localip]
 ssh_only = true
-style = "bg:cyanblue"
-format = "[ $localipv4 ](fg:eigengrau bg:cyanblue)"
+style = "bg:machine_info_bg"
+format = "[ $localipv4 ](fg:machine_info_fg bg:machine_info_bg)"
 disabled = false
 
 [git_branch]
 always_show_remote = true
 format = "[ $symbol($remote_name:)$branch ]($style)"
 symbol = "\ue0a0"
-style = "bg:warmlightbrown"
+style = "bg:git_bg"
 
 [git_status]
-style = "bg:warmlightbrown"
+style = "bg:git_bg"
 format = '([$all_status$ahead_behind ]($style))'
-ahead = "[\uF01B ${count}](green bg:warmlightbrown)"
-behind = "[\uF01A ${count}](blue bg:warmlightbrown)"
-conflicted = "[ ](red bg:warmlightbrown)"
-deleted = "[\uf056 ](red bg:warmlightbrown)"
+ahead = "[\uF01B ${count}](git_ahead_fg bg:git_bg)"
+behind = "[\uF01A ${count}](git_behind_fg bg:git_bg)"
+conflicted = "[ ](fg:git_conflicted_fg bg:git_bg)"
+deleted = "[\uf056 ](fg:git_deleted_fg bg:git_bg)"
 diverged = "\uf47f \uF01B ${ahead_count}\uF01A ${behind_count}"
-modified = "[\uF06A ](wine bg:warmlightbrown)"
-renamed = "[\uf45a ](blue bg:warmlightbrown)"
-staged = '[落$count ](green bg:warmlightbrown)'
-stashed = "[\uF01C ](blue bg:warmlightbrown)"
-untracked = "[\uf059 ](yellow bg:warmlightbrown)"
-up_to_date = "[](green bg:warmlightbrown)"
+modified = "[\uF06A ](git_modified_fg bg:git_bg)"
+renamed = "[\uf45a ](git_renamed_fg bg:git_bg)"
+staged = '[落$count ](git_staged_fg bg:git_bg)'
+stashed = "[\uF01C ](git_stashed_fg bg:git_bg)"
+untracked = "[\uf059 ](git_untracked_fg bg:git_bg)"
+up_to_date = "[](git_uptodate_fg bg:git_bg)"
 
 [directory]
-style = "bg:lavender"
-read_only_style = "bg:lavender"
+style = "bg:directory_bg"
+read_only_style = "bg:directory_bg"
 format = "[ $path]($style)[$read_only]($read_only_style)"
 truncation_length = 3
 truncation_symbol = "…/"
@@ -146,272 +146,272 @@ read_only = " \ue0a2"
 
 # disabled modules (generally because I don't want the via ... whatever cluttering things)
 [aws]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [bun]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [buf]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [c]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [cmake]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = "喝"
 disabled = false
 
 [cobol]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 disabled = false
 
 [conda]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [container]
-style = "bg:lightteal"
+style = "bg:container_bg"
 format = "[ $symbol ]($style)"
 symbol = ""
 disabled = false
 
 [crystal]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 disabled = false
 
 [daml]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 disabled = false
 
 [dart]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [deno]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 disabled = false
 
 [dotnet]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol(🎯 $tfm )]($style)"
 disabled = false
 
 [docker_context]
-style = "bg:lightteal"
+style = "bg:container_bg"
 format = "[$symbol ]($style)"
 symbol = "  "
 disabled = false
 only_with_files = true
 
 [elixir]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [elm]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [erlang]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [golang]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [haskell]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [helm]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [hg_branch]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [java]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [julia]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [kotlin]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [lua]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [memory_usage]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [meson]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 disabled = false
 
 [nim]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [nix_shell]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [nodejs]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [ocaml]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol(\($switch_indicator$switch_name\) )]($style)'
 disabled = false
 
 [package]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [perl]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [php]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 disabled = false
 
 [pulumi]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol$stack]($style)'
 disabled = false
 
 [purescript]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [python]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [raku]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [red]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [rlang]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = "ﳒ"
 disabled = false
 
 [ruby]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [rust]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [scala]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [spack]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = "🅢"
 disabled = false
 
 [swift]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [vagrant]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = "[$symbol ]($style)"
 symbol = ""
 disabled = false
 
 [vlang]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
 [zig]
-style = "bg:seagull"
+style = "bg:tool_bg"
 format = '[$symbol ]($style)'
 disabled = false
 
@@ -457,14 +457,27 @@ disabled = false
 "temp" = " "
 
 [palettes.seth]
-cyanblue = "#a0d2eb"
-lavender = "#8458B3"
-warmlightbrown = "#a28089"
-seagull = "#86BBD8"
-lightteal = "#06969A"
-astral = "#33658A"
-eigengrau = "#16161d"
-grayblue = "#4f5f76"
-pinky = "#f2b1d8"
 burgundy = "#800020"
+container_bg = "#06969A"
+directory_bg = "#8458B3"
+duration_fg = "#E4D00A"
+error_fg = "#EE4B2B"
+git_ahead_fg = "#beed76"
+git_behind_fg = "#0096FF"
+git_bg = "#a28089"
+git_conflicted_fg = "#EE4B2B"
+git_deleted_fg = "#EE4B2B"
+git_modified_fg = "#A62349"
+git_renamed_fg = "#0096FF"
+git_staged_fg = "#beed76"
+git_stashed_fg = "#0096FF"
+git_untracked_fg = "#E4D00A"
+git_uptodate_fg = "#beed76"
+grayblue = "#4f5f76"
+machine_info_bg = "#a0d2eb"
+machine_info_fg = "#16161d"
+pinky = "#f2b1d8"
+status_bg = "#33658A"
+success_fg = "#beed76"
+tool_bg = "#86BBD8"
 wine = "#A62349"
