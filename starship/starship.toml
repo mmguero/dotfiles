@@ -3,7 +3,7 @@
 palette = "seth"
 
 format = """
-[\ue0ca ](fg:cyanblue)\
+[\ue0b6](fg:cyanblue)\
 $username\
 $hostname\
 $localip\

@@ -1488,7 +1488,6 @@ function InstallCommonPackagesGUI {
       brew install --cask barrier
       brew install --cask diskwave
       brew install --cask firefox
-      brew install --cask homebrew/cask-fonts/font-hack
       brew install --cask iterm2
       brew install --cask keepassxc
       brew install --cask libreoffice
@@ -2137,7 +2136,15 @@ EOX
 
 ################################################################################
 function InstallUserLocalFonts {
-  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
+  if [[ -n $MACOS ]]; then
+    unset CONFIRMATION
+    read -p "Install user-local fonts [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      brew install --cask font-hack-nerd-font
+    fi
+
+  elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
     unset CONFIRMATION
     read -p "Install user-local fonts [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
