@@ -452,7 +452,7 @@ function docker_backup() {
 function podman_backup() {
   for IMAGE in $(podman images | tail -n +2 | cols 1 2 | sed "s/ /:/"); do
     export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g')
-    podman save --compress --format docker-dir -o "$FN" "$IMAGE"
+    podman save --format oci-archive "$IMAGE" | pv | pigz > "$FN.tgz"
   done
 }
 
