@@ -7,15 +7,15 @@ format = """
 $username\
 $hostname\
 $localip\
-[\ue0c8](fg:machine_info_bg bg:directory_bg)\
+[\ue0b0](fg:machine_info_bg bg:directory_bg)\
 $directory\
-[\ue0c8](fg:directory_bg bg:git_bg)\
+[\ue0b0](fg:directory_bg bg:git_bg)\
 $git_branch\
 $git_commit\
 $git_state\
 $git_metrics\
 $git_status\
-[\ue0c8 ](fg:git_bg bg:tool_bg)\
+[\ue0b0 ](fg:git_bg bg:tool_bg)\
 $c\
 $cmake\
 $cobol\
@@ -63,15 +63,15 @@ $openstack\
 $azure\
 $crystal\
 $package\
-[\ue0c8](fg:tool_bg bg:container_bg)\
+[\ue0b0](fg:tool_bg bg:container_bg)\
 $container\
 $docker_context\
-[\ue0c8](fg:container_bg bg:status_bg)\
+[\ue0b0](fg:container_bg bg:status_bg)\
 $cmd_duration\
 $time\
 $character\
-[\ue0ca](fg:light_gray bg:status_bg)\
-[\ue0b4 ](fg:light_gray)\
+[\ue0b2](fg:status_bg bg:status_bg)\
+[\ue0b0 ](fg:status_bg)\
 """
 
 add_newline = false
