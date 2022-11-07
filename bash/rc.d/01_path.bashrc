@@ -11,6 +11,7 @@ if [[ $MACOS ]]; then
   [[ -d "/usr/local/opt/gnu-which/libexec/gnubin" ]]  && PATH="/usr/local/opt/gnu-which/libexec/gnubin:$PATH"
   [[ -d "/usr/local/opt/grep/libexec/gnubin" ]]       && PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
   [[ -d "/usr/local/opt/openssl@1.1/bin" ]]           && PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
+  [[ -d $HOME/tmp ]] && export TMPDIR="$HOME/tmp"
 fi
 
 if [[ $WINDOWS10 ]]; then
