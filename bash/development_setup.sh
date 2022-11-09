@@ -1761,6 +1761,7 @@ function InstallCommonPackagesNetworking {
           main/wget
           main/xh
           extras/stunnel
+          mmguero/fluent-bit
           smallstep/step
         )
         for i in ${SCOOP_PACKAGE_LIST[@]}; do
@@ -1864,9 +1865,10 @@ function InstallCommonPackagesNetworkingGUI {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       scoop bucket add extras
       SCOOP_PACKAGE_LIST=(
+        extras/filezilla
         extras/putty
         extras/winscp
-        extras/filezilla
+        mmguero/x2goclient
       )
       for i in ${SCOOP_PACKAGE_LIST[@]}; do
         scoop install "$i"
@@ -2342,7 +2344,6 @@ function InstallUserLocalBinaries {
         curl -L -J -O "https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v${OPENSHELL_RELEASE}/OpenShellSetup_$(echo "${OPENSHELL_RELEASE}" | sed 's/\./_/g').exe"
         curl -L -J -O 'https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Windows/synergy_windows_x64.msi'
         curl -L -J -O 'https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Windows/pCloud_Windows_x64.exe'
-        curl -L -J -O "$(curl -sSL "https://docs.fluentbit.io/manual/installation/windows" | grep -Pio "https://fluentbit.io/releases/[\d\.]+/fluent-bit-\d+\.\d+\.\d+-win64.exe" | sort -u | head -n 1)"
         echo "Some installers downloaded to \"$(pwd)\"" >&2
         popd >/dev/null 2>&1
     fi
