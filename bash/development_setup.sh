@@ -1382,6 +1382,7 @@ function InstallCommonPackages {
         localepurge
         lshw
         lsof
+        lz4
         make
         moreutils
         ninja-build
@@ -1413,6 +1414,7 @@ function InstallCommonPackages {
         unrar
         unzip
         vim-tiny
+        zip
         zlib1g
       )
 
