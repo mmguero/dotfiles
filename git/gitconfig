@@ -9,7 +9,7 @@
 [credential]
   helper = /usr/share/doc/git/contrib/credential/libsecret/git-credential-libsecret
 [pull]
-  rebase = true
+  rebase = false
   prune = true
   recurse-submodules = true
   autoStash = true
