@@ -99,15 +99,15 @@
     "name": "infosec wide",
     "sections": [
       {
-        "code": "\n/* Adjusts to remove horizontal scrollbar\n   in smaller window size (e.g. 1280x1024) */\n@media (min-width: 800px)\n  {\n    .wide .drawer {\n        min-width: 280px;\n  }\n}\n\n/* Adjusts to use up space in larger\n   window size (e.g. 1920x1080)      */\n@media (min-width: 1024px)\n{\n  .columns-area>div\n  {\n    width: 25%;\n    max-width: 25%;\n  }\n\n  .wide .drawer,\n    .wide .column,\n    .columns-area>div>.column,\n    .columns-area>div>.mastodon-column-container>.column,\n    .wide .columns-area:not(.columns-area--mobile) .column\n  {\n    max-width: 100%;\n    flex: auto;\n  }\n}",
+        "code": "\n/* Adjusts to remove horizontal scrollbar\n   in smaller window size (e.g. 1280x1024) */\n@media (min-width: 800px)\n  {\n    .wide .drawer {\n        min-width: 280px;\n  }\n}\n\n/* Adjusts to use up space in larger\n   window size (e.g. 1920x1080)      */\n@media (min-width: 1024px)\n{\n  .columns-area>div\n  {\n    width: 25%;\n    max-width: 25%;\n  }\n    \n  .drawer {\n    width: 280px;\n  }\n\n    .wide .column,\n    .columns-area>div>.column,\n    .columns-area>div>.mastodon-column-container>.column,\n    .wide .columns-area:not(.columns-area--mobile) .column\n  {\n    max-width: calc(100% - 280px);\n    flex: auto;\n  }\n}",
         "domains": [
           "infosec.exchange"
         ]
       }
     ],
-    "updateDate": 1668530436016,
+    "updateDate": 1668530826861,
     "_id": "5c142a88-5a45-4d38-b8ee-617318d34081",
-    "_rev": 1668530436016,
+    "_rev": 1668530826861,
     "id": 1
   }
 ]
