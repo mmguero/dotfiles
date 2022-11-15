@@ -1385,6 +1385,8 @@ function InstallCommonPackages {
         lz4
         make
         moreutils
+        musl
+        musl-tools
         ninja-build
         ntfs-3g
         openssl
