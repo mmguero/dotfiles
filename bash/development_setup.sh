@@ -2203,7 +2203,16 @@ function InstallUserLocalBinaries {
       # dra will be used to download other release/tag assets from GitHub
       DRA_RELEASE="$(_GitLatestRelease devmatteini/dra)"
       TMP_CLONE_DIR="$(mktemp -d)"
-      curl -sSL "https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}-x86_64-unknown-linux-gnu.tar.gz" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
+      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
+        if [[ "$LINUX_CPU" == "aarch64" ]]; then
+          DRA_URL="https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}-aarch64-unknown-linux-gnu.tar.gz"
+        else
+          DRA_URL="https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}-arm-unknown-linux-gnueabihf.tar.gz"
+        fi
+      else
+        DRA_URL="https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}-x86_64-unknown-linux-gnu.tar.gz"
+      fi
+      curl -sSL "$DRA_URL" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
       cp -f "${TMP_CLONE_DIR}"/dra "$LOCAL_BIN_PATH"/dra
       chmod 755 "$LOCAL_BIN_PATH"/dra
       rm -rf "$TMP_CLONE_DIR"
