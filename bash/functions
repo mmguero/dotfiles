@@ -650,7 +650,18 @@ function git_list_packages () {
       https://api.github.com/user/packages?package_type=container \
       | jq -r '.[] | .repository.full_name,.name' \
       | sed '$!N;s/\n/:/' \
+      | grep -Piv "(malcolm|network-architecture-verification-and-validation)" \
       | sort -f
+    if [[ -n $GITHUB_ORGS ]]; then
+      for ORG in $(echo "$GITHUB_ORGS" | sed "s/,/ /g"); do \
+        curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/orgs/$ORG/packages?package_type=container \
+              | jq -r '.[] | .repository.full_name,.name' \
+              | sed '$!N;s/\n/:/' \
+              | grep -Piv "(malcolm|network-architecture-verification-and-validation)" \
+              | sort -f
+      done
+    fi
   else
     echo "\$GITHUB_TOKEN not defined">&2
   fi
