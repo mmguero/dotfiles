@@ -1079,10 +1079,10 @@ function InstallVirtualization {
 
       elif command -v ${CONTAINER_ENGINE} >/dev/null 2>&1 ; then
         unset CONFIRMATION
-        read -p "Pull ghcr.io/mmguero/vagrant-libvirt:latest instead [Y/n]? " CONFIRMATION
+        read -p "Pull ghcr.io/mmguero-dev/vagrant-libvirt:latest instead [Y/n]? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-Y}
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          ${CONTAINER_ENGINE} pull ghcr.io/mmguero/vagrant-libvirt:latest
+          ${CONTAINER_ENGINE} pull ghcr.io/mmguero-dev/vagrant-libvirt:latest
         fi
       fi
     fi

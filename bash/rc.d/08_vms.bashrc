@@ -30,7 +30,7 @@ if [[ $LINUX ]]; then
         --pull=never \
         --entrypoint /bin/bash \
         --security-opt label=disable \
-        ghcr.io/mmguero/vagrant-libvirt:latest \
+        ghcr.io/mmguero-dev/vagrant-libvirt:latest \
         vagrant "$@"
     else
       $ENGINE run -it --rm \
@@ -44,7 +44,7 @@ if [[ $LINUX ]]; then
         -w "${PWD}" \
         --network host \
         --pull=never \
-        ghcr.io/mmguero/vagrant-libvirt:latest \
+        ghcr.io/mmguero-dev/vagrant-libvirt:latest \
         vagrant "$@"
     fi
   }
