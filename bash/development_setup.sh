@@ -631,7 +631,7 @@ function DockerPullImages {
         alpine:latest
         amazonlinux:2
         debian:stable-slim
-        ghcr.io/mmguero/debian:stable-slim
+        ghcr.io/mmguero/debian:latest
         ubuntu:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -661,6 +661,7 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
+        ghcr.io/mmguero/net-clients:latest
         ghcr.io/mmguero/nginx-ldap:latest
         ghcr.io/mmguero/stunnel:latest
         ghcr.io/mmguero/tunneler:latest
@@ -682,6 +683,7 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         andrewmackrodt/chromium-x11:latest
         ghcr.io/mmguero/firefox:latest
+        ghcr.io/mmguero/net-clients:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         ${CONTAINER_ENGINE} pull "$i"
