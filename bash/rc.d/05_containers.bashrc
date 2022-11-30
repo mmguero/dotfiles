@@ -4,6 +4,7 @@ export CONTAINER_SHARE_HOME=$HOME
 [[ -d "$CONTAINER_SHARE_HOME"/tmp ]] && export CONTAINER_SHARE_TMP="-v "$(realpath "$CONTAINER_SHARE_HOME"/tmp)":/host:rw"
 [[ -f "$CONTAINER_SHARE_HOME"/.bashrc ]] && export CONTAINER_SHARE_BASH_RC="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bashrc)":/etc/bash.bashrc:ro"
 [[ -d "$CONTAINER_SHARE_HOME"/.bashrc.d ]] && export CONTAINER_SHARE_BASH_RC_D="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bashrc.d)":/etc/bashrc.d:ro"
+[[ -d "$CONTAINER_SHARE_HOME"/.ssh ]] && export CONTAINER_SHARE_SSH="-v "$(realpath "$CONTAINER_SHARE_HOME"/.ssh)":"$CONTAINER_SHARE_HOME"/.ssh:ro"
 [[ -f "$CONTAINER_SHARE_HOME"/.bash_aliases ]] && export CONTAINER_SHARE_BASH_ALIASES="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bash_aliases)":/etc/bash.bash_aliases:ro"
 [[ -f "$CONTAINER_SHARE_HOME"/.bash_functions ]] && export CONTAINER_SHARE_BASH_FUNCTIONS="-v "$(realpath "$CONTAINER_SHARE_HOME"/.bash_functions)":/etc/bash.bash_functions:ro"
 [[ -f "$CONTAINER_SHARE_HOME"/.gitconfig ]] && export CONTAINER_SHARE_GIT_CONFIG="-v "$(realpath "$CONTAINER_SHARE_HOME"/.gitconfig)":/etc/gitconfig:ro"
@@ -230,6 +231,69 @@ function cyberchef() {
   $CONTAINER_ENGINE run -d --rm -p $CHEF_PORT:8000 --name cyberchef --pull=never mpepping/cyberchef && \
   o http://localhost:$CHEF_PORT
 }
+
+########################################################################
+# network misc.
+########################################################################
+
+function cssh() {
+  DIR="$(pwd)"
+
+  if [[ "$CONTAINER_ENGINE" == "podman" ]]; then
+    CONTAINER_PUID=0
+    CONTAINER_PGID=0
+  else
+    CONTAINER_PUID=$(id -u)
+    CONTAINER_PGID=$(id -g)
+  fi
+
+  $CONTAINER_ENGINE run -i -t --rm \
+    -e PUID=$CONTAINER_PUID \
+    -e PGID=$CONTAINER_PGID \
+    -u $CONTAINER_PUID:$CONTAINER_PGID \
+    -v "$DIR:$DIR:rw" \
+    $CONTAINER_SHARE_SSH \
+    -w "$DIR" \
+    --pull=never \
+    --entrypoint=ssh \
+    ghcr.io/mmguero/debian \
+    -F "$CONTAINER_SHARE_HOME"/.ssh/config \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    "$@"
+}
+function dssh() { CONTAINER_ENGINE=docker cssh "$@"; }
+function pssh() { CONTAINER_ENGINE=podman cssh "$@"; }
+
+function cclient() {
+  DIR="$(pwd)"
+
+  if [[ "$CONTAINER_ENGINE" == "podman" ]]; then
+    CONTAINER_PUID=0
+    CONTAINER_PGID=0
+  else
+    CONTAINER_PUID=$(id -u)
+    CONTAINER_PGID=$(id -g)
+  fi
+
+  if [[ "$1" ]]; then
+    CLIENT_EXE="$1"
+    shift
+  fi
+
+  $CONTAINER_ENGINE run -i -t --rm \
+    -e PUID=$CONTAINER_PUID \
+    -e PGID=$CONTAINER_PGID \
+    -u $CONTAINER_PUID:$CONTAINER_PGID \
+    -v "$DIR:$DIR:rw" \
+    -w "$DIR" \
+    --pull=never \
+    --entrypoint="$CLIENT_EXE" \
+    ghcr.io/mmguero/debian \
+    "$@"
+}
+function dclient() { CONTAINER_ENGINE=docker cclient "$@"; }
+function pclient() { CONTAINER_ENGINE=podman cclient "$@"; }
 
 ########################################################################
 # desktop
