@@ -352,6 +352,7 @@ function InstallEnvs {
           libxml2-dev \
           libxmlsec1-dev \
           llvm \
+          tk-dev \
           make \
           wget \
           xz-utils \
@@ -397,38 +398,40 @@ function InstallEnvPackages {
       python3 -m pip install -U pip
       python3 -m pip install -U wheel
       python3 -m pip install -U \
-        beautifulsoup4 \
+        arrow \
         black \
-        chepy[extras] \
         colorama \
         colored \
-        cryptography \
         Cython \
         dateparser \
+        dataset \
+        defopt \
         entrypoint2 \
         git+https://github.com/badele/gitcheck.git \
         git-up \
         humanhash3 \
-        jinja2 \
-        magic-wormhole \
+        more-itertools \
         mmguero \
-        nikola \
         patool \
-        Pillow \
         psutil \
         py-cui \
-        pyshark \
+        pyinputplus \
         python-dateutil \
         python-magic \
         python-slugify \
         pythondialog \
         pyunpack \
-        requests\[security\] \
+        rich \
         ruamel.yaml \
-        scapy \
-        urllib3
+        stackprinter \
+        tqdm \
+        typer[all]
 
-      [[ ! -d "$LOCAL_CONFIG_PATH"/chepy_plugins ]] && _GitClone https://github.com/securisec/chepy_plugins "$LOCAL_CONFIG_PATH"/chepy_plugins
+      if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
+        python3 -m pip install -U \
+          pyinotify \
+          sh
+      fi
     fi
 
     if command -v go >/dev/null 2>&1; then
@@ -1373,6 +1376,7 @@ function InstallCommonPackages {
         grep
         gzip
         htop
+        inotify-tools
         jq
         less
         libcap2-bin
@@ -1596,6 +1600,15 @@ function InstallCommonPackagesGUI {
     fi
 
   fi # Mac vs Linux
+
+  if python3 -m pip -V >/dev/null 2>&1 ; then
+    unset CONFIRMATION
+    read -p "Install common pip packages (GUI) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    [[ $CONFIRMATION =~ ^[Yy] ]] && \
+      python3 -m pip install -U \
+        customtkinter
+  fi
 }
 
 ################################################################################
@@ -1622,9 +1635,6 @@ function InstallCommonPackagesMedia {
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
       done
-      if python3 -m pip -V >/dev/null 2>&1 ; then
-        python3 -m pip install -U yt-dlp cleanvid monkeyplug montag-cleaner
-      fi
 
       unset CONFIRMATION
       read -p "Install common packages (media/GIMP) [Y/n]? " CONFIRMATION
@@ -1693,6 +1703,19 @@ function InstallCommonPackagesMedia {
       fi
     fi
   fi # Linux vs. MSYS
+
+  if python3 -m pip -V >/dev/null 2>&1 ; then
+    unset CONFIRMATION
+    read -p "Install common pip packages (media) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    [[ $CONFIRMATION =~ ^[Yy] ]] && \
+      python3 -m pip install -U \
+        cleanvid \
+        monkeyplug \
+        montag-cleaner \
+        Pillow \
+        yt-dlp
+  fi
 }
 
 ################################################################################
@@ -1791,6 +1814,20 @@ function InstallCommonPackagesNetworking {
     fi
 
   fi # Linux vs. MSYS
+
+  if python3 -m pip -V >/dev/null 2>&1 ; then
+    unset CONFIRMATION
+    read -p "Install common pip packages (network) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    [[ $CONFIRMATION =~ ^[Yy] ]] && \
+      python3 -m pip install -U \
+        beautifulsoup4 \
+        netmiko \
+        pyshark \
+        requests\[security\] \
+        scapy \
+        urllib3
+  fi
 }
 
 ################################################################################
@@ -1977,6 +2014,18 @@ function InstallCommonPackagesForensics {
     fi
 
   fi # Linux vs. MSYS
+
+  if python3 -m pip -V >/dev/null 2>&1 ; then
+    unset CONFIRMATION
+    read -p "Install common pip packages (forensics/security) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    [[ $CONFIRMATION =~ ^[Yy] ]] && \
+      python3 -m pip install -U \
+        chepy[extras] \
+        cryptography && \
+      [[ ! -d "$LOCAL_CONFIG_PATH"/chepy_plugins ]] && \
+        _GitClone https://github.com/securisec/chepy_plugins "$LOCAL_CONFIG_PATH"/chepy_plugins
+  fi
 }
 
 
