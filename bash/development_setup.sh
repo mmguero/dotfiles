@@ -416,6 +416,7 @@ function InstallEnvPackages {
         pyunpack \
         rich \
         ruamel.yaml \
+        snoop \
         stackprinter \
         tqdm \
         typer[all]
@@ -589,30 +590,50 @@ function InstallDocker {
 }
 
 ################################################################################
-function InstallDockerCompose {
+function InstallContainerCompose {
+
   if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
-    # install docker-compose, if needed
-    if ! docker-compose version >/dev/null 2>&1 ; then
-      unset CONFIRMATION
-      read -p "\"docker-compose version\" failed, attempt to install docker-compose [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-        DOCKER_COMPOSE_BIN=/usr/libexec/docker/cli-plugins/docker-compose
-        DOCKER_COMPOSE_URL="https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
-        $SUDO_CMD curl -L -o "$DOCKER_COMPOSE_BIN" "$DOCKER_COMPOSE_URL"
-        $SUDO_CMD chmod +x "$DOCKER_COMPOSE_BIN"
-        if "$DOCKER_COMPOSE_BIN" version >/dev/null 2>&1 ; then
-          $SUDO_CMD ln -s -r -f "$DOCKER_COMPOSE_BIN" /usr/local/bin/docker-compose
-        else
-          echo "Installing docker-compose failed" >&2
-          exit 1
-        fi
+    if command -v docker >/dev/null 2>&1 ; then
+      # install docker-compose, if needed
+      if ! docker-compose version >/dev/null 2>&1 ; then
+        unset CONFIRMATION
+        read -p "\"docker-compose version\" failed, attempt to install docker-compose [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
-      fi # docker-compose install confirmation check
-    else
-      echo "\"docker-compose\" is already installed!" >&2
-    fi # docker-compose install check
+          DOCKER_COMPOSE_BIN=/usr/libexec/docker/cli-plugins/docker-compose
+          DOCKER_COMPOSE_URL="https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
+          $SUDO_CMD curl -L -o "$DOCKER_COMPOSE_BIN" "$DOCKER_COMPOSE_URL"
+          $SUDO_CMD chmod +x "$DOCKER_COMPOSE_BIN"
+          if "$DOCKER_COMPOSE_BIN" version >/dev/null 2>&1 ; then
+            $SUDO_CMD ln -s -r -f "$DOCKER_COMPOSE_BIN" /usr/local/bin/docker-compose
+          else
+            echo "Installing docker-compose failed" >&2
+            exit 1
+          fi
+
+        fi # docker-compose install confirmation check
+      else
+        echo "\"docker-compose\" is already installed!" >&2
+      fi # docker-compose install check
+    fi
+
+    if command -v podman >/dev/null 2>&1 && \
+       python3 -m pip -V >/dev/null 2>&1; then
+      # install podman-compose, if needed
+      if ! podman-compose version >/dev/null 2>&1 ; then
+        unset CONFIRMATION
+        read -p "\"podman-compose version\" failed, attempt to install podman-compose [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          python3 -m pip install -U podman-compose
+        fi # podman-compose install confirmation check
+      else
+        echo "\"podman-compose\" is already installed!" >&2
+      fi # podman-compose install check
+    fi
+
   fi
 }
 
@@ -2842,7 +2863,7 @@ if (( $USER_FUNCTION_IDX == 0 )); then
   InstallCockpit
   InstallDocker
   InstallPodman
-  InstallDockerCompose
+  InstallContainerCompose
   DockerPullImages
   InstallVirtualization
   InstallCommonPackages
