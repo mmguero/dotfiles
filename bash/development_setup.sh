@@ -338,6 +338,7 @@ function InstallEnvs {
           libbz2-dev \
           libffi-dev \
           libfribidi-dev \
+          liblzma-dev \
           libncurses5-dev \
           libreadline-dev \
           libsqlite3-dev \
