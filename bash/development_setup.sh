@@ -1830,6 +1830,7 @@ function InstallCommonPackagesNetworking {
         beautifulsoup4 \
         netmiko \
         pyshark \
+        requests-html \
         requests\[security\] \
         scapy \
         urllib3
