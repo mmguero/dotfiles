@@ -396,10 +396,6 @@ function deblive() {
 function deblived() { CONTAINER_ENGINE=docker deblive "$@"; }
 function deblivep() { CONTAINER_ENGINE=podman deblive "$@"; }
 
-function debian() { crun "$@" ghcr.io/mmguero/debian; }
-function debiand() { CONTAINER_ENGINE=docker crun "$@" ghcr.io/mmguero/debian; }
-function debianp() { CONTAINER_ENGINE=podman crun "$@" ghcr.io/mmguero/debian; }
-
 ########################################################################
 # helper functions for docker / podman
 ########################################################################
@@ -442,6 +438,10 @@ function crun() {
 }
 function drun() { CONTAINER_ENGINE=docker crun "$@"; }
 function prun() { CONTAINER_ENGINE=podman crun "$@"; }
+
+function debian() { crun "$@" ghcr.io/mmguero/debian; }
+function debiand() { CONTAINER_ENGINE=docker crun "$@" ghcr.io/mmguero/debian; }
+function debianp() { CONTAINER_ENGINE=podman crun "$@" ghcr.io/mmguero/debian; }
 
 # compose
 function compose() {
