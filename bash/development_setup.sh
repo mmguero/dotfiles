@@ -337,22 +337,14 @@ function InstallEnvs {
           build-essential \
           libbz2-dev \
           libffi-dev \
-          libfreetype6-dev \
           libfribidi-dev \
-          libharfbuzz-dev \
-          libjpeg-dev \
-          liblcms2-dev \
           libncurses5-dev \
-          libopenjp2-7-dev \
           libreadline-dev \
           libsqlite3-dev \
           libssl-dev \
-          libtiff5-dev \
-          libwebp-dev \
           libxml2-dev \
           libxmlsec1-dev \
           llvm \
-          tk-dev \
           make \
           wget \
           xz-utils \
@@ -1607,7 +1599,10 @@ function InstallCommonPackagesGUI {
     CONFIRMATION=${CONFIRMATION:-N}
     [[ $CONFIRMATION =~ ^[Yy] ]] && \
       python3 -m pip install -U \
-        customtkinter
+        customtkinter && \
+        [[ -n $LINUX ]] && \
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+            tk-dev
   fi
 }
 
@@ -1714,7 +1709,17 @@ function InstallCommonPackagesMedia {
         monkeyplug \
         montag-cleaner \
         Pillow \
-        yt-dlp
+        yt-dlp && \
+        [[ -n $LINUX ]] && \
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+            libfreetype6-dev \
+            libharfbuzz-dev \
+            libjpeg-dev \
+            liblcms2-dev \
+            libopenjp2-7-dev \
+            libtiff5-dev \
+            libwebp-dev \
+            tk-dev
   fi
 }
 
