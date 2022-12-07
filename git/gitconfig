@@ -105,8 +105,10 @@
   # list/count extensions of tracked files
   ext = "!f() { BRNCH=$(git rev-parse --abbrev-ref HEAD) && git ls-tree -r \"$BRNCH\" --name-only | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n; }; f"
   # list/count extensions of untracked files (excluding ignored files)
+  un = !git ls-files --others --exclude-standard
   extun = !git ls-files --others --exclude-standard | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n
   # list/count extensions of untracked files (including ignored files)
+  una = !git ls-files --others
   extuna = !git ls-files --others | sed -n 's/..*\\.//p' | sort | uniq -c | sort -k1n
   # merge, no commit, no ff
   mrg = merge --no-commit --no-ff
