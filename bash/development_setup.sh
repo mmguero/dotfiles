@@ -414,6 +414,7 @@ function InstallEnvPackages {
         python-slugify \
         pythondialog \
         pyunpack \
+        pyyaml \
         rich \
         ruamel.yaml \
         snoop \
