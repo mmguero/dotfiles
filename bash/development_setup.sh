@@ -431,7 +431,7 @@ function InstallEnvPackages {
 
     if ruby -S gem -v >/dev/null 2>&1; then
       ruby -S gem install \
-        excon \
+        faraday \
         lru_redux
     fi
 
