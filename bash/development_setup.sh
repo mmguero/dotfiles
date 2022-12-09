@@ -429,6 +429,12 @@ function InstallEnvPackages {
       fi
     fi
 
+    if ruby -S gem -v >/dev/null 2>&1; then
+      ruby -S gem install \
+        excon \
+        lru_redux
+    fi
+
     if command -v go >/dev/null 2>&1; then
       go get -u -v github.com/rogpeppe/godef
       go get -u -v golang.org/x/tools/cmd/goimports
