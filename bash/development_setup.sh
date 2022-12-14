@@ -399,6 +399,7 @@ function InstallEnvPackages {
         dateparser \
         dataset \
         defopt \
+        dtrx \
         entrypoint2 \
         git+https://github.com/badele/gitcheck.git \
         git-up \

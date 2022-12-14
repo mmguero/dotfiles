@@ -180,30 +180,6 @@ function renmod() {
   mv -iv "$FILENAME" "$FILENAME.$TIMESTAMP"
 }
 
-function unp() {
-  for ARCHIVE_FILENAME in "$@"
-  do
-    TIMESTAMP=$(date -d @$(stat -c%Y "$ARCHIVE_FILENAME") +"%Y%m%d%H%M%S")
-    DEST_DIR="$(basename "$ARCHIVE_FILENAME")_$TIMESTAMP"
-    mkdir "$DEST_DIR" 2>/dev/null || {
-      DEST_DIR="$(mktemp -d -p . -t $(basename "$ARCHIVE_FILENAME")_XXXXXX)"
-    }
-    python -m pyunpack.cli -a "$ARCHIVE_FILENAME" "$DEST_DIR/"
-    DEST_DIR_CONTENTS=()
-    while IFS=  read -r -d $'\0'; do
-        DEST_DIR_CONTENTS+=("$REPLY")
-    done < <(find "$DEST_DIR" -mindepth 1 -maxdepth 1 -print0)
-    if [[ ${#DEST_DIR_CONTENTS[@]} -eq 1 ]]; then
-      (mv -n "$DEST_DIR"/* "$DEST_DIR"/.. >/dev/null 2>&1 && \
-         rmdir "$DEST_DIR" >/dev/null 2>&1 && \
-         echo "\"$ARCHIVE_FILENAME\" -> \"$(basename "${DEST_DIR_CONTENTS[0]}")\"" ) || \
-      echo "\"$ARCHIVE_FILENAME\" -> \"$DEST_DIR/\""
-    else
-      echo "\"$ARCHIVE_FILENAME\" -> \"$DEST_DIR/\""
-    fi
-  done
-}
-
 function upto() {
   local EXPRESSION="$1"
   if [ -z "$EXPRESSION" ]; then

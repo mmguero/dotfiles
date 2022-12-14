@@ -72,6 +72,7 @@ alias entropy='cat /proc/sys/kernel/random/entropy_avail'
 alias crocs='croc --yes'
 alias mine="sudo chown -R $USER:$USER"
 alias rgfile="cut -d: -f1 | sort -u"
+alias unp=dtrx
 
 #json/msgpack/xml/etc
 alias jsontool='python3 -mjson.tool'
