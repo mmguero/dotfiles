@@ -214,7 +214,7 @@ function ytplaylistmp3p() { ytplaylistp mp3 2 "$@"; }
 function signal() {
   mkdir -p "$HOME/.config/Signal"
   # --pulseaudio --webcam
-  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- ghcr.io/mmguero/signal </dev/null >/dev/null 2>&1 &
+  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER --workdir=/opt/Signal -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- ghcr.io/mmguero/signal </dev/null >/dev/null 2>&1 &
 }
 
 ########################################################################
