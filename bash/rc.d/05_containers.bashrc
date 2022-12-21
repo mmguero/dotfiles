@@ -207,7 +207,7 @@ function ytplaylistmp3p() { ytplaylistp mp3 2 "$@"; }
 #}
 
 #function teams() {
-#  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --alsa --webcam --hostuser=$USER -- "--tmpfs" "/dev/shm" -- ghcr.io/mmguero/teams "$@" </dev/null >/dev/null 2>&1 &
+#  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --alsa --webcam --hostuser=$USER --workdir=/usr/share/teams -- "--tmpfs" "/dev/shm" -- ghcr.io/mmguero/teams "$@" </dev/null >/dev/null 2>&1 &
 #}
 
 # signal (ghcr.io/mmguero/signal) via x11docker
@@ -221,9 +221,9 @@ function signal() {
 # web
 ########################################################################
 # tor (jess/tor-browser) via x11docker
-function tor() {
-  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER -- "--tmpfs" "/dev/shm" -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
-}
+# function tor() {
+#  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER -- "--tmpfs" "/dev/shm" -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
+#}
 
 # cyberchef (mpepping/cyberchef) containerized
 function cyberchef() {
@@ -299,15 +299,15 @@ function pclient() { CONTAINER_ENGINE=podman cclient "$@"; }
 # desktop
 ########################################################################
 # kodi (erichough/kodi) via x11docker
-function kodi() {
-  if [[ "$1" ]]; then
-    MEDIA_FOLDER="$1"
-    shift
-  else
-    MEDIA_FOLDER="$(realpath $(pwd))"
-  fi
-  nohup x11docker --backend=$CONTAINER_ENGINE --home "$HOME/.config/kodi" --network --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
-}
+# function kodi() {
+#   if [[ "$1" ]]; then
+#     MEDIA_FOLDER="$1"
+#     shift
+#   else
+#     MEDIA_FOLDER="$(realpath $(pwd))"
+#   fi
+#   nohup x11docker --backend=$CONTAINER_ENGINE --home "$HOME/.config/kodi" --network --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
+# }
 
 # full XFCE-based desktop (ghcr.io/mmguero/xfce) via x11docker
 function x11desktop() {
