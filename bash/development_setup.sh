@@ -735,7 +735,6 @@ function DockerPullImages {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         ghcr.io/mmguero/xfce-base:latest
-        ghcr.io/mmguero/xfce-ext:latest
         ghcr.io/mmguero/xfce:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
