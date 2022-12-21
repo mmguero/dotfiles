@@ -59,7 +59,11 @@ function audacityd() {
       DOCS_FOLDER="$(realpath "$1")"
     fi
   fi
-  x11docker --backend=$CONTAINER_ENGINE --alsa $(find /dev/snd/ -type c | sed 's/^/--share /') --workdir=/Audio -- "-v" "$DOCS_FOLDER:/Audio" -- ghcr.io/mmguero/audacity
+  if [[ "$(realpath "$DOCS_FOLDER")" == "$(realpath "$HOME")" ]]; then
+    echo "\$DOCS_FOLDER needs to be a directory other than \"$HOME\"" >&2
+  else
+    x11docker --backend=$CONTAINER_ENGINE --alsa $(find /dev/snd/ -type c | sed 's/^/--share /') --workdir=/Audio -- "-v" "$DOCS_FOLDER:/Audio" -- ghcr.io/mmguero/audacity
+  fi
 }
 
 # losslesscut (ghcr.io/mmguero/lossless-cut) via x11docker
@@ -72,7 +76,11 @@ function losslesscut() {
       DOCS_FOLDER="$(realpath "$1")"
     fi
   fi
-  nohup x11docker --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- ghcr.io/mmguero/lossless-cut </dev/null >/dev/null 2>&1 &
+  if [[ "$(realpath "$DOCS_FOLDER")" == "$(realpath "$HOME")" ]]; then
+    echo "\$DOCS_FOLDER needs to be a directory other than \"$HOME\"" >&2
+  else
+    nohup x11docker --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- ghcr.io/mmguero/lossless-cut </dev/null >/dev/null 2>&1 &
+  fi
 }
 
 function fluentbit() {
