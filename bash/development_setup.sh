@@ -722,7 +722,7 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        woahbase/alpine-libreoffice:latest
+        lscr.io/linuxserver/libreoffice:latest
         ghcr.io/mmguero/gimp:LATEST
       )
       for i in ${DOCKER_IMAGES[@]}; do
