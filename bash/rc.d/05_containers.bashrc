@@ -22,7 +22,7 @@ export DBX_NON_INTERACTIVE="0"
 # If you're using just podman, you could uncomment this to have
 # docker/podman clients work more cleanly together. See the
 # compose() function for how I'm dealing with this for docker-compose
-# specifically, which now supports docker-compose.
+# specifically, which is now supported by podman.
 #
 # command -v podman >/dev/null 2>&1 && \
 #   [[ -n "$UID" ]] && \
@@ -220,11 +220,6 @@ function signal() {
 ########################################################################
 # web
 ########################################################################
-# tor (jess/tor-browser) via x11docker
-# function tor() {
-#  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER -- "--tmpfs" "/dev/shm" -- jess/tor-browser "$@" </dev/null >/dev/null 2>&1 &
-#}
-
 # cyberchef (mpepping/cyberchef) containerized
 function cyberchef() {
   CHEF_PORT="${1:-8000}"
@@ -298,17 +293,6 @@ function pclient() { CONTAINER_ENGINE=podman cclient "$@"; }
 ########################################################################
 # desktop
 ########################################################################
-# kodi (erichough/kodi) via x11docker
-# function kodi() {
-#   if [[ "$1" ]]; then
-#     MEDIA_FOLDER="$1"
-#     shift
-#   else
-#     MEDIA_FOLDER="$(realpath $(pwd))"
-#   fi
-#   nohup x11docker --backend=$CONTAINER_ENGINE --home "$HOME/.config/kodi" --network --gpu --pulseaudio -- "-v"$MEDIA_FOLDER":/Media:ro" -- erichough/kodi "$@" </dev/null >/dev/null 2>&1 &
-# }
-
 # full XFCE-based desktop (ghcr.io/mmguero/xfce) via x11docker
 function x11desktop() {
   if [[ "$CONTAINER_ENGINE" == "docker" ]]; then

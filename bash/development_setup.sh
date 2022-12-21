@@ -670,10 +670,10 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        erichough/kodi:latest
         ghcr.io/mmguero/cleanvid:latest
         ghcr.io/mmguero/lossless-cut:latest
         ghcr.io/mmguero/montag:latest
+        ghcr.io/mmguero/monkeyplug:small
         jess/spotify:latest
         mwader/static-ffmpeg:latest
       )
@@ -694,6 +694,7 @@ function DockerPullImages {
         ghcr.io/mmguero/wireproxy:latest
         haugene/transmission-openvpn:latest
         nginx:latest
+        osminogin/tor-simple:latest
         traefik/whoami:latest
         traefik:latest
       )
@@ -722,7 +723,7 @@ function DockerPullImages {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         woahbase/alpine-libreoffice:latest
-        woahbase/alpine-gimp:latest
+        ghcr.io/mmguero/gimp:LATEST
       )
       for i in ${DOCKER_IMAGES[@]}; do
         ${CONTAINER_ENGINE} pull "$i"
@@ -760,7 +761,7 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        ghcr.io/mmguero/mattermost-server:latest
+        ghcr.io/mmguero/mattermost:latest
         ghcr.io/mmguero/mirotalk:latest
         ghcr.io/mmguero/postgres:latest
         ghcr.io/mmguero/signal:latest
@@ -779,7 +780,7 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         ghcr.io/mmguero/capa:latest
         ghcr.io/mmguero/zeek:latest
-        ghcr.io/idaholab/navv:latest
+        ghcr.io/cisagov/network-architecture-verification-and-validation
         mpepping/cyberchef:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -1127,6 +1128,7 @@ function InstallVirtualization {
         vagrant-reload
         vagrant-scp
         vagrant-sshfs
+        vagrant-vbguest
       )
       for i in ${VAGRANT_PLUGINS[@]}; do
         if (( "$( vagrant plugin list | grep -c "^$i " )" == 0 )); then
@@ -1141,11 +1143,10 @@ function InstallVirtualization {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       VAGRANT_BOXES=(
-        bento/almalinux-8
+        bento/amazonlinux-2
         bento/debian-11
-        bento/ubuntu-21.10
+        bento/ubuntu-22.04
         clink15/pxe
-        gbailey/amzn2
       )
       for i in ${VAGRANT_BOXES[@]}; do
         if (( "$( vagrant box list | grep -c "^$i " )" == 0 )); then
