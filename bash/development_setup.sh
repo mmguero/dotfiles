@@ -656,6 +656,7 @@ function DockerPullImages {
         alpine:latest
         amazonlinux:2
         debian:stable-slim
+        bitnami/minideb:latest
         ghcr.io/mmguero/debian:latest
         ubuntu:latest
       )
