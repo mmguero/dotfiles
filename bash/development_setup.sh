@@ -1541,19 +1541,18 @@ function InstallCommonPackagesGUI {
       SCOOP_PACKAGE_LIST=(
         main/msys2
         extras/bulk-crap-uninstaller
-        extras/conemu
         extras/cpu-z
         extras/meld
         extras/sublime-text
         extras/sumatrapdf
         extras/sysinternals
+        extras/vceredist2022
         extras/win32-disk-imager
+        extras/windows-terminal
       )
       for i in ${SCOOP_PACKAGE_LIST[@]}; do
         scoop install "$i"
       done
-      echo "conemu task for $MSYSTEM:" >&2
-      echo "set \"PATH=%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin;%PATH%\" & set CHERE_INVOKING=1 & set MSYSTEM=$MSYSTEM & set MSYS2_PATH_TYPE=inherit & set MSYS=winsymlinks:nativestrict & set LC_ALL=C.UTF-8 & set LANG=C.UTF-8 & \"%homedrive%%homepath%\scoop\apps\conemu\current\ConEmu\conemu-msys2-64.exe\" \"%homedrive%%homepath%\scoop\apps\msys2\current\usr\bin\bash.exe\" --login -i -new_console:p" >&2
     fi
 
     unset CONFIRMATION
