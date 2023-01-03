@@ -8,6 +8,7 @@ format = """
 $username\
 $hostname\
 $localip\
+$os\
 [\ue0b0](fg:machine_info_bg bg:directory_bg)\
 $directory\
 [\ue0b0](fg:directory_bg bg:git_bg)\
@@ -94,6 +95,11 @@ disabled = false
 time_format = "%R"
 style = "bg:status_bg"
 format = '[  $time ]($style)'
+
+[os]
+disabled = false
+style = "bg:machine_info_bg"
+format = '[$symbol]($style)'
 
 [username]
 show_always = false
