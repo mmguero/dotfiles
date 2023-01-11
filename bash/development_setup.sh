@@ -2539,6 +2539,9 @@ function SetupGroupsAndSudo {
 %netdev ALL=(root) NOPASSWD: /usr/local/bin/wwg.sh
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 %cryptkeeper ALL=(root) NOPASSWD:/usr/bin/veracrypt
+%docker ALL=(root) NOPASSWD: /usr/local/bin/k3s
+%docker ALL=(root) NOPASSWD: /usr/local/bin/kubectl
+%docker ALL=(root) NOPASSWD: /usr/local/bin/crictl
 EOT
         $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
       fi # confirmation on group stuff

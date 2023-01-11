@@ -204,7 +204,11 @@ function ytplaylistmp3p() { ytplaylistp mp3 2 "$@"; }
 ########################################################################
 # kubernetes
 ########################################################################
-alias kc="sudo kubectl"
+if [[ -f /usr/local/bin/k3s ]]; then
+  alias k3s="sudo /usr/local/bin/k3s"
+  alias kubectl="sudo /usr/local/bin/kubectl"
+  alias crictl="sudo /usr/local/bin/crictl"
+fi
 
 ########################################################################
 # communications
