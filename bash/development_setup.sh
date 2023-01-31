@@ -1276,6 +1276,7 @@ function InstallCommonPackages {
       #   PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
       brew install grep
 
+      brew install detox
       brew install gzip
       brew install htop
       brew install iproute2mac
@@ -1400,6 +1401,7 @@ function InstallCommonPackages {
         cpio
         cryptmount
         cryptsetup
+        detox
         dialog
         diffutils
         dirmngr
