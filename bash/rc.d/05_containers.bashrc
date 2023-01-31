@@ -244,6 +244,33 @@ function cyberchef() {
   o http://localhost:$CHEF_PORT
 }
 
+function carbonyl() {
+  ENGINE="${CONTAINER_ENGINE:-docker}"
+
+  DOWNLOAD_DIR="$(type xdg-user-dir >/dev/null 2>&1 && xdg-user-dir DOWNLOAD || echo "$HOME/Downloads")"
+
+  mkdir -p "$DOWNLOAD_DIR"
+
+  # for audio with pulse it's sort of a pain. i haven't been able to get auth to work right, however this works:
+  # 1. install paprefs
+  # 2. Network Server tab
+  #    - Enable network access to local sound devices
+  #    - Don't require authentication
+  # 3. Use a firewall so as to not allow 4713 from other than localhost
+
+  $ENGINE run -ti --rm \
+    --net=host \
+    -v "$DOWNLOAD_DIR:/home/carbonyl/Downloads" \
+    -v /dev/shm:/dev/shm \
+    -v /etc/machine-id:/etc/machine-id:ro \
+    -v /etc/localtime:/etc/localtime:ro \
+    -v /etc/timezone:/etc/timezone:ro \
+    -e TZ="$(head -n 1 /etc/timezone)" \
+    -e PULSE_SERVER=tcp:localhost:4713 \
+    --name carbonyl \
+    docker.io/fathyb/carbonyl:latest "$@"
+}
+
 ########################################################################
 # network misc.
 ########################################################################

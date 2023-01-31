@@ -738,6 +738,7 @@ function DockerPullImages {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         andrewmackrodt/chromium-x11:latest
+        fathyb/carbonyl:latest
         ghcr.io/mmguero/firefox:latest
         ghcr.io/mmguero/net-clients:latest
       )
