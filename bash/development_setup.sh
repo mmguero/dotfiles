@@ -375,6 +375,11 @@ function InstallEnvs {
       fi
     done
     _EnvSetup
+
+    if [[ ${ENVS_INSTALLED[python]} = 'true' ]] && python3 -m pip -V >/dev/null 2>&1; then
+      python3 -m pip install -U pip
+      python3 -m pip install -U wheel
+    fi
   fi
 }
 
