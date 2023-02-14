@@ -378,6 +378,7 @@ function InstallEnvs {
 
     if [[ ${ENVS_INSTALLED[python]} = 'true' ]] && python3 -m pip -V >/dev/null 2>&1; then
       python3 -m pip install -U pip
+      python3 -m pip install -U setuptools
       python3 -m pip install -U wheel
     fi
   fi
@@ -394,6 +395,7 @@ function InstallEnvPackages {
 
     if python3 -m pip -V >/dev/null 2>&1; then
       python3 -m pip install -U pip
+      python3 -m pip install -U setuptools
       python3 -m pip install -U wheel
       python3 -m pip install -U \
         arrow \
