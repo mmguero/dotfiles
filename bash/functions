@@ -341,7 +341,7 @@ function aptsize() {
 # python package management
 ########################################################################
 function pipup() {
-  python3 -m pip list --outdated --format=json | jq -r '.[] | "\(.name)==\(.latest_version)"' | cut -d = -f 1  | xargs -r -n1 $PIPBIN install -U
+  python3 -m pip list --outdated --format=json | jq -r '.[] | "\(.name)==\(.latest_version)"' | cut -d = -f 1  | xargs -r -n1 python3 -m pip install --upgrade
 }
 
 ########################################################################
