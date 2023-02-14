@@ -2430,7 +2430,7 @@ function InstallUserLocalBinaries {
             "starship/starship|starship-x86_64-unknown-linux-gnu.tar.gz|/tmp/starship.tar.gz"
             "timvisee/ffsend|ffsend-v{tag}-linux-x64-static|$LOCAL_BIN_PATH/ffsend|755"
             "tomnomnom/gron|gron-linux-amd64-{tag}.tgz|/tmp/gron.tgz"
-            "watchexec/watchexec|watchexec-{tag}-x86_64-unknown-linux-gnu.tar.xz|/tmp/watchexec.tar.xz"
+            "watchexec/watchexec|watchexec-{tag}-x86_64-unknown-linux-musl.tar.xz|/tmp/watchexec.tar.xz"
             "Wilfred/difftastic|difft-x86_64-unknown-linux-gnu.tar.gz|/tmp/difft.tar.gz"
           )
         fi
