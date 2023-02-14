@@ -380,6 +380,7 @@ function InstallEnvs {
       python3 -m pip install -U pip
       python3 -m pip install -U setuptools
       python3 -m pip install -U wheel
+      asdf reshim python
     fi
   fi
 }
@@ -397,6 +398,7 @@ function InstallEnvPackages {
       python3 -m pip install -U pip
       python3 -m pip install -U setuptools
       python3 -m pip install -U wheel
+      asdf reshim python
       python3 -m pip install -U \
         arrow \
         black \
