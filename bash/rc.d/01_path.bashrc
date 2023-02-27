@@ -14,12 +14,16 @@ if [[ $MACOS ]]; then
 fi
 
 if [[ $WINDOWS10 ]]; then
-  command -v cygpath >/dev/null 2>&1 && \
-    [[ -n $USERPROFILE ]] && \
-    [[ -d "$(cygpath -u $USERPROFILE)"/scoop/shims ]] && \
-    PATH="$(cygpath -u $USERPROFILE)"/scoop/shims:"$PATH"
-    [[ -d "$(cygpath -u $USERPROFILE)"/scoop/apps/python/current/Scripts ]] && \
-    PATH="$(cygpath -u $USERPROFILE)"/scoop/apps/python/current/Scripts:"$PATH"
+  if command -v cygpath >/dev/null 2>&1; then
+    if [[ -n $USERPROFILE ]]; then
+      [[ -d "$(cygpath -u $USERPROFILE)"/scoop/shims ]] && \
+        PATH="$(cygpath -u $USERPROFILE)"/scoop/shims:"$PATH"
+      [[ -d "$(cygpath -u $USERPROFILE)"/scoop/apps/python/current/Scripts ]] && \
+        PATH="$(cygpath -u $USERPROFILE)"/scoop/apps/python/current/Scripts:"$PATH"
+    fi
+    [[ -d "$(cygpath -u $SYSTEMROOT)"/System32/OpenSSH ]] && \
+      PATH="$(cygpath -u $SYSTEMROOT)"/System32/OpenSSH:"$PATH"
+  fi
 fi
 
 [[ -d /snap/bin ]] && PATH="/snap/bin:$PATH"
