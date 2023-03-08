@@ -1395,6 +1395,7 @@ function InstallCommonPackages {
         autoconf
         automake
         bash
+        bash-completion
         bc
         binutils
         bison

@@ -81,6 +81,11 @@ function o() {
 if [[ $LINUX ]]; then
 
   [[ -r "/etc/bash_completion" ]] && . "/etc/bash_completion"
+  if [[ -d "/etc/bash_completion.d" ]]; then
+    for file in "/etc/bash_completion.d"/*; do
+      source "$file"
+    done
+  fi
 
   if [[ $TILIX_ID ]] || [[ $VTE_VERSION ]]; then
     [[ -r "/etc/profile.d/vte.sh" ]] && . "/etc/profile.d/vte.sh" || . /etc/profile.d/vte-*.sh
