@@ -533,11 +533,6 @@ function InstallDocker {
       echo "\"docker-edge\" is already installed!" >&2
     fi # docker-edge install check
 
-    unset CONFIRMATION
-    read -p "Install Helm [y/N]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-N}
-    [[ $CONFIRMATION =~ ^[Yy] ]] && brew install helm
-
   elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
     # install docker-ce, if needed
@@ -607,6 +602,48 @@ function InstallDocker {
     [[ $CONFIRMATION =~ ^[Yy] ]] && \
         curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sh -s -- -p "$LOCAL_BIN_PATH"
 
+  fi # MacOS vs. Linux for docker
+}
+
+################################################################################
+function InstallKubernetes {
+
+  unset CONFIRMATION
+  read -p "Install k3sup [y/N]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-N}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    curl -sLS https://get.k3sup.dev | sed "s@/usr/local/bin@$LOCAL_BIN_PATH@g"| sh -
+  fi
+
+  if [[ -n $MACOS ]]; then
+
+    unset CONFIRMATION
+    read -p "Install kubernetes-cli [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    [[ $CONFIRMATION =~ ^[Yy] ]] && brew install kubernetes-cli
+
+    unset CONFIRMATION
+    read -p "Install Helm [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    [[ $CONFIRMATION =~ ^[Yy] ]] && brew install helm
+
+  elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
+
+    unset CONFIRMATION
+    read -p "Install K3s [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      curl -sfL https://get.k3s.io | sh -
+
+    else
+      unset CONFIRMATION
+      read -p "Install kubernetes-kubectl [y/N]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y kubernetes-kubectl
+      fi
+    fi # k3s/kubernetes-kubectl confirmation
+
     unset CONFIRMATION
     read -p "Install Helm [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
@@ -624,13 +661,6 @@ function InstallDocker {
       chmod 755 "$LOCAL_BIN_PATH"/helm
       rm -rf "$TMP_CLONE_DIR"
     fi # helm confirmation
-
-    unset CONFIRMATION
-    read -p "Install K3S [y/N]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-N}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      curl -sfL https://get.k3s.io | sh -
-    fi # k3s confirmation
 
   fi # MacOS vs. Linux for docker
 }
@@ -2922,6 +2952,7 @@ if (( $USER_FUNCTION_IDX == 0 )); then
   InstallDocker
   InstallPodman
   InstallContainerCompose
+  InstallKubernetes
   DockerPullImages
   InstallVirtualization
   InstallCommonPackages

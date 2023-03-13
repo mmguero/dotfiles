@@ -26,6 +26,7 @@ if [[ $LINUX ]]; then
         -v "$MOUNT_HOME"/tmp:/.vagrant.d/tmp \
         -v "$(realpath "${PWD}")":"${PWD}" \
         -w "${PWD}" \
+        $CONTAINER_SHARE_TMP \
         --network host \
         --pull=never \
         --entrypoint /bin/bash \
@@ -42,6 +43,7 @@ if [[ $LINUX ]]; then
         -v "${VAGRANT_HOME:-$HOME/.vagrant.d}":/.vagrant.d \
         -v "$(realpath "${PWD}")":"${PWD}" \
         -w "${PWD}" \
+        $CONTAINER_SHARE_TMP \
         --network host \
         --pull=never \
         ghcr.io/mmguero-dev/vagrant-libvirt:latest \
