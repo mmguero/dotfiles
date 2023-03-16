@@ -75,6 +75,7 @@ ENV_LIST=(
   sqlite
   starship
   step
+  stern
   tmux
   viddy
   websocat
@@ -663,6 +664,19 @@ function InstallKubernetes {
     fi # helm confirmation
 
   fi # MacOS vs. Linux for docker
+
+  _EnvSetup
+  if command -v kubectl >/dev/null 2>&1 && command -v asdf >/dev/null 2>&1; then
+    unset CONFIRMATION
+    read -p "Install stern (via asdf) [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      asdf plugin update stern
+      asdf install stern latest
+      asdf global stern latest
+      asdf reshim stern
+    fi
+  fi
 }
 
 ################################################################################
@@ -2399,6 +2413,7 @@ function InstallUserLocalBinaries {
               "sharkdp/fd|fd-v{tag}-aarch64-unknown-linux-gnu.tar.gz|/tmp/fd.tar.gz"
               "smallstep/cli|step_linux_{tag}_arm64.tar.gz|/tmp/step.tar.gz"
               "starship/starship|starship-aarch64-unknown-linux-musl.tar.gz|/tmp/starship.tar.gz"
+              "stern/stern|stern_{tag}_linux_arm64.tar.gz|/tmp/stern.tar.gz"
               "tomnomnom/gron|gron-linux-arm64-{tag}.tgz|/tmp/gron.tgz"
               "watchexec/watchexec|watchexec-{tag}-aarch64-unknown-linux-musl.tar.xz|/tmp/watchexec.tar.xz"
             )
@@ -2442,6 +2457,7 @@ function InstallUserLocalBinaries {
               "sharkdp/fd|fd-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/fd.tar.gz"
               "smallstep/cli|step_linux_{tag}_armv7.tar.gz|/tmp/step.tar.gz"
               "starship/starship|starship-arm-unknown-linux-musleabihf.tar.gz|/tmp/starship.tar.gz"
+              "stern/stern|stern_{tag}_linux_arm.tar.gz|/tmp/stern.tar.gz"
               "watchexec/watchexec|watchexec-{tag}-armv7-unknown-linux-gnueabihf.tar.xz|/tmp/watchexec.tar.xz"
             )
           fi
@@ -2468,6 +2484,7 @@ function InstallUserLocalBinaries {
             "sharkdp/fd|fd-v{tag}-x86_64-unknown-linux-gnu.tar.gz|/tmp/fd.tar.gz"
             "smallstep/cli|step_linux_{tag}_amd64.tar.gz|/tmp/step.tar.gz"
             "starship/starship|starship-x86_64-unknown-linux-gnu.tar.gz|/tmp/starship.tar.gz"
+            "stern/stern|stern_{tag}_linux_amd64.tar.gz|/tmp/stern.tar.gz"
             "timvisee/ffsend|ffsend-v{tag}-linux-x64-static|$LOCAL_BIN_PATH/ffsend|755"
             "tomnomnom/gron|gron-linux-amd64-{tag}.tgz|/tmp/gron.tgz"
             "watchexec/watchexec|watchexec-{tag}-x86_64-unknown-linux-musl.tar.xz|/tmp/watchexec.tar.xz"
@@ -2582,9 +2599,6 @@ function SetupGroupsAndSudo {
 %netdev ALL=(root) NOPASSWD: /usr/local/bin/wwg.sh
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 %cryptkeeper ALL=(root) NOPASSWD:/usr/bin/veracrypt
-%docker ALL=(root) NOPASSWD: /usr/local/bin/k3s
-%docker ALL=(root) NOPASSWD: /usr/local/bin/kubectl
-%docker ALL=(root) NOPASSWD: /usr/local/bin/crictl
 EOT
         $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
       fi # confirmation on group stuff
