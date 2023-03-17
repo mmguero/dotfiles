@@ -137,6 +137,8 @@
   upall = "!f() { find . -type d -name .git -print0 | xargs -r -0 -I XXX bash -c 'pushd \"XXX\"/../ >/dev/null 2>&1 && echo && printf '=%.0s' {1..60} && echo && pwd && ((git up; echo; git status -u no; echo; gitcheck -vr) | grep -Pv \"(Updating.*remotes|\\S+\\s+up to date|On branch\\s+\\S+|Fetching\\s+\\S+|Your branch is up to date|nothing to commit)\" | grep . ) && popd >/dev/null' ; }; f "
   # unstage
   unstage = reset HEAD --
+  # revert a particular commit for a particular file (https://stackoverflow.com/a/7196615)
+  revfile = "!f() { git show \"$1\" -- \"$2\" | git apply -R; }; f"
   # upstream (the non-current remote) integrate
   upstreamintegrate = "!f() { RMT=$(git branch -vv | grep \"^\\*\" | cut -d \"[\" -f2 | cut -d \"]\" -f1 | cut -d \"/\" -f1) && UPS=$(git branch -vvr | grep -Pv \"^\\s*$RMT\" | cut -d \"/\" -f1 | sort -u | head -n 1 | tr -d \" \") && BRNCH=$(git rev-parse --abbrev-ref HEAD) && echo && gitcheck -v -r && echo && echo "git pull --no-rebase $UPS $BRNCH" && git pull --no-rebase $UPS $BRNCH && echo "git push $RMT $BRNCH" && git push $RMT $BRNCH && echo && gitcheck -v -r; }; f"
   # make a single-branch clone get all branches
