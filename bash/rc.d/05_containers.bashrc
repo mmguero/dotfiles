@@ -79,7 +79,7 @@ function losslesscut() {
   if [[ "$(realpath "$DOCS_FOLDER")" == "$(realpath "$HOME")" ]]; then
     echo "\$DOCS_FOLDER needs to be a directory other than \"$HOME\"" >&2
   else
-    nohup x11docker --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- ghcr.io/mmguero/lossless-cut </dev/null >/dev/null 2>&1 &
+    nohup x11docker --no-entrypoint --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- ghcr.io/mmguero/lossless-cut /opt/LosslessCut-linux-x64/losslesscut --no-sandbox </dev/null >/dev/null 2>&1 &
   fi
 }
 
