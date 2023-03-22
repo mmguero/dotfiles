@@ -1198,6 +1198,17 @@ function InstallVirtualization {
       fi
     fi
 
+    # install Vagrant
+    unset CONFIRMATION
+    read -p "Download latest version of LINBIT/virter from GitHub [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      curl -L -o "${LOCAL_BIN_PATH}"/virter.new "https://github.com/LINBIT/virter/releases/latest/download/virter-linux-amd64"
+      chmod 755 "${LOCAL_BIN_PATH}"/virter.new
+      rm -f "${LOCAL_BIN_PATH}"/virter
+      mv "${LOCAL_BIN_PATH}"/virter.new "${LOCAL_BIN_PATH}"/virter
+    fi
+
   fi # MacOS vs. Linux for virtualbox/kvm/vagrant
 
   # see if we want to install vagrant plugins
