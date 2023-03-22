@@ -1207,6 +1207,15 @@ function InstallVirtualization {
       chmod 755 "${LOCAL_BIN_PATH}"/virter.new
       rm -f "${LOCAL_BIN_PATH}"/virter
       mv "${LOCAL_BIN_PATH}"/virter.new "${LOCAL_BIN_PATH}"/virter
+      unset CONFIRMATION
+      read -p "Download latest version of LINBIT/vmshed from GitHub [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        curl -L -o "${LOCAL_BIN_PATH}"/vmshed.new "https://github.com/LINBIT/vmshed/releases/latest/download/vmshed-linux-amd64"
+        chmod 755 "${LOCAL_BIN_PATH}"/vmshed.new
+        rm -f "${LOCAL_BIN_PATH}"/vmshed
+        mv "${LOCAL_BIN_PATH}"/vmshed.new "${LOCAL_BIN_PATH}"/vmshed
+      fi
     fi
 
   fi # MacOS vs. Linux for virtualbox/kvm/vagrant
