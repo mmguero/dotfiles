@@ -64,6 +64,7 @@ ENV_LIST=(
   direnv
   exa
   fd
+  fzf
   ghorg
   packer
   peco
@@ -667,15 +668,17 @@ function InstallKubernetes {
 
   _EnvSetup
   if command -v kubectl >/dev/null 2>&1 && command -v asdf >/dev/null 2>&1; then
-    unset CONFIRMATION
-    read -p "Install stern (via asdf) [y/N]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-N}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      asdf plugin update stern
-      asdf install stern latest
-      asdf global stern latest
-      asdf reshim stern
-    fi
+    for UTIL in stern kubectx; do
+      unset CONFIRMATION
+      read -p "Install $UTIL (via asdf) [y/N]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        asdf plugin update $UTIL
+        asdf install $UTIL latest
+        asdf global $UTIL latest
+        asdf reshim $UTIL
+      fi
+    done
   fi
 }
 
