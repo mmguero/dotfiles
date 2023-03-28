@@ -431,6 +431,7 @@ function InstallEnvPackages {
         ruamel.yaml \
         snoop \
         stackprinter \
+        textual \
         tqdm \
         typer[all]
 
