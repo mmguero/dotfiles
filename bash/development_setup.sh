@@ -417,6 +417,7 @@ function InstallEnvPackages {
         humanhash3 \
         more-itertools \
         mmguero \
+        ordered-set \
         patool \
         psutil \
         py-cui \
