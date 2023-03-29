@@ -32,7 +32,7 @@ if [[ $LINUX ]]; then
         --entrypoint /bin/bash \
         --security-opt label=disable \
         ghcr.io/mmguero-dev/vagrant-libvirt:latest \
-        vagrant "$@"
+        /usr/bin/vagrant "$@"
     else
       $ENGINE run -it --rm \
         -e LIBVIRT_DEFAULT_URI \
@@ -47,7 +47,7 @@ if [[ $LINUX ]]; then
         --network host \
         --pull=never \
         ghcr.io/mmguero-dev/vagrant-libvirt:latest \
-        vagrant "$@"
+        /usr/bin/vagrant "$@"
     fi
   }
   function vagd() {
