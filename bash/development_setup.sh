@@ -2923,6 +2923,7 @@ function GueroSymlinks {
         self_signed_key_gen.sh
         store_unique.sh
         window_dimensions.sh
+        tx-rx-secure.sh
       )
       for i in ${LINKED_SCRIPTS[@]}; do
         rm -vf "$LOCAL_BIN_PATH"/"$i" && ln $LNFLAGS "$GUERO_GITHUB_PATH"/scripts/"$i" "$LOCAL_BIN_PATH"/
