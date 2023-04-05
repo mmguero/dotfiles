@@ -1635,7 +1635,6 @@ function InstallCommonPackagesGUI {
       brew install --cask iterm2
       brew install --cask keepassxc
       brew install --cask libreoffice
-      brew install --cask ngrok
       brew install --cask osxfuse
       brew install --cask sublime-text
       brew install --cask veracrypt
@@ -1930,7 +1929,6 @@ function InstallCommonPackagesNetworking {
           main/ffsend
           main/ghorg
           main/netcat
-          main/ngrok
           main/nmap
           main/rclone
           main/wget
@@ -2423,6 +2421,8 @@ function InstallUserLocalBinaries {
               "boringproxy/boringproxy|boringproxy-linux-arm64|$LOCAL_BIN_PATH/boringproxy|755"
               "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
               "darkhz/rclone-tui|rclone-tui_{tag}_Linux_arm64.tar.gz|/tmp/rclone-tui.tar.gz"
+              "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-arm64|$LOCAL_BIN_PATH/docker-credential-pass|755"
+              "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-arm64|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
               "FiloSottile/age|age-v{tag}-linux-arm64.tar.gz|/tmp/age.tar.gz"
               "gabrie30/ghorg|ghorg_{tag}_Linux_arm64.tar.gz|/tmp/ghorg.tar.gz"
               "gcla/termshark|termshark_{tag}_linux_arm64.tar.gz|/tmp/termshark.tar.gz"
@@ -2448,6 +2448,8 @@ function InstallUserLocalBinaries {
               "boringproxy/boringproxy|boringproxy-linux-arm|$LOCAL_BIN_PATH/boringproxy|755"
               "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
               "darkhz/rclone-tui|rclone-tui_{tag}_Linux_armv6.tar.gz|/tmp/rclone-tui.tar.gz"
+              "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-armv6|$LOCAL_BIN_PATH/docker-credential-pass|755"
+              "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-armv6|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
               "FiloSottile/age|age-v{tag}-linux-arm.tar.gz|/tmp/age.tar.gz"
               "gcla/termshark|termshark_{tag}_linux_armv6.tar.gz|/tmp/termshark.tar.gz"
               "mikefarah/yq|yq_linux_arm|$LOCAL_BIN_PATH/yq|755"
@@ -2469,6 +2471,8 @@ function InstallUserLocalBinaries {
               "boringproxy/boringproxy|boringproxy-linux-arm|$LOCAL_BIN_PATH/boringproxy|755"
               "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
               "darkhz/rclone-tui|rclone-tui_{tag}_Linux_armv7.tar.gz|/tmp/rclone-tui.tar.gz"
+              "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-armv7|$LOCAL_BIN_PATH/docker-credential-pass|755"
+              "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-armv7|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
               "FiloSottile/age|age-v{tag}-linux-arm.tar.gz|/tmp/age.tar.gz"
               "gcla/termshark|termshark_{tag}_linux_armv6.tar.gz|/tmp/termshark.tar.gz"
               "mikefarah/yq|yq_linux_arm|$LOCAL_BIN_PATH/yq|755"
@@ -2492,6 +2496,8 @@ function InstallUserLocalBinaries {
             "boringproxy/boringproxy|boringproxy-linux-x86_64|$LOCAL_BIN_PATH/boringproxy|755"
             "BurntSushi/ripgrep|ripgrep-{tag}-x86_64-unknown-linux-musl.tar.gz|/tmp/ripgrep.tar.gz"
             "darkhz/rclone-tui|rclone-tui_{tag}_Linux_x86_64.tar.gz|/tmp/rclone-tui.tar.gz"
+            "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-amd64|$LOCAL_BIN_PATH/docker-credential-pass|755"
+            "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-amd64|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
             "FiloSottile/age|age-v{tag}-linux-amd64.tar.gz|/tmp/age.tar.gz"
             "fireeye/capa|capa-v{tag}-linux.zip|/tmp/capa.zip"
             "gabrie30/ghorg|ghorg_{tag}_Linux_x86_64.tar.gz|/tmp/ghorg.tar.gz"
