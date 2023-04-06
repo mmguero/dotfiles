@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# run imagededup (https://github.com/idealo/imagededup) on a directory/directories of images
+# and write the results as JSON to STDOUT
+#
+# https://gist.github.com/mmguero/75ddc56f2961e5301bc14e46fbf75119
+
 import argparse
 import glob
 import json
