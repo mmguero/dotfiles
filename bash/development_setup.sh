@@ -2826,6 +2826,8 @@ EOT
 * hard nofile 65535
 * soft memlock unlimited
 * hard memlock unlimited
+* soft nproc 262144
+* hard nproc 524288
 EOT
       fi # limits.conf confirmation
     fi # limits.conf check
