@@ -209,6 +209,7 @@ if [[ -f /usr/local/bin/k3s ]]; then
   alias kubectl="sudo /usr/local/bin/kubectl"
   alias crictl="sudo /usr/local/bin/crictl"
 fi
+command -v kubectl >/dev/null 2>&1 && alias k=kubectl
 
 ########################################################################
 # communications

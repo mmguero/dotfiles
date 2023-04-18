@@ -2828,6 +2828,8 @@ EOT
 * hard memlock unlimited
 * soft nproc 262144
 * hard nproc 524288
+* soft core 0
+* hard core 0
 EOT
       fi # limits.conf confirmation
     fi # limits.conf check
