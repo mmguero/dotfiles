@@ -319,8 +319,8 @@ function InstallEnvs {
             fi
           else
             unset CONFIRMATION
-            read -p "\"$i\" is already installed, attempt to update it [y/N]? " CONFIRMATION
-            CONFIRMATION=${CONFIRMATION:-N}
+            read -p "\"$i\" is already installed, attempt to update it [Y/n]? " CONFIRMATION
+            CONFIRMATION=${CONFIRMATION:-Y}
             if [[ $CONFIRMATION =~ ^[Yy] ]]; then
               ENVS_INSTALLED[$i]=true
             fi
