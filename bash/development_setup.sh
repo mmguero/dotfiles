@@ -2500,7 +2500,6 @@ function InstallUserLocalBinaries {
             "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-amd64|$LOCAL_BIN_PATH/docker-credential-pass|755"
             "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-amd64|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
             "FiloSottile/age|age-v{tag}-linux-amd64.tar.gz|/tmp/age.tar.gz"
-            "fireeye/capa|capa-v{tag}-linux.zip|/tmp/capa.zip"
             "gabrie30/ghorg|ghorg_{tag}_Linux_x86_64.tar.gz|/tmp/ghorg.tar.gz"
             "gcla/termshark|termshark_{tag}_linux_x64.tar.gz|/tmp/termshark.tar.gz"
             "jez/as-tree|as-tree-{tag}-linux.zip|/tmp/as-tree.zip"
