@@ -1087,7 +1087,18 @@ function InstallVirtualization {
     read -p "Install kvm/libvirt/qemu [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends qemu-system libvirt-clients libvirt-daemon-system virtinst
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends \
+        ebtables \
+        libguestfs-tools \
+        libvirt-clients \
+        libvirt-daemon-system \
+        libvirt-daemon-system \
+        libvirt-dev \
+        qemu \
+        qemu-system \
+        ruby-fog-libvirt \
+        ruby-libvirt \
+        virtinst
       unset CONFIRMATION
       read -p "Install kvm/libvirt/qemu GUI packages [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
