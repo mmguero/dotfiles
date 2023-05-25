@@ -1775,9 +1775,8 @@ function InstallCommonPackagesMedia {
         imagemagick
         mpv
         pavucontrol
-        pithos
+        pqiv
         recordmydesktop
-        wodim
       )
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
