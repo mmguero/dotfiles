@@ -491,7 +491,7 @@ function SetupAptSources {
           "https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg"
           "https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
           "https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg"
-          "https://download.opensuse.org/repositories/home:alvistack/Debian_Testing/Release.key|/usr/share/keyrings/home_alvistack.gpg"
+          "https://mirrorcache-us.opensuse.org/repositories/home:/alvistack/Debian_Testing/Release.key|/usr/share/keyrings/home_alvistack.gpg"
           "https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg"
           "deb:fasttrack-archive-keyring"
         )
@@ -932,13 +932,13 @@ function InstallPodman {
 
         echo "Installing Podman..." >&2
         if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
-          curl -fsSL "http://download.opensuse.org/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/Release.key" | $SUDO_CMD apt-key add -
+          curl -fsSLk "https://mirrorcache-us.opensuse.org/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/Release.key" | $SUDO_CMD apt-key add -
           $SUDO_CMD add-apt-repository -y \
              "deb [arch=$LINUX_ARCH] http://download.opensuse.org/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/ /"
         elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
-          curl -fsSL "http://download.opensuse.org/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/Release.key" | $SUDO_CMD apt-key add -
+          curl -fsSLk "https://mirrorcache-us.opensuse.org/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/Release.key" | $SUDO_CMD apt-key add -
           $SUDO_CMD add-apt-repository -y \
-             "deb [arch=$LINUX_ARCH] http://download.opensuse.org/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /"
+             "deb [arch=$LINUX_ARCH] https://mirrorcache-us.opensuse.org/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /"
         fi
 
         _AptUpdate
