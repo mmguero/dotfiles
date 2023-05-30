@@ -19,3 +19,13 @@ if [[ -n $ASDF_DIR ]]; then
     . "$ASDF_DIR"/installs/rust/"$(asdf current rust | awk '{print $2}')"/env
   fi
 fi
+
+function asdf-latest () {
+  for ACTION in install global; do
+    asdf list | grep -P "^\S" | xargs -I XXX -r asdf "$ACTION" "XXX" latest
+  done
+}
+
+function asdf-prune () {
+  asdf list | grep -P -v "^\s*\*" | grep -P -B 1 "^\s" | grep -v "\-\-" | paste -s -d" \n" | xargs -r -l asdf uninstall
+}
