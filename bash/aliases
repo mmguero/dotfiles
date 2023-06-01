@@ -39,7 +39,7 @@ alias grepi='GREP_COLORS="mt=1;33;40" LANG=C grep -i -D skip --color=auto --excl
 alias grepp='GREP_COLORS="mt=1;33;40" LANG=C grep -P -D skip --color=auto --exclude-dir=\.svn --exclude-dir=\.git --exclude-dir=backup --exclude=*~'
 alias greppi='GREP_COLORS="mt=1;33;40" LANG=C grep -P -i -D skip --color=auto --exclude-dir=\.svn --exclude-dir=\.git --exclude-dir=backup --exclude=*~'
 alias egrep='GREP_COLORS="mt=1;33;40" LANG=C egrep -D skip --color=auto --exclude-dir=\.svn --exclude-dir=\.git --exclude-dir=backup --exclude=*~'
-alias nuke='shred -u -z -v'
+alias nuke='shred --iterations=0 --zero -u'
 alias rsync="rsync --partial --inplace --no-inc-recursive --progress --info=progress2 --verbose"
 alias rcp="rsync --info=progress2 --no-inc-recursive --size-only --inplace --verbose"
 alias ..='cd ..'
