@@ -878,10 +878,14 @@ function media_history_purge() {
   for TERM in \
       1080p \
       720p \
+      audiobook \
       _clean \
       cleanvid \
       epub \
       ffmpeg \
+      jpg \
+      jpeg \
+      m4b \
       mediasus \
       mkv \
       monkeyplug \
@@ -899,6 +903,7 @@ function media_history_purge() {
       season \
       srt \
       torrent \
+      webm \
       webrip \
       yify \
    ; do \

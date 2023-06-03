@@ -2452,6 +2452,7 @@ function InstallUserLocalBinaries {
               "starship/starship|starship-aarch64-unknown-linux-musl.tar.gz|/tmp/starship.tar.gz"
               "stern/stern|stern_{tag}_linux_arm64.tar.gz|/tmp/stern.tar.gz"
               "tomnomnom/gron|gron-linux-arm64-{tag}.tgz|/tmp/gron.tgz"
+              "wader/fq|fq_{tag}_linux_arm64.tar.gz|/tmp/fq.tar.gz"
               "watchexec/watchexec|watchexec-{tag}-aarch64-unknown-linux-musl.tar.xz|/tmp/watchexec.tar.xz"
             )
           elif [[ "$LINUX_CPU" == "armv6l" ]]; then
@@ -2532,6 +2533,7 @@ function InstallUserLocalBinaries {
             "stern/stern|stern_{tag}_linux_amd64.tar.gz|/tmp/stern.tar.gz"
             "timvisee/ffsend|ffsend-v{tag}-linux-x64-static|$LOCAL_BIN_PATH/ffsend|755"
             "tomnomnom/gron|gron-linux-amd64-{tag}.tgz|/tmp/gron.tgz"
+            "wader/fq|fq_{tag}_linux_amd64.tar.gz|/tmp/fq.tar.gz"
             "watchexec/watchexec|watchexec-{tag}-x86_64-unknown-linux-musl.tar.xz|/tmp/watchexec.tar.xz"
             "Wilfred/difftastic|difft-x86_64-unknown-linux-gnu.tar.gz|/tmp/difft.tar.gz"
           )
