@@ -743,6 +743,7 @@ function DockerPullImages {
         alpine:latest
         amazonlinux:2
         debian:stable-slim
+        debian:bookworm-slim
         bitnami/minideb:latest
         ghcr.io/mmguero/debian:latest
         ubuntu:latest
@@ -1610,9 +1611,9 @@ EOT
       $SUDO_CMD dpkg-reconfigure --frontend=noninteractive wireshark-common
 
       # veracrypt
-      curl -L -o "/tmp/veracrypt-console-Debian-10.deb" "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio "https://.+?veracrypt-console.+?Debian-10-${LINUX_ARCH}.deb" | sed "s/&#43;/+/" | head -n 1)"
-      $SUDO_CMD dpkg -i "/tmp/veracrypt-console-Debian-10.deb"
-      rm -f "/tmp/veracrypt-console-Debian-10.deb"
+      curl -L -o "/tmp/veracrypt-console-Debian-11.deb" "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio "https://.+?veracrypt-console.+?Debian-11-${LINUX_ARCH}.deb" | sed "s/&#43;/+/" | head -n 1)"
+      $SUDO_CMD dpkg -i "/tmp/veracrypt-console-Debian-11.deb"
+      rm -f "/tmp/veracrypt-console-Debian-11.deb"
 
       if ! grep -q mapper /etc/pmount.allow; then
         $SUDO_CMD tee -a /etc/pmount.allow > /dev/null <<'EOT'
