@@ -9,7 +9,7 @@ alias chown='chown --preserve-root'
 
 #package management
 alias aptorphaned='apt-show-versions |grep -i "No available"'
-alias aptnondeb='apt-show-versions |grep -iPv "((/(testing|stable|bullseye|debian-bullseye))|not installed)"'
+alias aptnondeb='apt-show-versions |grep -iPv "((/(testing|stable|bookworm|debian-bookworm))|not installed)"'
 alias debkeys='sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80'
 
 #make watch work with aliases

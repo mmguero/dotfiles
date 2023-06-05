@@ -1264,8 +1264,8 @@ function InstallVirtualization {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       VAGRANT_BOXES=(
         bento/amazonlinux-2
-        bento/debian-11
-        bento/ubuntu-22.04
+        bento/debian-12
+        bento/ubuntu-23.04
         clink15/pxe
       )
       for i in ${VAGRANT_BOXES[@]}; do
