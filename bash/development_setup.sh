@@ -1088,13 +1088,14 @@ function InstallVirtualization {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends \
+        binfmt-support \
         ebtables \
         libguestfs-tools \
         libvirt-clients \
         libvirt-daemon-system \
         libvirt-daemon-system \
         libvirt-dev \
-        qemu \
+        qemu-user-static \
         qemu-system \
         ruby-fog-libvirt \
         ruby-libvirt \
