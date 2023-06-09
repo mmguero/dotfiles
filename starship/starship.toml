@@ -94,7 +94,7 @@ format = "[$duration](bold duration_fg bg:status_bg)"
 disabled = false
 time_format = "%R"
 style = "bg:status_bg"
-format = '[  $time ]($style)'
+format = '[ $time ]($style)'
 
 [os]
 disabled = false
@@ -113,7 +113,6 @@ ssh_only = true
 style = "bg:machine_info_bg"
 format = "[$ssh_symbol$hostname ](fg:machine_info_fg bg:machine_info_bg)"
 disabled = false
-ssh_symbol = " "
 
 [localip]
 ssh_only = true
@@ -124,23 +123,22 @@ disabled = false
 [git_branch]
 always_show_remote = true
 format = "[ $symbol($remote_name:)$branch ]($style)"
-symbol = "\ue0a0"
 style = "bg:git_bg"
 
 [git_status]
 style = "bg:git_bg"
 format = '([$all_status$ahead_behind ]($style))'
-ahead = "[\uF01B ${count}](git_ahead_fg bg:git_bg)"
-behind = "[\uF01A ${count}](git_behind_fg bg:git_bg)"
-conflicted = "[ ](fg:git_conflicted_fg bg:git_bg)"
-deleted = "[\uf056 ](fg:git_deleted_fg bg:git_bg)"
-diverged = "\uf47f \uF01B ${ahead_count}\uF01A ${behind_count}"
-modified = "[\uF06A ](git_modified_fg bg:git_bg)"
-renamed = "[\uf45a ](git_renamed_fg bg:git_bg)"
-staged = '[落$count ](git_staged_fg bg:git_bg)'
-stashed = "[\uF01C ](git_stashed_fg bg:git_bg)"
-untracked = "[\uf059 ](git_untracked_fg bg:git_bg)"
-up_to_date = "[](git_uptodate_fg bg:git_bg)"
+ahead = " [ ⇡${count}](git_ahead_fg bg:git_bg)"
+behind = "[ ⇣${count}](git_behind_fg bg:git_bg)"
+conflicted = "[ ⚑${count}](fg:git_conflicted_fg bg:git_bg)"
+deleted = "[ 🗑${count}](fg:git_deleted_fg bg:git_bg)"
+diverged = " ⇡${ahead_count} ⇣${behind_count}"
+modified = "[ ✎${count}](git_modified_fg bg:git_bg)"
+renamed = "[ »${count}](git_renamed_fg bg:git_bg)"
+staged = '[ +${count}](git_staged_fg bg:git_bg)'
+stashed = "[ 🖴](git_stashed_fg bg:git_bg)"
+untracked = "[ ≟](git_untracked_fg bg:git_bg)"
+up_to_date = "[ ](git_uptodate_fg bg:git_bg)"
 
 [directory]
 style = "bg:directory_bg"
@@ -149,38 +147,33 @@ format = "[ $path]($style)[$read_only]($read_only_style)"
 truncation_length = 3
 truncation_symbol = "…/"
 truncate_to_repo = true
-home_symbol = "ﴤ "
-read_only = " \ue0a2"
+home_symbol = "🏠 "
+read_only = " 🔒"
 
 # disabled modules (generally because I don't want the via ... whatever cluttering things)
 [aws]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [bun]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [buf]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [c]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [cmake]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = "喝"
 disabled = false
 
 [cobol]
@@ -191,13 +184,11 @@ disabled = false
 [conda]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [container]
 style = "bg:container_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [crystal]
@@ -213,7 +204,6 @@ disabled = false
 [dart]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [deno]
@@ -223,26 +213,23 @@ disabled = false
 
 [dotnet]
 style = "bg:tool_bg"
-format = "[ $symbol(🎯 $tfm )]($style)"
+format = "[ $symbol( $tfm )]($style)"
 disabled = false
 
 [docker_context]
 style = "bg:container_bg"
 format = "[ $symbol ]($style)"
-symbol = "  "
 disabled = false
 only_with_files = true
 
 [elixir]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [elm]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [erlang]
@@ -253,13 +240,11 @@ disabled = false
 [golang]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [haskell]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [helm]
@@ -270,19 +255,16 @@ disabled = false
 [hg_branch]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [java]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [julia]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [kotlin]
@@ -293,13 +275,11 @@ disabled = false
 [lua]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [memory_usage]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [meson]
@@ -310,19 +290,16 @@ disabled = false
 [nim]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [nix_shell]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [nodejs]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [ocaml]
@@ -333,8 +310,7 @@ disabled = false
 [package]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
-disabled = false
+disabled = true
 
 [perl]
 style = "bg:tool_bg"
@@ -359,7 +335,6 @@ disabled = false
 [python]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [raku]
@@ -375,31 +350,26 @@ disabled = false
 [rlang]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = "ﳒ"
 disabled = false
 
 [ruby]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [rust]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [scala]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [spack]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = "🅢"
 disabled = false
 
 [swift]
@@ -410,7 +380,6 @@ disabled = false
 [vagrant]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-symbol = ""
 disabled = false
 
 [vlang]
@@ -424,18 +393,18 @@ format = '[ $symbol ]($style)'
 disabled = false
 
 [directory.substitutions]
-"Audio" = " "
-"audio" = " "
-"backup" = " "
-"Backup" = " "
-"bak" = " "
+"Audio" = "🕪"
+"audio" = "🕪"
+"backup" = "🖪"
+"Backup" = "🖪"
+"bak" = "🖪"
 "Books" = " "
 "books" = " "
 ".config" = " "
 ".local" = " "
 "Desktop" = " "
-"devel" = " "
-"Documents" = " "
+"devel" = ""
+"Documents" = "🖺"
 "download" = " "
 "Downloads" = " "
 "github" = " "
@@ -443,8 +412,8 @@ disabled = false
 "GitHub" = " "
 "images" = " "
 "Images" = " "
-"Malcolm" = " "
-"malcolm" = " "
+"Malcolm" = "🤄"
+"malcolm" = "🤄"
 "media" = " "
 "Media" = " "
 "Music" = " "
@@ -456,11 +425,11 @@ disabled = false
 "Pictures" = " "
 "pictures" = " "
 "Public" = " "
-"pCloudDrive" = " "
-"video" = "辶 "
-"videos" = "辶 "
-"Video" = "辶 "
-"Videos" = "辶 "
+"pCloudDrive" = "☁"
+"video" = "🎞"
+"videos" = "🎞"
+"Video" = "🎞"
+"Videos" = "🎞"
 "tmp" = " "
 "temp" = " "
 
