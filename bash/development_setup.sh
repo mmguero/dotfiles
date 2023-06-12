@@ -1671,7 +1671,7 @@ function InstallCommonPackagesGUI {
         extras/sublime-text
         extras/sumatrapdf
         extras/sysinternals
-        extras/vceredist2022
+        extras/vcredist2022
         extras/win32-disk-imager
         extras/windows-terminal
       )
