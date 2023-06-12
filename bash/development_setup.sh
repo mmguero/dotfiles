@@ -1541,6 +1541,7 @@ function InstallCommonPackages {
         moreutils
         musl
         musl-tools
+        ncdu
         ninja-build
         ntfs-3g
         openssl
