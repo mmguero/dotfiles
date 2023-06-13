@@ -100,3 +100,4 @@ alias at='as-tree'
 alias dexif="exiftool -T -description"
 alias mp='mpv'
 alias feh='feh --scale-down --auto-zoom'
+alias idparam="identify -format '%[parameters]'"

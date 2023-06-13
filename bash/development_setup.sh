@@ -2906,6 +2906,9 @@ function GueroSymlinks {
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf "$HOME"/.tmux.conf && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf "$HOME"/.tmux.conf
 
+      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/pqiv/pqivrc ]] && rm -vf "$LOCAL_CONFIG_PATH"/pqivrc && \
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/pqiv/pqivrc "$LOCAL_CONFIG_PATH"/pqivrc
+
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ]] && rm -vf "$HOME"/.xbindkeysrc && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc "$HOME"/.xbindkeysrc
 
