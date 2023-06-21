@@ -3001,6 +3001,8 @@ function GueroDockerWrappers {
       https://raw.githubusercontent.com/mmguero/cleanvid/main/docker/cleanvid-docker.sh
       https://raw.githubusercontent.com/mmguero/docker/master/capa/capa-docker.sh
       https://raw.githubusercontent.com/mmguero/docker/master/yt-dlp/yt-dlp-docker.sh
+      https://raw.githubusercontent.com/mmguero/docker/master/fetch/fetch-docker.sh
+      https://raw.githubusercontent.com/mmguero/docker/master/roop/roop-docker.sh
       https://raw.githubusercontent.com/mmguero/docker/master/gimp/gimp-docker.sh
       https://github.com/idaholab/network-architecture-verification-and-validation/blob/develop/docker/navv-docker.sh
       https://raw.githubusercontent.com/mmguero/monkeyplug/main/docker/monkeyplug-docker.sh
