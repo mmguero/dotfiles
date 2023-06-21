@@ -2406,156 +2406,173 @@ function InstallUserLocalBinaries {
 
       if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WSL ]]; then
         PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
-        curl -L "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud.new
+        curl -fsSL "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud.new
         chmod 755 "$LOCAL_BIN_PATH"/pcloud.new
         [[ -f "$LOCAL_BIN_PATH"/pcloud ]] && mv "$LOCAL_BIN_PATH"/pcloud "$LOCAL_BIN_PATH"/pcloud.old
         mv "$LOCAL_BIN_PATH"/pcloud.new "$LOCAL_BIN_PATH"/pcloud && rm -f "$LOCAL_BIN_PATH"/pcloud.old
       fi
 
-      # dra will be used to download other release/tag assets from GitHub
-      DRA_RELEASE="$(_GitLatestRelease devmatteini/dra)"
+      # fetch will be used to download other release/tag assets from GitHub
       TMP_CLONE_DIR="$(mktemp -d)"
-      if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-        if [[ "$LINUX_CPU" == "aarch64" ]]; then
-          DRA_URL="https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}-aarch64-unknown-linux-gnu.tar.gz"
+      pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+      FETCH_ALT_URL=
+      if [[ $DEB_ARCH == arm* ]]; then
+        if [[ $LINUX_CPU == aarch64 ]]; then
+          FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_linux_arm64"
         else
-          DRA_URL="https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}-arm-unknown-linux-gnueabihf.tar.gz"
+          # todo
+          FETCH_URL=
         fi
       else
-        DRA_URL="https://github.com/devmatteini/dra/releases/download/${DRA_RELEASE}/dra-${DRA_RELEASE}-x86_64-unknown-linux-musl.tar.gz"
+        FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_linux_amd64"
+        FETCH_ALT_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/fetch_linux_amd64"
       fi
-      curl -sSL "$DRA_URL" | tar xzf - -C "${TMP_CLONE_DIR}" --strip-components 1
-      cp -f "${TMP_CLONE_DIR}"/dra "$LOCAL_BIN_PATH"/dra
-      chmod 755 "$LOCAL_BIN_PATH"/dra
+      curl -fsSL -o ./fetch "$FETCH_URL"
+      chmod 755 ./fetch
+      if ./fetch --version >/dev/null 2>&1; then
+        cp -f ./fetch "$LOCAL_BIN_PATH"/fetch
+      elif [[ -n "$FETCH_ALT_URL" ]]; then
+        curl -fsSL -o "$LOCAL_BIN_PATH"/fetch "$FETCH_URL"
+        chmod 755 "$LOCAL_BIN_PATH"/fetch
+      fi
+      popd >/dev/null 2>&1
       rm -rf "$TMP_CLONE_DIR"
 
-      if [[ -x "$LOCAL_BIN_PATH"/dra ]]; then
+      if [[ -x "$LOCAL_BIN_PATH"/fetch ]]; then
         if [[ "$LINUX_ARCH" =~ ^arm ]]; then
           if [[ "$LINUX_CPU" == "aarch64" ]]; then
             ASSETS=(
-              "aptible/supercronic|supercronic-linux-arm64|$LOCAL_BIN_PATH/supercronic|755"
-              "boringproxy/boringproxy|boringproxy-linux-arm64|$LOCAL_BIN_PATH/boringproxy|755"
-              "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
-              "darkhz/rclone-tui|rclone-tui_{tag}_Linux_arm64.tar.gz|/tmp/rclone-tui.tar.gz"
-              "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-arm64|$LOCAL_BIN_PATH/docker-credential-pass|755"
-              "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-arm64|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
-              "FiloSottile/age|age-v{tag}-linux-arm64.tar.gz|/tmp/age.tar.gz"
-              "gabrie30/ghorg|ghorg_{tag}_Linux_arm64.tar.gz|/tmp/ghorg.tar.gz"
-              "gcla/termshark|termshark_{tag}_linux_arm64.tar.gz|/tmp/termshark.tar.gz"
-              "mikefarah/yq|yq_linux_arm64|$LOCAL_BIN_PATH/yq|755"
-              "neilotoole/sq|sq-{tag}-linux-arm64.tar.gz|/tmp/sq.tar.gz"
-              "nektos/act|act_Linux_arm64.tar.gz|/tmp/act.tar.gz"
-              "ogham/exa|exa-linux-armv7-v{tag}.zip|/tmp/exa.zip"
-              "peco/peco|peco_linux_arm64.tar.gz|/tmp/peco.tar.gz"
-              "projectdiscovery/httpx|httpx_{tag}_linux_arm64.zip|/tmp/httpx.zip"
-              "rclone/rclone|rclone-v{tag}-linux-arm64.zip|/tmp/rclone.zip"
-              "sachaos/viddy|viddy_{tag}_Linux_arm64.tar.gz|/tmp/viddy.tar.gz"
-              "schollz/croc|croc_{tag}_Linux-ARM64.tar.gz|/tmp/croc.tar.gz"
-              "sharkdp/bat|bat-v{tag}-aarch64-unknown-linux-gnu.tar.gz|/tmp/bat.tar.gz"
-              "sharkdp/fd|fd-v{tag}-aarch64-unknown-linux-gnu.tar.gz|/tmp/fd.tar.gz"
-              "smallstep/cli|step_linux_{tag}_arm64.tar.gz|/tmp/step.tar.gz"
-              "starship/starship|starship-aarch64-unknown-linux-musl.tar.gz|/tmp/starship.tar.gz"
-              "stern/stern|stern_{tag}_linux_arm64.tar.gz|/tmp/stern.tar.gz"
-              "tomnomnom/gron|gron-linux-arm64-{tag}.tgz|/tmp/gron.tgz"
-              "wader/fq|fq_{tag}_linux_arm64.tar.gz|/tmp/fq.tar.gz"
-              "watchexec/watchexec|watchexec-{tag}-aarch64-unknown-linux-musl.tar.xz|/tmp/watchexec.tar.xz"
+              "https://github.com/aptible/supercronic|^supercronic-linux-arm64$|$LOCAL_BIN_PATH/supercronic|755"
+              "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm64$|$LOCAL_BIN_PATH/boringproxy|755"
+              "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
+              "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_arm64\.tar\.gz$|/tmp/rclone-tui.tar.gz"
+              "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
+              "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
+              "https://github.com/FiloSottile/age|^age-v.+-linux-arm64\.tar\.gz$|/tmp/age.tar.gz"
+              "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_arm64\.tar\.gz$|/tmp/ghorg.tar.gz"
+              "https://github.com/gcla/termshark|^termshark_.+_linux_arm64\.tar\.gz$|/tmp/termshark.tar.gz"
+              "https://github.com/mikefarah/yq|^yq_linux_arm64$|$LOCAL_BIN_PATH/yq|755"
+              "https://github.com/neilotoole/sq|^sq-.+-linux-arm64\.tar\.gz$|/tmp/sq.tar.gz"
+              "https://github.com/nektos/act|^act_Linux_arm64\.tar\.gz$|/tmp/act.tar.gz"
+              "https://github.com/ogham/exa|^exa-linux-armv7-v.+\.zip$|/tmp/exa.zip"
+              "https://github.com/peco/peco|^peco_linux_arm64\.tar\.gz$|/tmp/peco.tar.gz"
+              "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_arm64\.zip$|/tmp/httpx.zip"
+              "https://github.com/rclone/rclone|^rclone-v.+-linux-arm64\.zip$|/tmp/rclone.zip"
+              "https://github.com/sachaos/viddy|^viddy_.+_Linux_arm64\.tar\.gz$|/tmp/viddy.tar.gz"
+              "https://github.com/schollz/croc|^croc_.+_Linux-ARM64\.tar\.gz$|/tmp/croc.tar.gz"
+              "https://github.com/sharkdp/bat|^bat-v.+-aarch64-unknown-linux-gnu\.tar\.gz$|/tmp/bat.tar.gz"
+              "https://github.com/sharkdp/fd|^fd-v.+-aarch64-unknown-linux-gnu\.tar\.gz$|/tmp/fd.tar.gz"
+              "https://github.com/smallstep/cli|^step_linux_.+_arm64\.tar\.gz$|/tmp/step.tar.gz"
+              "https://github.com/starship/starship|^starship-aarch64-unknown-linux-musl\.tar\.gz$|/tmp/starship.tar.gz"
+              "https://github.com/stern/stern|^stern_.+_linux_arm64\.tar\.gz$|/tmp/stern.tar.gz"
+              "https://github.com/tomnomnom/gron|^gron-linux-arm64-.+\.tgz$|/tmp/gron\.tgz"
+              "https://github.com/wader/fq|^fq_.+_linux_arm64\.tar\.gz$|/tmp/fq.tar.gz"
+              "https://github.com/watchexec/watchexec|^watchexec-.+-aarch64-unknown-linux-musl\.tar\.xz$|/tmp/watchexec.tar.xz"
             )
           elif [[ "$LINUX_CPU" == "armv6l" ]]; then
             ASSETS=(
-              "aptible/supercronic|supercronic-linux-arm|$LOCAL_BIN_PATH/supercronic|755"
-              "boringproxy/boringproxy|boringproxy-linux-arm|$LOCAL_BIN_PATH/boringproxy|755"
-              "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
-              "darkhz/rclone-tui|rclone-tui_{tag}_Linux_armv6.tar.gz|/tmp/rclone-tui.tar.gz"
-              "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-armv6|$LOCAL_BIN_PATH/docker-credential-pass|755"
-              "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-armv6|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
-              "FiloSottile/age|age-v{tag}-linux-arm.tar.gz|/tmp/age.tar.gz"
-              "gcla/termshark|termshark_{tag}_linux_armv6.tar.gz|/tmp/termshark.tar.gz"
-              "mikefarah/yq|yq_linux_arm|$LOCAL_BIN_PATH/yq|755"
-              "nektos/act|act_Linux_armv6.tar.gz|/tmp/act.tar.gz"
-              "ogham/exa|exa-linux-armv7-v{tag}.zip|/tmp/exa.zip"
-              "peco/peco|peco_linux_arm.tar.gz|/tmp/peco.tar.gz"
-              "projectdiscovery/httpx|httpx_{tag}_linux_armv6.zip|/tmp/httpx.zip"
-              "rclone/rclone|rclone-v{tag}-linux-arm.zip|/tmp/rclone.zip"
-              "sachaos/viddy|viddy_{tag}_Linux_armv6.tar.gz|/tmp/viddy.tar.gz"
-              "schollz/croc|croc_{tag}_Linux-ARM.tar.gz|/tmp/croc.tar.gz"
-              "sharkdp/bat|bat-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/bat.tar.gz"
-              "sharkdp/fd|fd-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/fd.tar.gz"
-              "smallstep/cli|step_linux_{tag}_armv6.tar.gz|/tmp/step.tar.gz"
-              "starship/starship|starship-arm-unknown-linux-musleabihf.tar.gz|/tmp/starship.tar.gz"
-              "watchexec/watchexec|watchexec-{tag}-armv7-unknown-linux-gnueabihf.tar.xz|/tmp/watchexec.tar.xz"
+              "https://github.com/aptible/supercronic|^supercronic-linux-arm$|$LOCAL_BIN_PATH/supercronic|755"
+              "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm$|$LOCAL_BIN_PATH/boringproxy|755"
+              "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
+              "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_armv6\.tar\.gz$|/tmp/rclone-tui.tar.gz"
+              "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-armv6$|$LOCAL_BIN_PATH/docker-credential-pass|755"
+              "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-armv6$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
+              "https://github.com/FiloSottile/age|^age-v.+-linux-arm\.tar\.gz$|/tmp/age.tar.gz"
+              "https://github.com/gcla/termshark|^termshark_.+_linux_armv6\.tar\.gz$|/tmp/termshark.tar.gz"
+              "https://github.com/mikefarah/yq|^yq_linux_arm$|$LOCAL_BIN_PATH/yq|755"
+              "https://github.com/nektos/act|^act_Linux_armv6\.tar\.gz$|/tmp/act.tar.gz"
+              "https://github.com/ogham/exa|^exa-linux-armv7-v.+\.zip$|/tmp/exa.zip"
+              "https://github.com/peco/peco|^peco_linux_arm\.tar\.gz$|/tmp/peco.tar.gz"
+              "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_armv6\.zip$|/tmp/httpx.zip"
+              "https://github.com/rclone/rclone|^rclone-v.+-linux-arm\.zip$|/tmp/rclone.zip"
+              "https://github.com/sachaos/viddy|^viddy_.+_Linux_armv6\.tar\.gz$|/tmp/viddy.tar.gz"
+              "https://github.com/schollz/croc|^croc_.+_Linux-ARM\.tar\.gz$|/tmp/croc.tar.gz"
+              "https://github.com/sharkdp/bat|^bat-v.+-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/bat.tar.gz"
+              "https://github.com/sharkdp/fd|^fd-v.+-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/fd.tar.gz"
+              "https://github.com/smallstep/cli|^step_linux_.+_armv6\.tar\.gz$|/tmp/step.tar.gz"
+              "https://github.com/starship/starship|^starship-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/starship.tar.gz"
+              "https://github.com/watchexec/watchexec|^watchexec-.+-armv7-unknown-linux-gnueabihf\.tar\.xz$|/tmp/watchexec.tar.xz"
             )
           else
             ASSETS=(
-              "aptible/supercronic|supercronic-linux-arm|$LOCAL_BIN_PATH/supercronic|755"
-              "boringproxy/boringproxy|boringproxy-linux-arm|$LOCAL_BIN_PATH/boringproxy|755"
-              "BurntSushi/ripgrep|ripgrep-{tag}-arm-unknown-linux-gnueabihf.tar.gz|/tmp/ripgrep.tar.gz"
-              "darkhz/rclone-tui|rclone-tui_{tag}_Linux_armv7.tar.gz|/tmp/rclone-tui.tar.gz"
-              "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-armv7|$LOCAL_BIN_PATH/docker-credential-pass|755"
-              "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-armv7|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
-              "FiloSottile/age|age-v{tag}-linux-arm.tar.gz|/tmp/age.tar.gz"
-              "gcla/termshark|termshark_{tag}_linux_armv6.tar.gz|/tmp/termshark.tar.gz"
-              "mikefarah/yq|yq_linux_arm|$LOCAL_BIN_PATH/yq|755"
-              "nektos/act|act_Linux_armv7.tar.gz|/tmp/act.tar.gz"
-              "ogham/exa|exa-linux-armv7-v{tag}.zip|/tmp/exa.zip"
-              "peco/peco|peco_linux_arm.tar.gz|/tmp/peco.tar.gz"
-              "projectdiscovery/httpx|httpx_{tag}_linux_armv6.zip|/tmp/httpx.zip"
-              "rclone/rclone|rclone-v{tag}-linux-arm-v7.zip|/tmp/rclone.zip"
-              "sachaos/viddy|viddy_{tag}_Linux_armv6.tar.gz|/tmp/viddy.tar.gz"
-              "schollz/croc|croc_{tag}_Linux-ARM.tar.gz|/tmp/croc.tar.gz"
-              "sharkdp/bat|bat-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/bat.tar.gz"
-              "sharkdp/fd|fd-v{tag}-arm-unknown-linux-musleabihf.tar.gz|/tmp/fd.tar.gz"
-              "smallstep/cli|step_linux_{tag}_armv7.tar.gz|/tmp/step.tar.gz"
-              "starship/starship|starship-arm-unknown-linux-musleabihf.tar.gz|/tmp/starship.tar.gz"
-              "stern/stern|stern_{tag}_linux_arm.tar.gz|/tmp/stern.tar.gz"
-              "watchexec/watchexec|watchexec-{tag}-armv7-unknown-linux-gnueabihf.tar.xz|/tmp/watchexec.tar.xz"
+              "https://github.com/aptible/supercronic|^supercronic-linux-arm$|$LOCAL_BIN_PATH/supercronic|755"
+              "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm$|$LOCAL_BIN_PATH/boringproxy|755"
+              "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
+              "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_armv7\.tar\.gz$|/tmp/rclone-tui.tar.gz"
+              "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-armv7$|$LOCAL_BIN_PATH/docker-credential-pass|755"
+              "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-armv7$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
+              "https://github.com/FiloSottile/age|^age-v.+-linux-arm\.tar\.gz$|/tmp/age.tar.gz"
+              "https://github.com/gcla/termshark|^termshark_.+_linux_armv6\.tar\.gz$|/tmp/termshark.tar.gz"
+              "https://github.com/mikefarah/yq|^yq_linux_arm$|$LOCAL_BIN_PATH/yq|755"
+              "https://github.com/nektos/act|^act_Linux_armv7\.tar\.gz$|/tmp/act.tar.gz"
+              "https://github.com/ogham/exa|^exa-linux-armv7-v.+\.zip$|/tmp/exa.zip"
+              "https://github.com/peco/peco|^peco_linux_arm\.tar\.gz$|/tmp/peco.tar.gz"
+              "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_armv6\.zip$|/tmp/httpx.zip"
+              "https://github.com/rclone/rclone|^rclone-v.+-linux-arm-v7\.zip$|/tmp/rclone.zip"
+              "https://github.com/sachaos/viddy|^viddy_.+_Linux_armv6\.tar\.gz$|/tmp/viddy.tar.gz"
+              "https://github.com/schollz/croc|^croc_.+_Linux-ARM\.tar\.gz$|/tmp/croc.tar.gz"
+              "https://github.com/sharkdp/bat|^bat-v.+-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/bat.tar.gz"
+              "https://github.com/sharkdp/fd|^fd-v.+-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/fd.tar.gz"
+              "https://github.com/smallstep/cli|^step_linux_.+_armv7\.tar\.gz$|/tmp/step.tar.gz"
+              "https://github.com/starship/starship|^starship-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/starship.tar.gz"
+              "https://github.com/stern/stern|^stern_.+_linux_arm\.tar\.gz$|/tmp/stern.tar.gz"
+              "https://github.com/watchexec/watchexec|^watchexec-.+-armv7-unknown-linux-gnueabihf\.tar\.xz$|/tmp/watchexec.tar.xz"
             )
           fi
         else
           ASSETS=(
-            "aptible/supercronic|supercronic-linux-amd64|$LOCAL_BIN_PATH/supercronic|755"
-            "boringproxy/boringproxy|boringproxy-linux-x86_64|$LOCAL_BIN_PATH/boringproxy|755"
-            "BurntSushi/ripgrep|ripgrep-{tag}-x86_64-unknown-linux-musl.tar.gz|/tmp/ripgrep.tar.gz"
-            "darkhz/rclone-tui|rclone-tui_{tag}_Linux_x86_64.tar.gz|/tmp/rclone-tui.tar.gz"
-            "docker/docker-credential-helpers|docker-credential-pass-v{tag}.linux-amd64|$LOCAL_BIN_PATH/docker-credential-pass|755"
-            "docker/docker-credential-helpers|docker-credential-secretservice-v{tag}.linux-amd64|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
-            "FiloSottile/age|age-v{tag}-linux-amd64.tar.gz|/tmp/age.tar.gz"
-            "gabrie30/ghorg|ghorg_{tag}_Linux_x86_64.tar.gz|/tmp/ghorg.tar.gz"
-            "gcla/termshark|termshark_{tag}_linux_x64.tar.gz|/tmp/termshark.tar.gz"
-            "jez/as-tree|as-tree-{tag}-linux.zip|/tmp/as-tree.zip"
-            "mikefarah/yq|yq_linux_amd64|$LOCAL_BIN_PATH/yq|755"
-            "neilotoole/sq|sq-{tag}-linux-amd64.tar.gz|/tmp/sq.tar.gz"
-            "nektos/act|act_Linux_x86_64.tar.gz|/tmp/act.tar.gz"
-            "ogham/exa|exa-linux-x86_64-v{tag}.zip|/tmp/exa.zip"
-            "peco/peco|peco_linux_amd64.tar.gz|/tmp/peco.tar.gz"
-            "projectdiscovery/httpx|httpx_{tag}_linux_amd64.zip|/tmp/httpx.zip"
-            "rclone/rclone|rclone-v{tag}-linux-amd64.zip|/tmp/rclone.zip"
-            "sachaos/viddy|viddy_{tag}_Linux_x86_64.tar.gz|/tmp/viddy.tar.gz"
-            "schollz/croc|croc_{tag}_Linux-64bit.tar.gz|/tmp/croc.tar.gz"
-            "sharkdp/bat|bat-v{tag}-x86_64-unknown-linux-gnu.tar.gz|/tmp/bat.tar.gz"
-            "sharkdp/fd|fd-v{tag}-x86_64-unknown-linux-gnu.tar.gz|/tmp/fd.tar.gz"
-            "smallstep/cli|step_linux_{tag}_amd64.tar.gz|/tmp/step.tar.gz"
-            "starship/starship|starship-x86_64-unknown-linux-gnu.tar.gz|/tmp/starship.tar.gz"
-            "stern/stern|stern_{tag}_linux_amd64.tar.gz|/tmp/stern.tar.gz"
-            "timvisee/ffsend|ffsend-v{tag}-linux-x64-static|$LOCAL_BIN_PATH/ffsend|755"
-            "tomnomnom/gron|gron-linux-amd64-{tag}.tgz|/tmp/gron.tgz"
-            "wader/fq|fq_{tag}_linux_amd64.tar.gz|/tmp/fq.tar.gz"
-            "watchexec/watchexec|watchexec-{tag}-x86_64-unknown-linux-musl.tar.xz|/tmp/watchexec.tar.xz"
-            "Wilfred/difftastic|difft-x86_64-unknown-linux-gnu.tar.gz|/tmp/difft.tar.gz"
+            "https://github.com/aptible/supercronic|^supercronic-linux-amd64$|$LOCAL_BIN_PATH/supercronic|755"
+            "https://github.com/boringproxy/boringproxy|^boringproxy-linux-x86_64$|$LOCAL_BIN_PATH/boringproxy|755"
+            "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-x86_64-unknown-linux-musl\.tar\.gz$|/tmp/ripgrep.tar.gz"
+            "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_x86_64\.tar\.gz$|/tmp/rclone-tui.tar.gz"
+            "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
+            "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
+            "https://github.com/FiloSottile/age|^age-v.+-linux-amd64\.tar\.gz$|/tmp/age.tar.gz"
+            "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_x86_64\.tar\.gz$|/tmp/ghorg.tar.gz"
+            "https://github.com/gcla/termshark|^termshark_.+_linux_x64\.tar\.gz$|/tmp/termshark.tar.gz"
+            "https://github.com/jez/as-tree|^as-tree-.+-linux\.zip$|/tmp/as-tree.zip"
+            "https://github.com/mikefarah/yq|^yq_linux_amd64$|$LOCAL_BIN_PATH/yq|755"
+            "https://github.com/neilotoole/sq|^sq-.+-linux-amd64\.tar\.gz$|/tmp/sq.tar.gz"
+            "https://github.com/nektos/act|^act_Linux_x86_64\.tar\.gz$|/tmp/act.tar.gz"
+            "https://github.com/ogham/exa|^exa-linux-x86_64-v.+\.zip$|/tmp/exa.zip"
+            "https://github.com/peco/peco|^peco_linux_amd64\.tar\.gz$|/tmp/peco.tar.gz"
+            "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_amd64\.zip$|/tmp/httpx.zip"
+            "https://github.com/rclone/rclone|^rclone-v.+-linux-amd64\.zip$|/tmp/rclone.zip"
+            "https://github.com/sachaos/viddy|^viddy_.+_Linux_x86_64\.tar\.gz$|/tmp/viddy.tar.gz"
+            "https://github.com/schollz/croc|^croc_.+_Linux-64bit\.tar\.gz$|/tmp/croc.tar.gz"
+            "https://github.com/sharkdp/bat|^bat-v.+-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/bat.tar.gz"
+            "https://github.com/sharkdp/fd|^fd-v.+-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/fd.tar.gz"
+            "https://github.com/smallstep/cli|^step_linux_.+_amd64\.tar\.gz$|/tmp/step.tar.gz"
+            "https://github.com/starship/starship|^starship-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/starship.tar.gz"
+            "https://github.com/stern/stern|^stern_.+_linux_amd64\.tar\.gz$|/tmp/stern.tar.gz"
+            "https://github.com/timvisee/ffsend|^ffsend-v.+-linux-x64-static$|$LOCAL_BIN_PATH/ffsend|755"
+            "https://github.com/tomnomnom/gron|^gron-linux-amd64-.+\.tgz$|/tmp/gron\.tgz"
+            "https://github.com/wader/fq|^fq_.+_linux_amd64\.tar\.gz$|/tmp/fq.tar.gz"
+            "https://github.com/watchexec/watchexec|^watchexec-.+-x86_64-unknown-linux-musl\.tar\.xz$|/tmp/watchexec.tar.xz"
+            "https://github.com/Wilfred/difftastic|^difft-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/difft.tar.gz"
           )
         fi
 
+        [[ -z "$GITHUB_OAUTH_TOKEN" ]] && [[ -n "$GITHUB_TOKEN" ]] && export GITHUB_OAUTH_TOKEN="$GITHUB_TOKEN"
+
         for i in ${ASSETS[@]}; do
           REPO="$(echo "$i" | cut -d'|' -f1)"
-          UNTAG="$(echo "$i" | cut -d'|' -f2)"
+          ASSET_REGEX="$(echo "$i" | cut -d'|' -f2)"
           OUTPUT_FILE="$(echo "$i" | cut -d'|' -f3)"
           OUTPUT_FILE_PERMS="$(echo "$i" | cut -d'|' -f4)"
+          echo "" >&2
           echo "Downloading asset for $REPO..." >&2
-          "$LOCAL_BIN_PATH"/dra download \
-            -s "$UNTAG" \
-            -o "$OUTPUT_FILE" \
-            "$REPO"
+          FETCH_DIR="$(mktemp -d)"
+          "$LOCAL_BIN_PATH"/fetch --progress --log-level warn \
+            --repo="$REPO" \
+            --tag=">=0.0.0" \
+            --release-asset="$ASSET_REGEX" \
+            "$FETCH_DIR"
+          mv "$FETCH_DIR"/* "$OUTPUT_FILE"
+          rm -rf "$FETCH_DIR"
           if [[ -f "$OUTPUT_FILE" ]]; then
             chmod "${OUTPUT_FILE_PERMS:-644}" "$OUTPUT_FILE"
+            touch -m "$OUTPUT_FILE"
             if [[ "$OUTPUT_FILE" == *.tar.gz ]] || [[ "$OUTPUT_FILE" == *.tgz ]]; then
               UNPACK_DIR="$(mktemp -d)"
               tar xzf "$OUTPUT_FILE" -C "$UNPACK_DIR"
@@ -2567,13 +2584,15 @@ function InstallUserLocalBinaries {
               unzip -q "$OUTPUT_FILE" -d "$UNPACK_DIR"
             fi
             if [[ -d "$UNPACK_DIR" ]]; then
+              find "$UNPACK_DIR" -type f -exec touch -m "{}" \;
               find "$UNPACK_DIR" -type f -exec file --mime-type "{}" \; | \
                 grep -P ":\s+application/.*executable" | \
-                cut -d: -f 1 | xargs -I XXX -r mv -v "XXX" "$LOCAL_BIN_PATH"/
+                cut -d: -f 1 | xargs -I XXX -r mv "XXX" "$LOCAL_BIN_PATH"/
               rm -rf "$UNPACK_DIR" "$OUTPUT_FILE"
             fi
           fi
         done
+        echo "" >&2
       fi
     fi
 
