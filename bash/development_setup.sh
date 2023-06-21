@@ -445,6 +445,8 @@ function InstallEnvPackages {
 
     if ruby -S gem -v >/dev/null 2>&1; then
       ruby -S gem install \
+        openssl
+      ruby -S gem install \
         faraday \
         lru_redux
     fi
