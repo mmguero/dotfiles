@@ -899,6 +899,7 @@ function media_history_purge() {
       ogg \
       plex \
       RARBG\
+      roop \
       searchbot \
       season \
       srt \
