@@ -101,3 +101,5 @@ alias dexif="exiftool -T -description"
 alias mp='mpv'
 alias feh='feh --scale-down --auto-zoom'
 alias idparam="identify -format '%[parameters]'"
+alias resrename="rename 's/[ \.](720|1080)p.*\./\./'"
+alias cleanrename="rename 's/_clean//'"

@@ -355,6 +355,15 @@ function InstallEnvs {
       fi
     fi
 
+    # ruby (build deps)
+    if [[ ${ENVS_INSTALLED[ruby]} = 'true' ]]; then
+      if [[ -n $LINUX ]]; then
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+          build-essential \
+          libyaml-dev
+      fi
+    fi
+
     # tmux (build deps)
     if [[ ${ENVS_INSTALLED[tmux]} = 'true' ]]; then
       if [[ -n $LINUX ]]; then
@@ -448,7 +457,9 @@ function InstallEnvPackages {
         openssl
       ruby -S gem install \
         faraday \
-        lru_redux
+        lru_redux \
+        fuzzy-string-match \
+        stringex
     fi
 
     if command -v go >/dev/null 2>&1; then

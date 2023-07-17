@@ -555,7 +555,7 @@ function podman_backup() {
 
 # pull updates for images
 function contup() {
-  $CONTAINER_ENGINE images | tail -n +2 | grep -Piv "(roop|malcolm)" | cols 1 2 | tr ' ' ':' | xargs -r -l $CONTAINER_ENGINE pull
+  $CONTAINER_ENGINE images | tail -n +2 | grep -Piv "(roop|mimic|sd-auto|monkeyplug|malcolm)" | cols 1 2 | tr ' ' ':' | xargs -r -l $CONTAINER_ENGINE pull
 }
 function dockup() { CONTAINER_ENGINE=docker contup "$@"; }
 function podup()  { CONTAINER_ENGINE=podman contup "$@"; }
