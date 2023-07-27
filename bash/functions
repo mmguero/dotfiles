@@ -585,6 +585,16 @@ function digip() {
   fi
 }
 
+function unusedport() {
+  read LOWER_PORT UPPER_PORT < /proc/sys/net/ipv4/ip_local_port_range
+  [[ -n "$1" ]] && UPPER_PORT="$1"
+  [[ -n "$2" ]] && LOWER_PORT="$2"
+  comm -23 <(seq $LOWER_PORT $UPPER_PORT | sort) \
+    <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) \
+    | shuf \
+    | head -n 1
+}
+
 ########################################################################
 # development
 ########################################################################

@@ -160,6 +160,8 @@ function qemuiso() {
     else
       MACHINE="type=q35"
     fi
+    VNC_PORT=$(unusedport)
+    VNC_ID=$((VNC_PORT-5900))
     nohup qemu-system-x86_64 \
         -machine "$MACHINE" \
         -smp ${QEMU_CPU:-2} \
@@ -169,8 +171,10 @@ function qemuiso() {
         -vga virtio \
         -usb \
         -device usb-tablet \
-        -display default,show-cursor=on >/dev/null 2>&1 </dev/null &
-    o vnc://localhost:5900
+        -vnc :$VNC_ID >/dev/null 2>&1 </dev/null &
+    sleep 1
+    echo "Connecting to vnc://localhost:$VNC_PORT" >&2
+    o vnc://localhost:$VNC_PORT >/dev/null 2>&1
   else
     echo "No image file specified" >&2
     exit 1
