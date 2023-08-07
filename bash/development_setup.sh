@@ -895,6 +895,7 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
+        alpine/dfimage:latest
         hello-world:latest
         nate/dockviz:latest
         wagoodman/dive:latest
