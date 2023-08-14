@@ -1817,7 +1817,6 @@ function InstallCommonPackagesGUI {
         pdftk
         regexxer
         rofi
-        sassc
         seahorse
         sublime-text
         thunar
@@ -1836,16 +1835,6 @@ function InstallCommonPackagesGUI {
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
       done
-
-      if [[ ! -d "$HOME"/.themes/vimix-dark-laptop-beryl ]]; then
-        TMP_CLONE_DIR="$(mktemp -d)"
-        _GitClone https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
-        pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
-        mkdir -p "$HOME"/.themes
-        ./install.sh -d "$HOME"/.themes -n vimix -c dark -t beryl -s compact
-        popd >/dev/null 2>&1
-        rm -rf "$TMP_CLONE_DIR"
-      fi
     fi
 
   fi # Mac vs Linux
