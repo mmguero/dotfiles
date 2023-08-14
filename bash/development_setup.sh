@@ -215,7 +215,7 @@ function InstallEssentialPackages {
       FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_linux_amd64"
       FETCH_ALT_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/fetch_linux_amd64"
     fi
-    curl -fsSL -o ./fetch "$FETCH_URL"
+    curl -fsSL -o ./"fetch${FETCH_BIN_EXT}" "$FETCH_URL"
     chmod 755 ./"fetch${FETCH_BIN_EXT}"
     if ./"fetch${FETCH_BIN_EXT}" --version >/dev/null 2>&1; then
       cp -f ./"fetch${FETCH_BIN_EXT}" "$LOCAL_BIN_PATH"/"fetch${FETCH_BIN_EXT}"
