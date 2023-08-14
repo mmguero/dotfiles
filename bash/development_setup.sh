@@ -504,7 +504,7 @@ function SetupAptSources {
           "https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg"
           "https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
           "https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg"
-          "https://mirrorcache-us.opensuse.org/repositories/home:/alvistack/Debian_Testing/Release.key|/usr/share/keyrings/home_alvistack.gpg"
+          "https://mirrorcache-us.opensuse.org/repositories/home:/alvistack/Debian_12/Release.key|/usr/share/keyrings/home_alvistack.gpg"
           "https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg"
           "deb:fasttrack-archive-keyring"
         )
@@ -1248,6 +1248,21 @@ function InstallVirtualization {
         chmod 755 "${LOCAL_BIN_PATH}"/vmshed.new
         rm -f "${LOCAL_BIN_PATH}"/vmshed
         mv "${LOCAL_BIN_PATH}"/vmshed.new "${LOCAL_BIN_PATH}"/vmshed
+      fi
+      unset CONFIRMATION
+      read -p "Configure AppArmor for LINBIT/virter [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD tee -a /etc/apparmor.d/local/abstractions/libvirt-qemu > /dev/null <<'EOT'
+/var/lib/libvirt/images/* rwk,
+# required for QEMU accessing UEFI nvram variables
+/usr/share/OVMF/* rk,
+owner /var/lib/libvirt/qemu/nvram/*_VARS.fd rwk,
+owner /var/lib/libvirt/qemu/nvram/*_VARS.ms.fd rwk,
+EOT
+        $SUDO_CMD systemctl daemon-reload && \
+          $SUDO_CMD systemctl restart apparmor.service
+          $SUDO_CMD systemctl systemctl restart libvirtd.service
       fi
     fi
 
