@@ -179,20 +179,54 @@ function InstallEssentialPackages {
   if command -v curl >/dev/null 2>&1 && \
      command -v git >/dev/null 2>&1 && \
      command -v jq >/dev/null 2>&1 && \
-     command -v sponge >/dev/null 2>&1; then
-    echo "\"curl\", \"git\", \"jq\" and \"moreutils\" are already installed!" >&2
+     command -v sponge >/dev/null 2>&1 && \
+     command -v unzip >/dev/null 2>&1; then
+    echo "\"curl\", \"git\", \"jq\", \"moreutils\" and  \"unzip\" are already installed!" >&2
   else
-    echo "Installing curl, git, jq and moreutils..." >&2
+    echo "Installing curl, git, jq, moreutils and unzip..." >&2
     if [[ -n $MACOS ]]; then
-      brew install git jq moreutils # since Jaguar curl is already installed in MacOS
+      brew install git jq moreutils unzip # since Jaguar curl is already installed in MacOS
     elif [[ -n $MSYSTEM ]]; then
-      [[ -n $HAS_SCOOP ]] && scoop install main/curl main/ln main/git main/jq || pacman --noconfirm -Sy curl git ${MINGW_PACKAGE_PREFIX}-jq
+      [[ -n $HAS_SCOOP ]] && scoop install main/curl main/ln main/git main/jq main/unzip || pacman --noconfirm -Sy curl git unzip ${MINGW_PACKAGE_PREFIX}-jq
       pacman --noconfirm -Sy moreutils
     elif [[ -n $LINUX ]]; then
       _AptUpdate
-      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq moreutils
+      DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y curl git jq moreutils unzip
     fi
   fi
+
+  # fetch will be used to download other release/tag assets from GitHub
+  if [[ ! -x "$LOCAL_BIN_PATH"/fetch ]]; then
+    TMP_CLONE_DIR="$(mktemp -d)"
+    pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
+    FETCH_ALT_URL=
+    FETCH_BIN_EXT=
+    if [[ -n $MSYSTEM ]]; then
+      FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_windows_amd64.exe"
+      FETCH_BIN_EXT=".exe"
+    elif [[ $DEB_ARCH == arm* ]]; then
+      if [[ $LINUX_CPU == aarch64 ]]; then
+        FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_linux_arm64"
+      else
+        # todo
+        FETCH_URL=
+      fi
+    else
+      FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_linux_amd64"
+      FETCH_ALT_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/fetch_linux_amd64"
+    fi
+    curl -fsSL -o ./fetch "$FETCH_URL"
+    chmod 755 ./"fetch${FETCH_BIN_EXT}"
+    if ./"fetch${FETCH_BIN_EXT}" --version >/dev/null 2>&1; then
+      cp -f ./"fetch${FETCH_BIN_EXT}" "$LOCAL_BIN_PATH"/"fetch${FETCH_BIN_EXT}"
+    elif [[ -n "$FETCH_ALT_URL" ]]; then
+      curl -fsSL -o "$LOCAL_BIN_PATH"/"fetch${FETCH_BIN_EXT}" "$FETCH_URL"
+      chmod 755 "$LOCAL_BIN_PATH"/"fetch${FETCH_BIN_EXT}"
+    fi
+    popd >/dev/null 2>&1
+    rm -rf "$TMP_CLONE_DIR"
+  fi
+
 }
 
 ###################################################################################
@@ -243,6 +277,49 @@ function _EnvSetup {
       if (asdf plugin list | grep -q rust) && (asdf current rust >/dev/null 2>&1); then
         . "$ASDF_DIR"/installs/rust/"$(asdf current rust | awk '{print $2}')"/env
       fi
+    fi
+  fi
+}
+
+################################################################################
+# _DownloadViaFetch
+function _DownloadViaFetch {
+  DOWNLOAD_SPEC="$1"
+  REPO="$(echo "$DOWNLOAD_SPEC" | cut -d'|' -f1)"
+  [[ -z "$GITHUB_OAUTH_TOKEN" ]] && [[ -n "$GITHUB_TOKEN" ]] && export GITHUB_OAUTH_TOKEN="$GITHUB_TOKEN"
+  ASSET_REGEX="$(echo "$DOWNLOAD_SPEC" | cut -d'|' -f2)"
+  OUTPUT_FILE="$(echo "$DOWNLOAD_SPEC" | cut -d'|' -f3)"
+  OUTPUT_FILE_PERMS="$(echo "$DOWNLOAD_SPEC" | cut -d'|' -f4)"
+  echo "" >&2
+  echo "Downloading asset for $REPO..." >&2
+  FETCH_DIR="$(mktemp -d)"
+  [[ -n $MSYSTEM ]] && FETCH_BIN_EXT=".exe" || FETCH_BIN_EXT=
+  "$LOCAL_BIN_PATH"/"fetch${FETCH_BIN_EXT}" --progress --log-level warn \
+    --repo="$REPO" \
+    --tag=">=0.0.0" \
+    --release-asset="$ASSET_REGEX" \
+    "$FETCH_DIR"
+  mv "$FETCH_DIR"/* "$OUTPUT_FILE"
+  rm -rf "$FETCH_DIR"
+  if [[ -f "$OUTPUT_FILE" ]]; then
+    chmod "${OUTPUT_FILE_PERMS:-644}" "$OUTPUT_FILE"
+    touch -m "$OUTPUT_FILE"
+    if [[ "$OUTPUT_FILE" == *.tar.gz ]] || [[ "$OUTPUT_FILE" == *.tgz ]]; then
+      UNPACK_DIR="$(mktemp -d)"
+      tar xzf "$OUTPUT_FILE" -C "$UNPACK_DIR"
+    elif [[ "$OUTPUT_FILE" == *.tar.xz ]] || [[ "$OUTPUT_FILE" == *.xz ]]; then
+      UNPACK_DIR="$(mktemp -d)"
+      tar xJf "$OUTPUT_FILE" -C "$UNPACK_DIR" --strip-components 1
+    elif [[ "$OUTPUT_FILE" == *.zip ]]; then
+      UNPACK_DIR="$(mktemp -d)"
+      unzip -q "$OUTPUT_FILE" -d "$UNPACK_DIR"
+    fi
+    if [[ -d "$UNPACK_DIR" ]]; then
+      find "$UNPACK_DIR" -type f -exec touch -m "{}" \;
+      find "$UNPACK_DIR" -type f -exec file --mime-type "{}" \; | \
+        grep -P ":\s+application/.*executable" | \
+        cut -d: -f 1 | xargs -I XXX -r mv "XXX" "$LOCAL_BIN_PATH"/
+      rm -rf "$UNPACK_DIR" "$OUTPUT_FILE"
     fi
   fi
 }
@@ -372,8 +449,7 @@ function InstallEnvs {
           autotools-dev \
           bison \
           build-essential \
-          make \
-          unzip
+          make
       fi
     fi
 
@@ -1205,6 +1281,40 @@ function InstallVirtualization {
       fi # check VBoxManage is not in path to see if some form of virtualbox is already installed
     fi # Check VirtualBox installation?
 
+    # install virter
+    unset CONFIRMATION
+    read -p "Download latest version of LINBIT/virter from GitHub [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+
+      if [[ -x "$LOCAL_BIN_PATH"/fetch ]] && [[ -n $LINUX ]] && [[ -z $WSL ]] && [[ "$LINUX_ARCH" == "amd64" ]]; then
+        ASSETS=(
+          "https://github.com/LINBIT/virter|^virter-linux-amd64$|$LOCAL_BIN_PATH/virter|755"
+          "https://github.com/LINBIT/vmshed|^vmshed-linux-amd64$|$LOCAL_BIN_PATH/vmshed|755"
+        )
+        for i in ${ASSETS[@]}; do
+          _DownloadViaFetch "$i"
+        done
+        echo "" >&2
+      fi
+
+      unset CONFIRMATION
+      read -p "Configure AppArmor for LINBIT/virter [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        $SUDO_CMD tee -a /etc/apparmor.d/local/abstractions/libvirt-qemu > /dev/null <<'EOT'
+/var/lib/libvirt/images/* rwk,
+# required for QEMU accessing UEFI nvram variables
+/usr/share/OVMF/* rk,
+owner /var/lib/libvirt/qemu/nvram/*_VARS.fd rwk,
+owner /var/lib/libvirt/qemu/nvram/*_VARS.ms.fd rwk,
+EOT
+        $SUDO_CMD systemctl daemon-reload && \
+          $SUDO_CMD systemctl restart apparmor.service
+          $SUDO_CMD systemctl systemctl restart libvirtd.service
+      fi
+    fi
+
     # install Vagrant
     unset CONFIRMATION
     read -p "Attempt to download and install latest version of Vagrant from releases.hashicorp.com [Y/n]? " CONFIRMATION
@@ -1228,41 +1338,6 @@ function InstallVirtualization {
         if [[ $CONFIRMATION =~ ^[Yy] ]]; then
           ${CONTAINER_ENGINE} pull ghcr.io/mmguero-dev/vagrant-libvirt:latest
         fi
-      fi
-    fi
-
-    # install Vagrant
-    unset CONFIRMATION
-    read -p "Download latest version of LINBIT/virter from GitHub [y/N]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-N}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      curl -L -o "${LOCAL_BIN_PATH}"/virter.new "https://github.com/LINBIT/virter/releases/latest/download/virter-linux-amd64"
-      chmod 755 "${LOCAL_BIN_PATH}"/virter.new
-      rm -f "${LOCAL_BIN_PATH}"/virter
-      mv "${LOCAL_BIN_PATH}"/virter.new "${LOCAL_BIN_PATH}"/virter
-      unset CONFIRMATION
-      read -p "Download latest version of LINBIT/vmshed from GitHub [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        curl -L -o "${LOCAL_BIN_PATH}"/vmshed.new "https://github.com/LINBIT/vmshed/releases/latest/download/vmshed-linux-amd64"
-        chmod 755 "${LOCAL_BIN_PATH}"/vmshed.new
-        rm -f "${LOCAL_BIN_PATH}"/vmshed
-        mv "${LOCAL_BIN_PATH}"/vmshed.new "${LOCAL_BIN_PATH}"/vmshed
-      fi
-      unset CONFIRMATION
-      read -p "Configure AppArmor for LINBIT/virter [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-N}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        $SUDO_CMD tee -a /etc/apparmor.d/local/abstractions/libvirt-qemu > /dev/null <<'EOT'
-/var/lib/libvirt/images/* rwk,
-# required for QEMU accessing UEFI nvram variables
-/usr/share/OVMF/* rk,
-owner /var/lib/libvirt/qemu/nvram/*_VARS.fd rwk,
-owner /var/lib/libvirt/qemu/nvram/*_VARS.ms.fd rwk,
-EOT
-        $SUDO_CMD systemctl daemon-reload && \
-          $SUDO_CMD systemctl restart apparmor.service
-          $SUDO_CMD systemctl systemctl restart libvirtd.service
       fi
     fi
 
@@ -1455,7 +1530,6 @@ function InstallCommonPackages {
           main/sudo
           main/time
           main/unrar
-          main/unzip
           main/vim
           main/watchexec
           main/yq
@@ -1482,7 +1556,6 @@ function InstallCommonPackages {
           patchutils
           time
           unrar
-          unzip
           vim
           zip
         )
@@ -1598,7 +1671,6 @@ function InstallCommonPackages {
         tzdata
         ufw
         unrar
-        unzip
         vim-tiny
         zip
         zlib1g
@@ -1745,6 +1817,7 @@ function InstallCommonPackagesGUI {
         pdftk
         regexxer
         rofi
+        sassc
         seahorse
         sublime-text
         thunar
@@ -1769,7 +1842,7 @@ function InstallCommonPackagesGUI {
         _GitClone https://github.com/vinceliuice/vimix-gtk-themes "$TMP_CLONE_DIR"
         pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
         mkdir -p "$HOME"/.themes
-        ./install.sh -d "$HOME"/.themes -n vimix -c dark -t beryl -s laptop
+        ./install.sh -d "$HOME"/.themes -n vimix -c dark -t beryl -s compact
         popd >/dev/null 2>&1
         rm -rf "$TMP_CLONE_DIR"
       fi
@@ -2440,32 +2513,6 @@ function InstallUserLocalBinaries {
         mv "$LOCAL_BIN_PATH"/pcloud.new "$LOCAL_BIN_PATH"/pcloud && rm -f "$LOCAL_BIN_PATH"/pcloud.old
       fi
 
-      # fetch will be used to download other release/tag assets from GitHub
-      TMP_CLONE_DIR="$(mktemp -d)"
-      pushd "$TMP_CLONE_DIR" >/dev/null 2>&1
-      FETCH_ALT_URL=
-      if [[ $DEB_ARCH == arm* ]]; then
-        if [[ $LINUX_CPU == aarch64 ]]; then
-          FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_linux_arm64"
-        else
-          # todo
-          FETCH_URL=
-        fi
-      else
-        FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_linux_amd64"
-        FETCH_ALT_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/fetch_linux_amd64"
-      fi
-      curl -fsSL -o ./fetch "$FETCH_URL"
-      chmod 755 ./fetch
-      if ./fetch --version >/dev/null 2>&1; then
-        cp -f ./fetch "$LOCAL_BIN_PATH"/fetch
-      elif [[ -n "$FETCH_ALT_URL" ]]; then
-        curl -fsSL -o "$LOCAL_BIN_PATH"/fetch "$FETCH_URL"
-        chmod 755 "$LOCAL_BIN_PATH"/fetch
-      fi
-      popd >/dev/null 2>&1
-      rm -rf "$TMP_CLONE_DIR"
-
       if [[ -x "$LOCAL_BIN_PATH"/fetch ]]; then
         if [[ "$LINUX_ARCH" =~ ^arm ]]; then
           if [[ "$LINUX_CPU" == "aarch64" ]]; then
@@ -2581,44 +2628,8 @@ function InstallUserLocalBinaries {
           )
         fi
 
-        [[ -z "$GITHUB_OAUTH_TOKEN" ]] && [[ -n "$GITHUB_TOKEN" ]] && export GITHUB_OAUTH_TOKEN="$GITHUB_TOKEN"
-
         for i in ${ASSETS[@]}; do
-          REPO="$(echo "$i" | cut -d'|' -f1)"
-          ASSET_REGEX="$(echo "$i" | cut -d'|' -f2)"
-          OUTPUT_FILE="$(echo "$i" | cut -d'|' -f3)"
-          OUTPUT_FILE_PERMS="$(echo "$i" | cut -d'|' -f4)"
-          echo "" >&2
-          echo "Downloading asset for $REPO..." >&2
-          FETCH_DIR="$(mktemp -d)"
-          "$LOCAL_BIN_PATH"/fetch --progress --log-level warn \
-            --repo="$REPO" \
-            --tag=">=0.0.0" \
-            --release-asset="$ASSET_REGEX" \
-            "$FETCH_DIR"
-          mv "$FETCH_DIR"/* "$OUTPUT_FILE"
-          rm -rf "$FETCH_DIR"
-          if [[ -f "$OUTPUT_FILE" ]]; then
-            chmod "${OUTPUT_FILE_PERMS:-644}" "$OUTPUT_FILE"
-            touch -m "$OUTPUT_FILE"
-            if [[ "$OUTPUT_FILE" == *.tar.gz ]] || [[ "$OUTPUT_FILE" == *.tgz ]]; then
-              UNPACK_DIR="$(mktemp -d)"
-              tar xzf "$OUTPUT_FILE" -C "$UNPACK_DIR"
-            elif [[ "$OUTPUT_FILE" == *.tar.xz ]] || [[ "$OUTPUT_FILE" == *.xz ]]; then
-              UNPACK_DIR="$(mktemp -d)"
-              tar xJf "$OUTPUT_FILE" -C "$UNPACK_DIR" --strip-components 1
-            elif [[ "$OUTPUT_FILE" == *.zip ]]; then
-              UNPACK_DIR="$(mktemp -d)"
-              unzip -q "$OUTPUT_FILE" -d "$UNPACK_DIR"
-            fi
-            if [[ -d "$UNPACK_DIR" ]]; then
-              find "$UNPACK_DIR" -type f -exec touch -m "{}" \;
-              find "$UNPACK_DIR" -type f -exec file --mime-type "{}" \; | \
-                grep -P ":\s+application/.*executable" | \
-                cut -d: -f 1 | xargs -I XXX -r mv "XXX" "$LOCAL_BIN_PATH"/
-              rm -rf "$UNPACK_DIR" "$OUTPUT_FILE"
-            fi
-          fi
+          _DownloadViaFetch "$i"
         done
         echo "" >&2
       fi
