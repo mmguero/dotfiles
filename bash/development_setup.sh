@@ -1922,6 +1922,7 @@ function InstallCommonPackagesNetworking {
         cifs-utils
         cryptcat
         curl
+        dnsmasq-utils
         dnsutils
         dsniff
         ethtool
