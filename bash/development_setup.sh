@@ -2698,6 +2698,7 @@ function SetupGroupsAndSudo {
 %netdev ALL=(root) NOPASSWD: /usr/local/bin/wwg.sh
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 %cryptkeeper ALL=(root) NOPASSWD:/usr/bin/veracrypt
+%libvirt ALL=(ALL) NOPASSWD: /usr/bin/dhcp_release
 EOT
         $SUDO_CMD chmod 440 /etc/sudoers.d/power_groups
       fi # confirmation on group stuff
