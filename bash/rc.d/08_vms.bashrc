@@ -127,16 +127,26 @@ if [[ $LINUX ]]; then
   }
 
   function vvdeb() {
+    MEMGB="$(numfmt --to iec --format "%8f" $(echo ${QEMU_RAM:-4096}*1024*1024 | bc) | sed "s/\.0G$/GiB/")"
+    ID=$((120 + $RANDOM % 80))
     virter vm run debian-12 \
-      --id $((20 + $RANDOM % 80)) \
+      --id ${ID} \
+      --name "debian-${ID}" \
       --vcpus ${QEMU_CPU:-2} \
-      --memory ${QEMU_RAM:-4096} \
+      --memory ${MEMGB} \
       --bootcapacity ${QEMU_DISK:-50G} \
       --mount "host=$(pwd),vm=/host" \
       --user debian \
       --wait-ssh \
       --container-pull-policy Never \
       "$@"
+    virter vm ssh "debian-${ID}"
+    unset CONFIRMATION
+    read -p "Remove VM debian-${ID} [y/N]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-N}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      virter vm rm "debian-${ID}"
+    fi
   }
 
 else
