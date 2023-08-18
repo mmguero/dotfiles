@@ -126,6 +126,19 @@ if [[ $LINUX ]]; then
     done <<<$(vagrant box list --no-tty --no-color | tr -d ',()' | tr -s ' ' | tr -s '\n' )
   }
 
+  function vvdeb() {
+    virter vm run debian-12 \
+      --id $((20 + $RANDOM % 80)) \
+      --vcpus ${QEMU_CPU:-2} \
+      --memory ${QEMU_RAM:-4096} \
+      --bootcapacity ${QEMU_DISK:-50G} \
+      --mount "host=$(pwd),vm=/host" \
+      --user debian \
+      --wait-ssh \
+      --container-pull-policy Never \
+      "$@"
+  }
+
 else
   alias vag='vagrant'
   alias vup='vagrant up'

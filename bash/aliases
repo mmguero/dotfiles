@@ -85,6 +85,7 @@ alias fd="fd --no-ignore --hidden --ignore-case --exclude '.git'"
 # net/vpn/tunnel
 alias ov='sudo openvpn'
 alias wwg='sudo wwg.sh'
+alias wgq='sudo wg-quick'
 
 #development/misc
 alias pycheck='python3 -m py_compile'

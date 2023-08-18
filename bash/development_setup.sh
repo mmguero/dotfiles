@@ -2696,6 +2696,7 @@ function SetupGroupsAndSudo {
 %disk ALL=(root) NOPASSWD: /bin/umount
 %netdev ALL=(root) NOPASSWD: /usr/sbin/openvpn
 %netdev ALL=(root) NOPASSWD: /usr/local/bin/wwg.sh
+%netdev ALL=(root) NOPASSWD: /usr/bin/wg-quick
 %cryptkeeper ALL=(root) NOPASSWD:/sbin/cryptsetup
 %cryptkeeper ALL=(root) NOPASSWD:/usr/bin/veracrypt
 %libvirt ALL=(ALL) NOPASSWD: /usr/bin/dhcp_release
