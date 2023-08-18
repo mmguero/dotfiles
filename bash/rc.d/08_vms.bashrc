@@ -129,9 +129,11 @@ if [[ $LINUX ]]; then
   function vvdeb() {
     MEMGB="$(numfmt --to iec --format "%8f" $(echo ${QEMU_RAM:-4096}*1024*1024 | bc) | sed "s/\.0G$/GiB/")"
     ID=$((120 + $RANDOM % 80))
-    virter vm run debian-12 \
+    [[ "${QEMU_ARCH:-amd64}" == "amd64" ]] && IMG_SUFFIX= || IMG_SUFFIX="-${QEMU_ARCH}"
+    virter vm run debian-12"${IMG_SUFFIX}" \
       --id ${ID} \
       --name "debian-${ID}" \
+      --arch "${QEMU_ARCH:-amd64}" \
       --vcpus ${QEMU_CPU:-2} \
       --memory ${MEMGB} \
       --bootcapacity ${QEMU_DISK:-50G} \
