@@ -426,6 +426,7 @@ function InstallEnvs {
           libxmlsec1-dev \
           llvm \
           make \
+          tk-dev \
           wget \
           xz-utils \
           zlib1g-dev
