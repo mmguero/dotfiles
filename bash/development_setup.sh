@@ -386,19 +386,35 @@ function InstallEnvs {
       _EnvSetup
       if [[ -n $ASDF_DIR ]]; then
         asdf update
+
+        unset CONFIRMATION
+        read -p "Update all installed envs [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          ASDF_AUTO_UPDATE=true
+        else
+          ASDF_AUTO_UPDATE=false
+        fi
+
         for i in ${ENV_LIST[@]}; do
           if ! ( asdf plugin list | grep -q "$i" ) >/dev/null 2>&1 ; then
-            unset CONFIRMATION
-            read -p "\"$i\" is not installed, attempt to install it [y/N]? " CONFIRMATION
-            CONFIRMATION=${CONFIRMATION:-N}
-            if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-              asdf plugin add "$i" && ENVS_INSTALLED[$i]=true
+            if ! "$ASDF_AUTO_UPDATE"; then
+              unset CONFIRMATION
+              read -p "\"$i\" is not installed, attempt to install it [y/N]? " CONFIRMATION
+              CONFIRMATION=${CONFIRMATION:-N}
+              if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+                asdf plugin add "$i" && ENVS_INSTALLED[$i]=true
+              fi
             fi
           else
-            unset CONFIRMATION
-            read -p "\"$i\" is already installed, attempt to update it [Y/n]? " CONFIRMATION
-            CONFIRMATION=${CONFIRMATION:-Y}
-            if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+            if ! "$ASDF_AUTO_UPDATE"; then
+              unset CONFIRMATION
+              read -p "\"$i\" is already installed, attempt to update it [Y/n]? " CONFIRMATION
+              CONFIRMATION=${CONFIRMATION:-Y}
+              if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+                ENVS_INSTALLED[$i]=true
+              fi
+            else
               ENVS_INSTALLED[$i]=true
             fi
           fi
@@ -2084,37 +2100,49 @@ function InstallCommonPackagesNetworking {
 
 ################################################################################
 function InstallLatestFirefoxLinuxAmd64 {
-  if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
-    if [[ "$LINUX_ARCH" == "amd64" ]]; then
-      curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
-      if [[ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]]; then
-        $SUDO_CMD mkdir -p /opt
-        $SUDO_CMD rm -rvf /opt/firefox
-        $SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C /opt/
-        rm -vf /tmp/firefox.tar.bz2
-        if [[ -f /opt/firefox/firefox ]]; then
-          $SUDO_CMD rm -vf /usr/local/bin/firefox
-          $SUDO_CMD ln -rs /opt/firefox/firefox /usr/local/bin/firefox
-          $SUDO_CMD tee /usr/share/applications/firefox.desktop > /dev/null <<'EOT'
+  if [[ -n $LINUX ]] && [[ -z $WSL ]] && [[ "$LINUX_ARCH" == "amd64" ]]; then
+
+    unset CONFIRMATION
+    read -p "Install firefox under \"$LOCAL_DATA_PATH\" [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      FIREFOX_DIR="$LOCAL_DATA_PATH"/firefox
+      FIREFOX_SUDO_CMD=
+      FIREFOX_LINK_DIR=$LOCAL_BIN_PATH
+      FIREFOX_DESKTOP="$LOCAL_DATA_PATH"/applications/firefox.desktop
+    else
+      FIREFOX_DIR=/opt/firefox
+      FIREFOX_SUDO_CMD=$SUDO_CMD
+      FIREFOX_LINK_DIR=/usr/local/bin
+      FIREFOX_DESKTOP=/usr/share/applications/firefox.desktop
+    fi
+    curl -o /tmp/firefox.tar.bz2 -L "https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US"
+    if [[ $(file -b --mime-type /tmp/firefox.tar.bz2) = 'application/x-bzip2' ]]; then
+      $FIREFOX_SUDO_CMD mkdir -p "$(dirname "$FIREFOX_DIR")"
+      $FIREFOX_SUDO_CMD rm -rvf "$FIREFOX_DIR"
+      $FIREFOX_SUDO_CMD tar -xvf /tmp/firefox.tar.bz2 -C "$(dirname "$FIREFOX_DIR")"/
+      rm -vf /tmp/firefox.tar.bz2
+      if [[ -f "$FIREFOX_DIR"/firefox ]]; then
+        $FIREFOX_SUDO_CMD rm -vf "$FIREFOX_LINK_DIR"/firefox
+        $FIREFOX_SUDO_CMD ln -rs "$FIREFOX_DIR"/firefox "$FIREFOX_LINK_DIR"/firefox
+        $FIREFOX_SUDO_CMD tee "$FIREFOX_DESKTOP" > /dev/null <<EOT
 [Desktop Entry]
 Name=Firefox
 Comment=Web Browser
 GenericName=Web Browser
 X-GNOME-FullName=Firefox Web Browser
-Exec=/opt/firefox/firefox %u
+Exec=$FIREFOX_DIR/firefox %u
 Terminal=false
 X-MultipleArgs=false
 Type=Application
-Icon=/opt/firefox/browser/chrome/icons/default/default128.png
+Icon=$FIREFOX_DIR/browser/chrome/icons/default/default128.png
 Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/vnd.mozilla.xul+xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;
 StartupWMClass=Firefox
 StartupNotify=true
 EOT
-          dpkg -s firefox-esr >/dev/null 2>&1 && $SUDO_CMD apt-get -y --purge remove firefox-esr
-        fi
-      fi # /tmp/firefox.tar.bz2 check
-    fi
+      fi
+    fi # /tmp/firefox.tar.bz2 check
   fi # Linux
 }
 

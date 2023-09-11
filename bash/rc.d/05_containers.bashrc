@@ -541,7 +541,7 @@ function phealth() { CONTAINER_ENGINE=podman chealth "$@"; }
 
 # backup *all* images!
 function docker_backup() {
-  for IMAGE in $(docker images | tail -n +2 | cols 1 2 | sed "s/ /:/" | grep -Pv "(malcolmnetsec)"); do
+  for IMAGE in $(docker images | tail -n +2 | cols 1 2 | sed "s/ /:/" | grep -Pv "(malcolm)"); do
     export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g')
     docker save "$IMAGE" | pv | pigz > "$FN.tgz"
   done
