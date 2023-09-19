@@ -1489,6 +1489,7 @@ function InstallCommonPackages {
       brew install grep
 
       brew install detox
+      brew install fx
       brew install gzip
       brew install htop
       brew install iproute2mac
@@ -1533,6 +1534,7 @@ function InstallCommonPackages {
           main/fd
           main/file
           main/findutils
+          main/fx
           main/gnupg
           main/gron
           main/jdupes
