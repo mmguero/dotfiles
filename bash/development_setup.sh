@@ -1327,7 +1327,7 @@ owner /var/lib/libvirt/qemu/nvram/*_VARS.ms.fd rwk,
 EOT
         $SUDO_CMD systemctl daemon-reload && \
           $SUDO_CMD systemctl restart apparmor.service
-          $SUDO_CMD systemctl systemctl restart libvirtd.service
+          $SUDO_CMD systemctl restart libvirtd.service
       fi
     fi
 
