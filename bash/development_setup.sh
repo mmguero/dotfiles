@@ -2534,6 +2534,7 @@ function InstallUserLocalBinaries {
         if [[ "$LINUX_ARCH" =~ ^arm ]]; then
           if [[ "$LINUX_CPU" == "aarch64" ]]; then
             ASSETS=(
+              "https://github.com/antonmedv/fx|^fx_linux_arm64$|$LOCAL_BIN_PATH/fx|755"
               "https://github.com/aptible/supercronic|^supercronic-linux-arm64$|$LOCAL_BIN_PATH/supercronic|755"
               "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm64$|$LOCAL_BIN_PATH/boringproxy|755"
               "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
@@ -2541,7 +2542,7 @@ function InstallUserLocalBinaries {
               "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
               "https://github.com/FiloSottile/age|^age-v.+-linux-arm64\.tar\.gz$|/tmp/age.tar.gz"
-              "https://github.com/gabrie30/ghorg|^ghorg_Linux_arm64\.tar\.gz$|/tmp/ghorg.tar.gz"
+              "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_arm64\.tar\.gz$|/tmp/ghorg.tar.gz"
               "https://github.com/gcla/termshark|^termshark_.+_linux_arm64\.tar\.gz$|/tmp/termshark.tar.gz"
               "https://github.com/mikefarah/yq|^yq_linux_arm64$|$LOCAL_BIN_PATH/yq|755"
               "https://github.com/neilotoole/sq|^sq-.+arm64-arm64\.tar\.gz$|/tmp/sq.tar.gz"
@@ -2613,6 +2614,7 @@ function InstallUserLocalBinaries {
           fi
         else
           ASSETS=(
+            "https://github.com/antonmedv/fx|^fx_linux_amd64$|$LOCAL_BIN_PATH/fx|755"
             "https://github.com/aptible/supercronic|^supercronic-linux-amd64$|$LOCAL_BIN_PATH/supercronic|755"
             "https://github.com/boringproxy/boringproxy|^boringproxy-linux-x86_64$|$LOCAL_BIN_PATH/boringproxy|755"
             "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-x86_64-unknown-linux-musl\.tar\.gz$|/tmp/ripgrep.tar.gz"
@@ -2620,7 +2622,7 @@ function InstallUserLocalBinaries {
             "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
             "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
             "https://github.com/FiloSottile/age|^age-v.+-linux-amd64\.tar\.gz$|/tmp/age.tar.gz"
-            "https://github.com/gabrie30/ghorg|^ghorg_Linux_x86_64\.tar\.gz$|/tmp/ghorg.tar.gz"
+            "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_x86_64\.tar\.gz$|/tmp/ghorg.tar.gz"
             "https://github.com/gcla/termshark|^termshark_.+_linux_x64\.tar\.gz$|/tmp/termshark.tar.gz"
             "https://github.com/jez/as-tree|^as-tree-.+-linux\.zip$|/tmp/as-tree.zip"
             "https://github.com/mikefarah/yq|^yq_linux_amd64$|$LOCAL_BIN_PATH/yq|755"
