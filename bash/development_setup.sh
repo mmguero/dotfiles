@@ -847,7 +847,7 @@ function DockerPullImages {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         alpine:latest
-        amazonlinux:2
+        amazonlinux:2023
         debian:stable-slim
         debian:bookworm-slim
         bitnami/minideb:latest
