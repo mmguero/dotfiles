@@ -2560,7 +2560,7 @@ function InstallUserLocalBinaries {
               "https://github.com/smallstep/cli|^step_linux_.+_arm64\.tar\.gz$|/tmp/step.tar.gz"
               "https://github.com/starship/starship|^starship-aarch64-unknown-linux-musl\.tar\.gz$|/tmp/starship.tar.gz"
               "https://github.com/stern/stern|^stern_.+_linux_arm64\.tar\.gz$|/tmp/stern.tar.gz"
-              "https://github.com/tomnomnom/gron|^gron-linux-arm64-.+\.tgz$|/tmp/gron\.tgz"
+              "https://github.com/tomnomnom/gron|^gron-linux-arm64-.+\.tgz$|/tmp/gron.tgz"
               "https://github.com/wader/fq|^fq_.+_linux_arm64\.tar\.gz$|/tmp/fq.tar.gz"
               "https://github.com/watchexec/watchexec|^watchexec-.+-aarch64-unknown-linux-musl\.tar\.xz$|/tmp/watchexec.tar.xz"
             )
@@ -2642,7 +2642,7 @@ function InstallUserLocalBinaries {
             "https://github.com/starship/starship|^starship-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/starship.tar.gz"
             "https://github.com/stern/stern|^stern_.+_linux_amd64\.tar\.gz$|/tmp/stern.tar.gz"
             "https://github.com/timvisee/ffsend|^ffsend-v.+-linux-x64-static$|$LOCAL_BIN_PATH/ffsend|755"
-            "https://github.com/tomnomnom/gron|^gron-linux-amd64-.+\.tgz$|/tmp/gron\.tgz"
+            "https://github.com/tomnomnom/gron|^gron-linux-amd64-.+\.tgz$|/tmp/gron.tgz"
             "https://github.com/wader/fq|^fq_.+_linux_amd64\.tar\.gz$|/tmp/fq.tar.gz"
             "https://github.com/watchexec/watchexec|^watchexec-.+-x86_64-unknown-linux-musl\.tar\.xz$|/tmp/watchexec.tar.xz"
             "https://github.com/Wilfred/difftastic|^difft-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/difft.tar.gz"
