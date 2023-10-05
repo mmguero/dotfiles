@@ -29,3 +29,5 @@ function asdf-latest () {
 function asdf-prune () {
   asdf list | grep -P -v "^\s*\*" | grep -P -B 1 "^\s" | grep -v "\-\-" | paste -s -d" \n" | xargs -r -l asdf uninstall
 }
+
+alias reshim='asdf reshim'
