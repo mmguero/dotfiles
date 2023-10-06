@@ -921,6 +921,8 @@ function media_history_purge() {
       webm \
       webrip \
       yify \
+      ytdlp \
+      yt-dlp \
    ; do \
       while read n; do history -d $n; done < <(history | tac | awk "/${TERM}/{print \$1}" IGNORECASE=1); \
   done && history -w
