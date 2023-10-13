@@ -322,6 +322,7 @@ function _DownloadViaFetch {
       rm -rf "$UNPACK_DIR" "$OUTPUT_FILE"
     fi
   fi
+  echo >&2
 }
 
 ################################################################################
@@ -2519,19 +2520,39 @@ function InstallUserLocalFonts {
 function InstallUserLocalBinaries {
   if [[ -n $LINUX ]]; then
     unset CONFIRMATION
-    read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
+    read -p "Install user-local binaries [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       mkdir -p "$LOCAL_BIN_PATH" "$LOCAL_DATA_PATH"/bash-completion/completions
 
-      if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WSL ]]; then
-        PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
-        curl -fsSL "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud.new
-        chmod 755 "$LOCAL_BIN_PATH"/pcloud.new
-        [[ -f "$LOCAL_BIN_PATH"/pcloud ]] && mv "$LOCAL_BIN_PATH"/pcloud "$LOCAL_BIN_PATH"/pcloud.old
-        mv "$LOCAL_BIN_PATH"/pcloud.new "$LOCAL_BIN_PATH"/pcloud && rm -f "$LOCAL_BIN_PATH"/pcloud.old
+      unset CONFIRMATION
+      read -p "Download all user-local binaries [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        BINARY_UPDATE_ALL=true
+      else
+        BINARY_UPDATE_ALL=false
       fi
 
+      # pcloud (and other one-offs)
+      if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WSL ]]; then
+        [[ "$BINARY_UPDATE_ALL" == "true" ]] && BINARY_UPDATE=true || BINARY_UPDATE=false
+        if [[ "$BINARY_UPDATE" == "false" ]]; then
+          unset CONFIRMATION
+          read -p "Download pcloud [y/N]? " CONFIRMATION
+          CONFIRMATION=${CONFIRMATION:-N}
+          [[ $CONFIRMATION =~ ^[Yy] ]] && BINARY_UPDATE=true
+        fi
+        if [[ "$BINARY_UPDATE" == "true" ]]; then
+          PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
+          curl -fsSL "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud.new
+          chmod 755 "$LOCAL_BIN_PATH"/pcloud.new
+          [[ -f "$LOCAL_BIN_PATH"/pcloud ]] && mv "$LOCAL_BIN_PATH"/pcloud "$LOCAL_BIN_PATH"/pcloud.old
+          mv "$LOCAL_BIN_PATH"/pcloud.new "$LOCAL_BIN_PATH"/pcloud && rm -f "$LOCAL_BIN_PATH"/pcloud.old
+        fi
+      fi
+
+      # github releases via fetch
       if [[ -x "$LOCAL_BIN_PATH"/fetch ]]; then
         if [[ "$LINUX_ARCH" =~ ^arm ]]; then
           if [[ "$LINUX_CPU" == "aarch64" ]]; then
@@ -2616,6 +2637,7 @@ function InstallUserLocalBinaries {
           fi
         else
           ASSETS=(
+            "https://github.com/alphasoc/flightsim|^flightsim_.+_linux_amd64\.tar\.gz$|/tmp/flightsim.tar.gz"
             "https://github.com/antonmedv/fx|^fx_linux_amd64$|$LOCAL_BIN_PATH/fx|755"
             "https://github.com/aptible/supercronic|^supercronic-linux-amd64$|$LOCAL_BIN_PATH/supercronic|755"
             "https://github.com/boringproxy/boringproxy|^boringproxy-linux-x86_64$|$LOCAL_BIN_PATH/boringproxy|755"
@@ -2650,7 +2672,14 @@ function InstallUserLocalBinaries {
         fi
 
         for i in ${ASSETS[@]}; do
-          _DownloadViaFetch "$i"
+          [[ "$BINARY_UPDATE_ALL" == "true" ]] && BINARY_UPDATE=true || BINARY_UPDATE=false
+          if [[ "$BINARY_UPDATE" == "false" ]]; then
+            unset CONFIRMATION
+            read -p "Download $(echo "$i" | cut -d'|' -f1) [y/N]? " CONFIRMATION
+            CONFIRMATION=${CONFIRMATION:-N}
+            [[ $CONFIRMATION =~ ^[Yy] ]] && BINARY_UPDATE=true
+          fi
+          [[ "$BINARY_UPDATE" == "true" ]] && _DownloadViaFetch "$i"
         done
         echo "" >&2
       fi
@@ -2659,7 +2688,7 @@ function InstallUserLocalBinaries {
   elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
 
     unset CONFIRMATION
-    read -p "Install user-local binaries/packages [Y/n]? " CONFIRMATION
+    read -p "Install user-local binaries [Y/n]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       # nothing for now (scoop pretty much did this already)
