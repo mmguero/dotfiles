@@ -526,6 +526,7 @@ function InstallEnvPackages {
         py-cui \
         pyinputplus \
         python-dateutil \
+        python-dotenv \
         python-magic \
         python-slugify \
         pythondialog \
@@ -3020,6 +3021,9 @@ function GueroSymlinks {
 
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/pqiv/pqivrc ]] && rm -vf "$LOCAL_CONFIG_PATH"/pqivrc && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/pqiv/pqivrc "$LOCAL_CONFIG_PATH"/pqivrc
+
+      [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/photorec/photorec.cfg ]] && rm -vf "$HOME"/.photorec.cfg && \
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/photorec/photorec.cfg "$HOME"/.photorec.cfg
 
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc ]] && rm -vf "$HOME"/.xbindkeysrc && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/xbindkeys/xbindkeysrc "$HOME"/.xbindkeysrc
