@@ -2495,16 +2495,20 @@ function InstallUserLocalThemes {
         popd >/dev/null 2>&1
 
         pushd "$LOCAL_DATA_PATH"/icons >/dev/null 2>&1
-        rm -rf ./Zafiro-*
+        rm -rf ./Zafiro* Nordzy*
         "$LOCAL_BIN_PATH"/fetch --log-level warn \
           --repo="https://github.com/zayronxio/Zafiro-icons" \
           --tag=">=0.0.0" \
           --release-asset="Zafiro-Icons-(Dark|Light)\.tar\.xz" .
-        for FILE in Zafiro*.tar.xz; do
+        "$LOCAL_BIN_PATH"/fetch --log-level warn \
+          --repo="https://github.com/alvatip/Nordzy-icon" \
+          --tag=">=0.0.0" \
+          --release-asset="Nordzy(-dark)?\.tar\.gz" .
+        for FILE in Zafiro*.tar.*z Nordzy*.tar.*z; do
           tar xf "$FILE"
           rm -f "$FILE"
         done
-        for FILE in Zafiro-Icons-*; do
+        for FILE in Zafiro* Nordzy*; do
           gtk-update-icon-cache ./"$FILE" >/dev/null 2>&1
         done
         popd >/dev/null 2>&1

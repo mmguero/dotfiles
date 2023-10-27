@@ -3,7 +3,7 @@
 <channel name="xsettings" version="1.0">
   <property name="Net" type="empty">
     <property name="ThemeName" type="string" value="Nordic-darker"/>
-    <property name="IconThemeName" type="string" value="Zafiro-Icons-Dark"/>
+    <property name="IconThemeName" type="string" value="Nordzy-dark"/>
     <property name="DoubleClickTime" type="empty"/>
     <property name="DoubleClickDistance" type="empty"/>
     <property name="DndDragThreshold" type="empty"/>
