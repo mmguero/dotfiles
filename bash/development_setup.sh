@@ -1832,8 +1832,6 @@ function InstallCommonPackagesGUI {
         gtk2-engines-pixbuf
         keepassxc
         meld
-        numix-gtk-theme
-        obsidian-icon-theme
         pdftk
         regexxer
         rofi
@@ -2472,6 +2470,46 @@ EOX
     fi
 
   fi # Linux vs. MSYS
+}
+
+################################################################################
+function InstallUserLocalThemes {
+  if [[ -n $LINUX ]] && [[ -z $WSL ]] && [[ -x "$LOCAL_BIN_PATH"/fetch ]]; then
+      unset CONFIRMATION
+      read -p "Install user-local themes [Y/n]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-Y}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        [[ -z "$GITHUB_OAUTH_TOKEN" ]] && [[ -n "$GITHUB_TOKEN" ]] && export GITHUB_OAUTH_TOKEN="$GITHUB_TOKEN"
+        mkdir -p "$LOCAL_DATA_PATH"/icons "$HOME"/.themes
+
+        pushd "$HOME"/.themes >/dev/null 2>&1
+        rm -rf ./Nordic-darker ./Nordic-Polar
+        "$LOCAL_BIN_PATH"/fetch --log-level warn \
+          --repo="https://github.com/EliverLara/Nordic" \
+          --tag=">=0.0.0" \
+          --release-asset="Nordic(-darker|-Polar)?\.tar\.xz" .
+        for FILE in *.tar.xz; do
+          tar xf "$FILE"
+          rm -f "$FILE"
+        done
+        popd >/dev/null 2>&1
+
+        pushd "$LOCAL_DATA_PATH"/icons >/dev/null 2>&1
+        rm -rf ./Zafiro-*
+        "$LOCAL_BIN_PATH"/fetch --log-level warn \
+          --repo="https://github.com/zayronxio/Zafiro-icons" \
+          --tag=">=0.0.0" \
+          --release-asset="Zafiro-Icons-(Dark|Light)\.tar\.xz" .
+        for FILE in Zafiro*.tar.xz; do
+          tar xf "$FILE"
+          rm -f "$FILE"
+        done
+        for FILE in Zafiro-Icons-*; do
+          gtk-update-icon-cache ./"$FILE" >/dev/null 2>&1
+        done
+        popd >/dev/null 2>&1
+      fi
+  fi
 }
 
 ################################################################################
@@ -3159,6 +3197,7 @@ if (( $USER_FUNCTION_IDX == 0 )); then
   CreateCommonLinuxConfig
   InstallEnvPackages
   InstallUserLocalFonts
+  InstallUserLocalThemes
   InstallUserLocalBinaries
   SetupGroupsAndSudo
   SetupNICPrivs
