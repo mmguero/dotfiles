@@ -1446,6 +1446,7 @@ function InstallCommonPackages {
       brew install diffutils
       brew install direnv
       brew install dos2unix
+      brew install eza
 
       # All commands have been installed with the prefix "g".
       # If you need to use these commands with their normal names, you
@@ -1532,6 +1533,7 @@ function InstallCommonPackages {
           main/diffutils
           main/direnv
           main/dos2unix
+          main/eza
           main/fd
           main/file
           main/findutils
