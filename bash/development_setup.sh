@@ -62,7 +62,6 @@ ENV_LIST=(
   bat
   difftastic
   direnv
-  exa
   fd
   fzf
   ghorg
@@ -2608,13 +2607,13 @@ function InstallUserLocalBinaries {
               "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_arm64\.tar\.gz$|/tmp/rclone-tui.tar.gz"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
+              "https://github.com/eza-community/eza|^eza_aarch64-unknown-linux-gnu\.tar\.gz$|/tmp/eza.tar.gz"
               "https://github.com/FiloSottile/age|^age-v.+-linux-arm64\.tar\.gz$|/tmp/age.tar.gz"
               "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_arm64\.tar\.gz$|/tmp/ghorg.tar.gz"
               "https://github.com/gcla/termshark|^termshark_.+_linux_arm64\.tar\.gz$|/tmp/termshark.tar.gz"
               "https://github.com/mikefarah/yq|^yq_linux_arm64$|$LOCAL_BIN_PATH/yq|755"
               "https://github.com/neilotoole/sq|^sq-.+arm64-arm64\.tar\.gz$|/tmp/sq.tar.gz"
               "https://github.com/nektos/act|^act_Linux_arm64\.tar\.gz$|/tmp/act.tar.gz"
-              "https://github.com/ogham/exa|^exa-linux-armv7-v.+\.zip$|/tmp/exa.zip"
               "https://github.com/peco/peco|^peco_linux_arm64\.tar\.gz$|/tmp/peco.tar.gz"
               "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_arm64\.zip$|/tmp/httpx.zip"
               "https://github.com/rclone/rclone|^rclone-v.+-linux-arm64\.zip$|/tmp/rclone.zip"
@@ -2638,11 +2637,11 @@ function InstallUserLocalBinaries {
               "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_armv6\.tar\.gz$|/tmp/rclone-tui.tar.gz"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-armv6$|$LOCAL_BIN_PATH/docker-credential-pass|755"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-armv6$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
+              "https://github.com/eza-community/eza|^eza_arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/eza.tar.gz"
               "https://github.com/FiloSottile/age|^age-v.+-linux-arm\.tar\.gz$|/tmp/age.tar.gz"
               "https://github.com/gcla/termshark|^termshark_.+_linux_armv6\.tar\.gz$|/tmp/termshark.tar.gz"
               "https://github.com/mikefarah/yq|^yq_linux_arm$|$LOCAL_BIN_PATH/yq|755"
               "https://github.com/nektos/act|^act_Linux_armv6\.tar\.gz$|/tmp/act.tar.gz"
-              "https://github.com/ogham/exa|^exa-linux-armv7-v.+\.zip$|/tmp/exa.zip"
               "https://github.com/peco/peco|^peco_linux_arm\.tar\.gz$|/tmp/peco.tar.gz"
               "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_armv6\.zip$|/tmp/httpx.zip"
               "https://github.com/rclone/rclone|^rclone-v.+-linux-arm\.zip$|/tmp/rclone.zip"
@@ -2663,11 +2662,11 @@ function InstallUserLocalBinaries {
               "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_armv7\.tar\.gz$|/tmp/rclone-tui.tar.gz"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-armv7$|$LOCAL_BIN_PATH/docker-credential-pass|755"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-armv7$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
+              "https://github.com/eza-community/eza|^eza_arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/eza.tar.gz"
               "https://github.com/FiloSottile/age|^age-v.+-linux-arm\.tar\.gz$|/tmp/age.tar.gz"
               "https://github.com/gcla/termshark|^termshark_.+_linux_armv6\.tar\.gz$|/tmp/termshark.tar.gz"
               "https://github.com/mikefarah/yq|^yq_linux_arm$|$LOCAL_BIN_PATH/yq|755"
               "https://github.com/nektos/act|^act_Linux_armv7\.tar\.gz$|/tmp/act.tar.gz"
-              "https://github.com/ogham/exa|^exa-linux-armv7-v.+\.zip$|/tmp/exa.zip"
               "https://github.com/peco/peco|^peco_linux_arm\.tar\.gz$|/tmp/peco.tar.gz"
               "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_armv6\.zip$|/tmp/httpx.zip"
               "https://github.com/rclone/rclone|^rclone-v.+-linux-arm-v7\.zip$|/tmp/rclone.zip"
@@ -2692,6 +2691,7 @@ function InstallUserLocalBinaries {
             "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_x86_64\.tar\.gz$|/tmp/rclone-tui.tar.gz"
             "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
             "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
+            "https://github.com/eza-community/eza|^eza_x86_64-unknown-linux-musl\.tar\.gz$|/tmp/eza.tar.gz"
             "https://github.com/FiloSottile/age|^age-v.+-linux-amd64\.tar\.gz$|/tmp/age.tar.gz"
             "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_x86_64\.tar\.gz$|/tmp/ghorg.tar.gz"
             "https://github.com/gcla/termshark|^termshark_.+_linux_x64\.tar\.gz$|/tmp/termshark.tar.gz"
@@ -2699,7 +2699,6 @@ function InstallUserLocalBinaries {
             "https://github.com/mikefarah/yq|^yq_linux_amd64$|$LOCAL_BIN_PATH/yq|755"
             "https://github.com/neilotoole/sq|^sq-.+amd64-amd64\.tar\.gz$|/tmp/sq.tar.gz"
             "https://github.com/nektos/act|^act_Linux_x86_64\.tar\.gz$|/tmp/act.tar.gz"
-            "https://github.com/ogham/exa|^exa-linux-x86_64-v.+\.zip$|/tmp/exa.zip"
             "https://github.com/peco/peco|^peco_linux_amd64\.tar\.gz$|/tmp/peco.tar.gz"
             "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_amd64\.zip$|/tmp/httpx.zip"
             "https://github.com/rclone/rclone|^rclone-v.+-linux-amd64\.zip$|/tmp/rclone.zip"
