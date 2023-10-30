@@ -24,13 +24,13 @@ alias eld="eza --all --long --only-dirs --sort name"
 alias esize="eza --long --sort size"
 alias et="eza --long --sort modified"
 alias etree="eza --tree"
+alias la=ea
+alias l=e
+alias ll=el
+alias lt=et
+alias lsize=esize
+alias lld=eld
 alias ls="ls --block-size=\"'1\" --color=auto --group-directories-first"
-alias la='ls -A'
-alias l='ls -oah'
-alias ll='ls -l --si --color=auto --group-directories-first'
-alias lt='ls -ltr'
-alias lsize='ls -lSrh'
-alias lld='ls -lUd */'
 alias df='df -Th -x"squashfs" -x"tmpfs" -x"devtmpfs" -x"overlay" 2>/dev/null'
 [[ -z $MSYSTEM ]] && alias ln='ln -s'
 alias lp='lesspipe'
