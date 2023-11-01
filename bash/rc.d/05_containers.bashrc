@@ -478,9 +478,10 @@ function compose() {
   [[ -n "$UID" ]] && \
     [[ -e "/run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock" ]] && \
     export DOCKER_HOST="unix:///run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock"
-
-  # as podman now has docker-compose support, we'll default to that for either if available
-  if command -v docker-compose >/dev/null 2>&1; then
+  if ${CONTAINER_ENGINE} compose version 2>&1 >/dev/null; then
+    ${CONTAINER_ENGINE} compose "$@"
+  elif command -v docker-compose >/dev/null 2>&1; then
+      # as podman now has docker-compose support, we'll default to that for either if available
       docker-compose "$@"
   else
     ${CONTAINER_ENGINE}-compose "$@"
