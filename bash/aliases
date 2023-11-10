@@ -71,7 +71,6 @@ alias vc='sudo veracrypt'
 alias x='xargs -r -l'
 alias entropy='cat /proc/sys/kernel/random/entropy_avail'
 alias crocs='croc --yes'
-alias hostyoself="hostyoself host --url ${HOSTYOSELF_URL:-https://hostyoself.com}"
 alias mine="sudo chown -R $USER:$USER"
 alias rgfile="cut -d: -f1 | sort -u"
 alias unp=dtrx

@@ -494,6 +494,11 @@ function server()
     fi
 }
 
+function hostyoself()
+{
+  hostyoself host --url ${HOSTYOSELF_URL:-https://hostyoself.com}
+}
+
 function arps()
 {
   /usr/sbin/arp -a | grep -v '^?' | cols 4 1 | sed "s/ /|/" | sed "s/$/|/"
