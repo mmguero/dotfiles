@@ -203,7 +203,7 @@ function InstallEssentialPackages {
     if [[ -n $MSYSTEM ]]; then
       FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_windows_amd64.exe"
       FETCH_BIN_EXT=".exe"
-    elif [[ $DEB_ARCH == arm* ]]; then
+    elif [[ $LINUX_ARCH =~ ^arm ]]; then
       if [[ $LINUX_CPU == aarch64 ]]; then
         FETCH_URL="https://github.com/gruntwork-io/fetch/releases/latest/download/fetch_linux_arm64"
       else
