@@ -16,31 +16,21 @@ alias debkeys='sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.c
 alias watch='watch --color '
 
 #convenience
-if command -v eza >/dev/null 2>&1; then
-    alias eza="eza --binary --color auto --group-directories-first --git --git-repos-no-status --hyperlink --icons auto --mounts --no-permissions --octal-permissions --time-style long-iso"
-    alias e="eza --all --long"
-    alias ea="eza --all"
-    alias el="eza --long"
-    alias eld="eza --all --long --only-dirs --sort name"
-    alias esize="eza --long --sort size"
-    alias et="eza --long --sort modified"
-    alias etree="eza --tree"
-    alias l=e
-    alias la=ea
-    alias ll=el
-    alias lld=eld
-    alias ls="ls --block-size=\"'1\" --color=auto --group-directories-first"
-    alias lsize=esize
-    alias lt=et
-else
-    alias ls="ls --block-size=\"'1\" --color=auto --group-directories-first"
-    alias l='ls -oah'
-    alias la='ls -A'
-    alias ll='ls -l --si --color=auto --group-directories-first'
-    alias lld='ls -lUd */'
-    alias lsize='ls -lSrh'
-    alias lt='ls -ltr'
-fi
+alias eza="eza --binary --color auto --group-directories-first --git --git-repos-no-status --hyperlink --icons auto --mounts --no-permissions --octal-permissions --time-style long-iso"
+alias e="eza --all --long"
+alias ea="eza --all"
+alias el="eza --long"
+alias eld="eza --all --long --only-dirs --sort name"
+alias esize="eza --long --sort size"
+alias et="eza --long --sort modified"
+alias etree="eza --tree"
+alias la=ea
+alias l=e
+alias ll=el
+alias lt=et
+alias lsize=esize
+alias lld=eld
+alias ls="ls --block-size=\"'1\" --color=auto --group-directories-first"
 alias df='df -Th -x"squashfs" -x"tmpfs" -x"devtmpfs" -x"overlay" 2>/dev/null'
 [[ -z $MSYSTEM ]] && alias ln='ln -s'
 alias lp='lesspipe'
