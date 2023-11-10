@@ -494,7 +494,7 @@ function server()
     fi
 }
 
-function hostyoself()
+function hys()
 {
   hostyoself host --url ${HOSTYOSELF_URL:-https://hostyoself.com}
 }
