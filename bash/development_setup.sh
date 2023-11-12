@@ -62,6 +62,7 @@ ENV_LIST=(
   bat
   difftastic
   direnv
+  eza
   fd
   fzf
   ghorg
