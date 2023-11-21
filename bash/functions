@@ -928,10 +928,14 @@ function media_history_purge() {
       yify \
       ytdlp \
       yt-dlp \
+      ytplaylist \
+      ytogg \
    ; do \
       while read n; do history -d $n; done < <(history | tac | awk "/${TERM}/{print \$1}" IGNORECASE=1); \
   done && history -w
 }
+
+alias mpv1080='mpv --autofit=1080x100%'
 
 ########################################################################
 # reference
