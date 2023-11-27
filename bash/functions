@@ -508,7 +508,7 @@ function hysi_cleanup()
 function hysi()
 {
   local DEL_IDX=
-  if [[ ! -f ./index.html ]] && command -v tree >/dev/null 2>&1 && tree -H . -o index.html >/dev/null 2>&1; then
+  if [[ ! -f ./index.html ]] && command -v tree >/dev/null 2>&1 && tree -x --dirsfirst --gitignore -H . -o index.html >/dev/null 2>&1; then
     DEL_IDX=./index.html
   fi
   trap "hysi_cleanup '${DEL_IDX}'" SIGINT EXIT RETURN
