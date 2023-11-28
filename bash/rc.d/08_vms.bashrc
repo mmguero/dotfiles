@@ -126,28 +126,52 @@ if [[ $LINUX ]]; then
     done <<<$(vagrant box list --no-tty --no-color | tr -d ',()' | tr -s ' ' | tr -s '\n' )
   }
 
-  function vvdeb() {
+  function vvrun() {
     MEMGB="$(numfmt --to iec --format "%8f" $(echo ${QEMU_RAM:-4096}*1024*1024 | bc) | sed "s/\.0G$/GiB/")"
+    IMG="${QEMU_IMG:-debian-12}"
     ID=$((120 + $RANDOM % 80))
     [[ "${QEMU_ARCH:-amd64}" == "amd64" ]] && IMG_SUFFIX= || IMG_SUFFIX="-${QEMU_ARCH}"
-    virter vm run debian-12"${IMG_SUFFIX}" \
+
+    declare -A IMG_USERS
+    IMG_USERS[alma-8]=almalinux
+    IMG_USERS[alma-9]=almalinux
+    IMG_USERS[amazonlinux-2023]=ec2-user
+    IMG_USERS[amazonlinux-2]=ec2-user
+    IMG_USERS[centos-6]=centos
+    IMG_USERS[centos-7]=centos
+    IMG_USERS[centos-8]=centos
+    IMG_USERS[debian-10]=debian
+    IMG_USERS[debian-11]=debian
+    IMG_USERS[debian-12-arm64]=debian
+    IMG_USERS[debian-12]=debian
+    IMG_USERS[debian-9]=debian
+    IMG_USERS[rocky-8]=rocky
+    IMG_USERS[rocky-9]=rocky
+    IMG_USERS[ubuntu-bionic]=ubuntu
+    IMG_USERS[ubuntu-focal]=ubuntu
+    IMG_USERS[ubuntu-jammy]=ubuntu
+    IMG_USERS[ubuntu-lunar]=ubuntu
+    IMG_USERS[ubuntu-mantic]=ubuntu
+    IMG_USERS[ubuntu-xenial]=ubuntu
+
+    virter vm run "${IMG}${IMG_SUFFIX}" \
       --id ${ID} \
-      --name "debian-${ID}" \
+      --name "${IMG}-${ID}" \
       --arch "${QEMU_ARCH:-amd64}" \
       --vcpus ${QEMU_CPU:-2} \
       --memory ${MEMGB} \
       --bootcapacity ${QEMU_DISK:-50G} \
       --mount "host=$(pwd),vm=/host" \
-      --user debian \
+      --user "${IMG_USERS["${IMG}"]:-root}" \
       --wait-ssh \
       --container-pull-policy Never \
       "$@"
-    virter vm ssh "debian-${ID}"
+    virter vm ssh "${IMG}-${ID}"
     unset CONFIRMATION
-    read -p "Remove VM debian-${ID} [y/N]? " CONFIRMATION
+    read -p "Remove VM ${IMG}-${ID} [y/N]? " CONFIRMATION
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      virter vm rm "debian-${ID}"
+      virter vm rm "${IMG}-${ID}"
     fi
   }
 
