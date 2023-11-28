@@ -1,0 +1,60 @@
+[ubuntu-mantic]
+url = "https://cloud-images.ubuntu.com/mantic/current/mantic-server-cloudimg-amd64.img"
+
+[ubuntu-lunar]
+url = "https://cloud-images.ubuntu.com/lunar/current/lunar-server-cloudimg-amd64.img"
+
+[ubuntu-jammy]
+url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+
+[ubuntu-focal]
+url = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
+
+[ubuntu-bionic]
+url = "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
+
+[ubuntu-xenial]
+url = "https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img"
+
+[debian-12]
+url = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
+
+[debian-12-arm64]
+url = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2"
+
+[debian-11]
+url = "https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2"
+
+[debian-10]
+url = "https://cloud.debian.org/images/cloud/buster/latest/debian-10-generic-amd64.qcow2"
+
+[debian-9]
+# There is no publicly available "generic" image, but the OpenStack one works
+url = "https://cdimage.debian.org/cdimage/openstack/current-9/debian-9-openstack-amd64.qcow2"
+
+[centos-8]
+url = "https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.4.2105-20210603.0.x86_64.qcow2"
+
+[centos-7]
+url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2"
+
+[centos-6]
+url = "https://cloud.centos.org/centos/6/images/CentOS-6-x86_64-GenericCloud.qcow2"
+
+[amazonlinux-2]
+url = "https://cdn.amazonlinux.com/os-images/2.0.20231101.0/kvm/amzn2-kvm-2.0.20231101.0-x86_64.xfs.gpt.qcow2"
+
+[amazonlinux-2023]
+url = "https://cdn.amazonlinux.com/al2023/os-images/2023.2.20231113.0/kvm/al2023-kvm-2023.2.20231113.0-kernel-6.1-x86_64.xfs.gpt.qcow2"
+
+[rocky-9]
+url = "https://download.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud.latest.x86_64.qcow2"
+
+[rocky-8]
+url = "https://download.rockylinux.org/pub/rocky/8/images/x86_64/Rocky-8-GenericCloud.latest.x86_64.qcow2"
+
+[alma-9]
+url = "https://repo.almalinux.org/almalinux/9/cloud/x86_64/images/AlmaLinux-9-GenericCloud-latest.x86_64.qcow2"
+
+[alma-8]
+url = "https://repo.almalinux.org/almalinux/8/cloud/x86_64/images/AlmaLinux-8-GenericCloud-latest.x86_64.qcow2"

@@ -3063,6 +3063,9 @@ function GueroSymlinks {
       [[ -d "$GUERO_GITHUB_PATH"/linux/containers ]] && rm -vf "$LOCAL_CONFIG_PATH"/containers && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/containers "$LOCAL_CONFIG_PATH"/containers
 
+      [[ -d "$GUERO_GITHUB_PATH"/linux/virter ]] && rm -vf "$LOCAL_DATA_PATH"/virter && \
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/virter "$LOCAL_DATA_PATH"/virter
+
       [[ -r "$GUERO_GITHUB_PATH"/starship/starship.toml ]] && rm -vf "$LOCAL_CONFIG_PATH"/starship.toml && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/starship/starship.toml "$LOCAL_CONFIG_PATH"/starship.toml
 
