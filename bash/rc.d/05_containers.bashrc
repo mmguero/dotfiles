@@ -381,11 +381,29 @@ function x11desktop() {
   fi
 }
 
+function ciso_ports_format() {
+  CONTAINER_NAME=
+  CONTAINER_ENGINE=$1
+  CONTAINER_ID=$2
+  [[ -n "$CONTAINER_ID" ]] && \
+    command -v jq >/dev/null 2>&1 && \
+    CONTAINER_NAME=$($CONTAINER_ENGINE inspect $CONTAINER_ID | jq -r '.[0].Name')
+  [[ -n "$CONTAINER_NAME" ]] || CONTAINER_NAME=$CONTAINER_ID
+  echo -e "Name:\t\t$CONTAINER_NAME"
+  command -v jq >/dev/null 2>&1 && \
+    $CONTAINER_ENGINE inspect $CONTAINER_ID | \
+    jq -r '.[0].NetworkSettings.Ports | to_entries[] | "\(.key)=\(.value[].HostPort)"' | \
+    grep -v "^22/tcp" | \
+    sed "s@5900/tcp=@VNC:\t\tvnc://localhost:@" | \
+    sed "s@8000/tcp=@Download:\thttp://localhost:@" | \
+    sed "s@8081/tcp=@Web View:\thttp://localhost:@"
+}
+
 # run an ISO in QEMU-KVM (ghcr.io/mmguero/qemu-live-iso)
 function ciso() {
     if [[ -e /dev/kvm ]]; then
         if [[ "$1" ]]; then
-            $CONTAINER_ENGINE run \
+          ciso_ports_format $CONTAINER_ENGINE $($CONTAINER_ENGINE run \
             --detach \
             --publish-all \
             --rm \
@@ -394,7 +412,7 @@ function ciso() {
             --device /dev/kvm \
             --volume "$(realpath "$1")":/image/live.iso:ro \
             --pull=never \
-            ghcr.io/mmguero/qemu-live-iso
+            ghcr.io/mmguero/qemu-live-iso)
         else
             echo "No image file specified" >&2
         fi
@@ -408,7 +426,7 @@ function piso() { CONTAINER_ENGINE=podman ciso "$@"; }
 # run ghcr.io/mmguero/deblive in QEMU-KVM
 function deblive() {
     if [[ -e /dev/kvm ]]; then
-      $CONTAINER_ENGINE run \
+      ciso_ports_format $CONTAINER_ENGINE $($CONTAINER_ENGINE run \
       --detach \
       --publish-all \
       --rm \
@@ -417,7 +435,7 @@ function deblive() {
       -e QEMU_CDROM=/image/live.iso \
       --device /dev/kvm \
       --pull=never \
-      ghcr.io/mmguero/deblive
+      ghcr.io/mmguero/deblive)
     else
       echo "/dev/kvm not found" >&2
     fi
