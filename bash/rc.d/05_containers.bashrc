@@ -20,9 +20,7 @@ export DBX_CONTAINER_IMAGE="docker.io/library/debian:stable-slim"
 export DBX_NON_INTERACTIVE="0"
 
 # If you're using just podman, you could uncomment this to have
-# docker/podman clients work more cleanly together. See the
-# compose() function for how I'm dealing with this for docker-compose
-# specifically, which is now supported by podman.
+# docker/podman clients work more cleanly together.
 #
 # command -v podman >/dev/null 2>&1 && \
 #   [[ -n "$UID" ]] && \
@@ -464,6 +462,7 @@ function cclean() {
     $CONTAINER_ENGINE rm -v $($CONTAINER_ENGINE ps --filter status=exited -q 2>/dev/null) 2>/dev/null
     $CONTAINER_ENGINE rmi $($CONTAINER_ENGINE images --filter dangling=true -q 2>/dev/null) 2>/dev/null
     $CONTAINER_ENGINE buildx prune -f 2>/dev/null
+    $CONTAINER_ENGINE network prune -f 2>/dev/null
 }
 function dclean() { CONTAINER_ENGINE=docker cclean "$@"; }
 function pclean() { CONTAINER_ENGINE=podman cclean "$@"; }
@@ -491,23 +490,18 @@ function debiand() { CONTAINER_ENGINE=docker crun "$@" ghcr.io/mmguero/debian; }
 function debianp() { CONTAINER_ENGINE=podman crun "$@" ghcr.io/mmguero/debian; }
 
 # compose
-function compose() {
-  OLD_DOCKER_HOST="$DOCKER_HOST"
-  [[ -n "$UID" ]] && \
-    [[ -e "/run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock" ]] && \
-    export DOCKER_HOST="unix:///run/user/$UID/$CONTAINER_ENGINE/$CONTAINER_ENGINE.sock"
-  if ${CONTAINER_ENGINE} compose version 2>&1 >/dev/null; then
-    ${CONTAINER_ENGINE} compose "$@"
-  elif command -v docker-compose >/dev/null 2>&1; then
-      # as podman now has docker-compose support, we'll default to that for either if available
-      docker-compose "$@"
-  else
-    ${CONTAINER_ENGINE}-compose "$@"
-  fi
-  [[ -n "$OLD_DOCKER_HOST" ]] && export DOCKER_HOST="$OLD_DOCKER_HOST" || unset DOCKER_HOST
-}
-function dc() { CONTAINER_ENGINE=docker compose "$@"; }
-function pc() { CONTAINER_ENGINE=podman compose "$@"; }
+# the "podman compose" help says:
+#   This command is a thin wrapper around an external compose provider such as docker-compose
+#     or podman-compose.  This means that podman compose is executing another tool that
+#     implements the compose functionality but sets up the environment in a way to let the
+#     compose provider communicate transparently with the local Podman socket.
+#     The specified options as well the command and argument are passed directly to the compose provider.
+#   The default compose providers are docker-compose and podman-compose.  If installed, docker-compose
+#     takes precedence since it is the original implementation of the Compose specification and is
+#     widely used on the supported platforms.
+# In other words, I can just call $CONTAINER_ENGINE compose and have it do the right thing.
+function dc() { docker compose "$@"; }
+function pc() { podman compose "$@"; }
 
 # Get latest container ID
 function clid() { $CONTAINER_ENGINE ps -l -q "$@"; }
