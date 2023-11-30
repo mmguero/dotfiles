@@ -47,7 +47,7 @@ function spotify() {
   nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER --pulseaudio -- "-v" "$HOME/.config/spotify/config:/home/spotify/.config/spotify" "-v" "$HOME/.config/spotify/cache:/home/spotify/spotify" -- jess/spotify </dev/null >/dev/null 2>&1 &
 }
 
-# audacity (ghcr.io/mmguero/audacity) via x11docker
+# audacity (oci.guero.top/audacity) via x11docker
 function audacityd() {
   DOCS_FOLDER="$(realpath $(pwd))"
   if [[ -n "$1" ]]; then
@@ -60,11 +60,11 @@ function audacityd() {
   if [[ "$(realpath "$DOCS_FOLDER")" == "$(realpath "$HOME")" ]]; then
     echo "\$DOCS_FOLDER needs to be a directory other than \"$HOME\"" >&2
   else
-    x11docker --backend=$CONTAINER_ENGINE --alsa $(find /dev/snd/ -type c | sed 's/^/--share /') --workdir=/Audio -- "-v" "$DOCS_FOLDER:/Audio" -- ghcr.io/mmguero/audacity
+    x11docker --backend=$CONTAINER_ENGINE --alsa $(find /dev/snd/ -type c | sed 's/^/--share /') --workdir=/Audio -- "-v" "$DOCS_FOLDER:/Audio" -- oci.guero.top/audacity
   fi
 }
 
-# losslesscut (ghcr.io/mmguero/lossless-cut) via x11docker
+# losslesscut (oci.guero.top/lossless-cut) via x11docker
 function losslesscut() {
   DOCS_FOLDER="$(realpath $(pwd))"
   if [[ -n "$1" ]]; then
@@ -77,7 +77,7 @@ function losslesscut() {
   if [[ "$(realpath "$DOCS_FOLDER")" == "$(realpath "$HOME")" ]]; then
     echo "\$DOCS_FOLDER needs to be a directory other than \"$HOME\"" >&2
   else
-    nohup x11docker --no-entrypoint --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- ghcr.io/mmguero/lossless-cut /opt/LosslessCut-linux-x64/losslesscut --no-sandbox </dev/null >/dev/null 2>&1 &
+    nohup x11docker --no-entrypoint --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- oci.guero.top/lossless-cut /opt/LosslessCut-linux-x64/losslesscut --no-sandbox </dev/null >/dev/null 2>&1 &
   fi
 }
 
@@ -158,7 +158,7 @@ function ytdlpc() {
     -v "$DIR:$DIR:rw" \
     -w "$DIR" \
     --pull=never \
-    ghcr.io/mmguero/yt-dlp "$@"
+    oci.guero.top/yt-dlp "$@"
 }
 function ytdlpd() { CONTAINER_ENGINE=docker ytdlpc "$@"; }
 function ytdlpp() { CONTAINER_ENGINE=podman ytdlpc "$@"; }
@@ -223,14 +223,14 @@ command -v kubectl >/dev/null 2>&1 && alias k=kubectl
 #}
 
 #function teams() {
-#  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --alsa --webcam --hostuser=$USER --workdir=/usr/share/teams -- "--tmpfs" "/dev/shm" -- ghcr.io/mmguero/teams "$@" </dev/null >/dev/null 2>&1 &
+#  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --alsa --webcam --hostuser=$USER --workdir=/usr/share/teams -- "--tmpfs" "/dev/shm" -- oci.guero.top/teams "$@" </dev/null >/dev/null 2>&1 &
 #}
 
-# signal (ghcr.io/mmguero/signal) via x11docker
+# signal (oci.guero.top/signal) via x11docker
 function signal() {
   mkdir -p "$HOME/.config/Signal"
   # --pulseaudio --webcam
-  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER --workdir=/opt/Signal -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- ghcr.io/mmguero/signal </dev/null >/dev/null 2>&1 &
+  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER --workdir=/opt/Signal -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- oci.guero.top/signal </dev/null >/dev/null 2>&1 &
 }
 
 ########################################################################
@@ -294,7 +294,7 @@ function cssh() {
     -w "$DIR" \
     --pull=never \
     --entrypoint=ssh \
-    ghcr.io/mmguero/debian \
+    oci.guero.top/debian \
     -F "$CONTAINER_SHARE_HOME"/.ssh/config \
     -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
@@ -327,7 +327,7 @@ function cclient() {
     -w "$DIR" \
     --pull=never \
     --entrypoint="$CLIENT_EXE" \
-    ghcr.io/mmguero/debian \
+    oci.guero.top/debian \
     "$@"
 }
 function dclient() { CONTAINER_ENGINE=docker cclient "$@"; }
@@ -336,7 +336,7 @@ function pclient() { CONTAINER_ENGINE=podman cclient "$@"; }
 ########################################################################
 # desktop
 ########################################################################
-# full XFCE-based desktop (ghcr.io/mmguero/xfce) via x11docker
+# full XFCE-based desktop (oci.guero.top/xfce) via x11docker
 function x11desktop() {
   if [[ "$CONTAINER_ENGINE" == "docker" ]]; then
     nohup x11docker \
@@ -355,7 +355,7 @@ function x11desktop() {
       --group-add=docker \
       --group-add=fuse \
       --group-add=libvirt \
-    ghcr.io/mmguero/xfce </dev/null >/dev/null 2>&1 &
+    oci.guero.top/xfce </dev/null >/dev/null 2>&1 &
 
   elif [[ "$CONTAINER_ENGINE" == "podman" ]]; then
     nohup x11docker \
@@ -372,7 +372,7 @@ function x11desktop() {
       --share /var/run/libvirt/ \
       --group-add=fuse \
       --group-add=libvirt \
-    ghcr.io/mmguero/xfce </dev/null >/dev/null 2>&1 &
+    oci.guero.top/xfce </dev/null >/dev/null 2>&1 &
 
   else
     echo "\$CONTAINER_ENGINE invalid or unspecified" >&2
@@ -397,7 +397,7 @@ function ciso_ports_format() {
     sed "s@8081/tcp=@Web View:\thttp://localhost:@"
 }
 
-# run an ISO in QEMU-KVM (ghcr.io/mmguero/qemu-live-iso)
+# run an ISO in QEMU-KVM (oci.guero.top/qemu-live-iso)
 function ciso() {
     if [[ -e /dev/kvm ]]; then
         if [[ "$1" ]]; then
@@ -410,7 +410,7 @@ function ciso() {
             --device /dev/kvm \
             --volume "$(realpath "$1")":/image/live.iso:ro \
             --pull=never \
-            ghcr.io/mmguero/qemu-live-iso)
+            oci.guero.top/qemu-live-iso)
         else
             echo "No image file specified" >&2
         fi
@@ -421,7 +421,7 @@ function ciso() {
 function diso() { CONTAINER_ENGINE=docker ciso "$@"; }
 function piso() { CONTAINER_ENGINE=podman ciso "$@"; }
 
-# run ghcr.io/mmguero/deblive in QEMU-KVM
+# run oci.guero.top/deblive in QEMU-KVM
 function deblive() {
     if [[ -e /dev/kvm ]]; then
       ciso_ports_format $CONTAINER_ENGINE $($CONTAINER_ENGINE run \
@@ -433,7 +433,7 @@ function deblive() {
       -e QEMU_CDROM=/image/live.iso \
       --device /dev/kvm \
       --pull=never \
-      ghcr.io/mmguero/deblive)
+      oci.guero.top/deblive)
     else
       echo "/dev/kvm not found" >&2
     fi
@@ -485,9 +485,9 @@ function crun() {
 function drun() { CONTAINER_ENGINE=docker crun "$@"; }
 function prun() { CONTAINER_ENGINE=podman crun "$@"; }
 
-function debian() { crun "$@" ghcr.io/mmguero/debian; }
-function debiand() { CONTAINER_ENGINE=docker crun "$@" ghcr.io/mmguero/debian; }
-function debianp() { CONTAINER_ENGINE=podman crun "$@" ghcr.io/mmguero/debian; }
+function debian() { crun "$@" oci.guero.top/debian; }
+function debiand() { CONTAINER_ENGINE=docker crun "$@" oci.guero.top/debian; }
+function debianp() { CONTAINER_ENGINE=podman crun "$@" oci.guero.top/debian; }
 
 # compose
 # the "podman compose" help says:

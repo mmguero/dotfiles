@@ -853,7 +853,7 @@ function DockerPullImages {
         debian:stable-slim
         debian:bookworm-slim
         bitnami/minideb:latest
-        ghcr.io/mmguero/debian:latest
+        oci.guero.top/debian:latest
         ubuntu:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -866,10 +866,10 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        ghcr.io/mmguero/cleanvid:latest
-        ghcr.io/mmguero/lossless-cut:latest
-        ghcr.io/mmguero/montag:latest
-        ghcr.io/mmguero/monkeyplug:small
+        oci.guero.top/cleanvid:latest
+        oci.guero.top/lossless-cut:latest
+        oci.guero.top/montag:latest
+        oci.guero.top/monkeyplug:small
         jess/spotify:latest
         mwader/static-ffmpeg:latest
       )
@@ -883,11 +883,11 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        ghcr.io/mmguero/net-clients:latest
-        ghcr.io/mmguero/nginx-ldap:latest
-        ghcr.io/mmguero/stunnel:latest
-        ghcr.io/mmguero/tunneler:latest
-        ghcr.io/mmguero/wireproxy:latest
+        oci.guero.top/net-clients:latest
+        oci.guero.top/nginx-ldap:latest
+        oci.guero.top/stunnel:latest
+        oci.guero.top/tunneler:latest
+        oci.guero.top/wireproxy:latest
         haugene/transmission-openvpn:latest
         nginx:latest
         osminogin/tor-simple:latest
@@ -906,8 +906,8 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         andrewmackrodt/chromium-x11:latest
         fathyb/carbonyl:latest
-        ghcr.io/mmguero/firefox:latest
-        ghcr.io/mmguero/net-clients:latest
+        oci.guero.top/firefox:latest
+        oci.guero.top/net-clients:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         ${CONTAINER_ENGINE} pull "$i"
@@ -920,7 +920,7 @@ function DockerPullImages {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         lscr.io/linuxserver/libreoffice:latest
-        ghcr.io/mmguero/gimp:LATEST
+        oci.guero.top/gimp:LATEST
       )
       for i in ${DOCKER_IMAGES[@]}; do
         ${CONTAINER_ENGINE} pull "$i"
@@ -932,8 +932,8 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        ghcr.io/mmguero/xfce-base:latest
-        ghcr.io/mmguero/xfce:latest
+        oci.guero.top/xfce-base:latest
+        oci.guero.top/xfce:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
         ${CONTAINER_ENGINE} pull "$i"
@@ -945,7 +945,7 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        ghcr.io/mmguero/deblive:latest
+        oci.guero.top/deblive:latest
         tianon/qemu:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -958,11 +958,11 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        ghcr.io/mmguero/mattermost:latest
-        ghcr.io/mmguero/mirotalk:latest
-        ghcr.io/mmguero/postgres:latest
-        ghcr.io/mmguero/signal:latest
-        ghcr.io/mmguero/teams:latest
+        oci.guero.top/mattermost:latest
+        oci.guero.top/mirotalk:latest
+        oci.guero.top/postgres:latest
+        oci.guero.top/signal:latest
+        oci.guero.top/teams:latest
         mdouchement/zoom-us:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -975,8 +975,8 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        ghcr.io/mmguero/capa:latest
-        ghcr.io/mmguero/zeek:latest
+        oci.guero.top/capa:latest
+        oci.guero.top/zeek:latest
         ghcr.io/cisagov/network-architecture-verification-and-validation
         mpepping/cyberchef:latest
       )
