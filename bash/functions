@@ -554,6 +554,24 @@ function portping()
   fi
 }
 
+function nidstest_cleanup() {
+  local TMPSHDIR="${1}"
+  [[ -n "$TMPSHDIR" ]] && [[ -d "$TMPSHDIR" ]] && rm -rf "$TMPSHDIR" >/dev/null 2>&1
+}
+
+function nidstest() {
+  if (( $# > 0 )); then
+    SHARGS=( "$@" )
+  else
+    SHARGS=( -1 )
+  fi
+  TMPSHDIR="$(mktemp -d)"
+  trap "nidstest_cleanup '${TMPSHDIR}'" SIGINT EXIT RETURN
+  curl -sSL https://raw.githubusercontent.com/3CORESec/testmynids.org/master/tmNIDS -o "${TMPSHDIR}"/tmNIDS && \
+    chmod +x "${TMPSHDIR}"/tmNIDS && \
+    "${TMPSHDIR}"/tmNIDS "${SHARGS[@]}"
+}
+
 function tcpbytes()
 {
   PCAPFILE="$1"
