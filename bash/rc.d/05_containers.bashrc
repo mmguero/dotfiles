@@ -340,6 +340,7 @@ function pclient() { CONTAINER_ENGINE=podman cclient "$@"; }
 function x11desktop() {
   if [[ "$CONTAINER_ENGINE" == "docker" ]]; then
     nohup x11docker \
+      --nxagent \
       --backend=$CONTAINER_ENGINE \
       --network \
       --clipboard \
@@ -359,6 +360,7 @@ function x11desktop() {
 
   elif [[ "$CONTAINER_ENGINE" == "podman" ]]; then
     nohup x11docker \
+      --nxagent \
       --backend=$CONTAINER_ENGINE \
       --network \
       --clipboard \

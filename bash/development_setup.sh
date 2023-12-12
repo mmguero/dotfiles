@@ -1834,6 +1834,7 @@ function InstallCommonPackagesGUI {
         gtk2-engines-pixbuf
         keepassxc
         meld
+        nxagent
         pdftk
         regexxer
         rofi
