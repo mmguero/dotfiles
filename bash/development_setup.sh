@@ -1497,6 +1497,7 @@ function InstallCommonPackages {
       brew install htop
       brew install iproute2mac
       brew install less
+      brew install jo
       brew install jq
       brew install openssh
       brew install moreutils
@@ -1649,6 +1650,7 @@ function InstallCommonPackages {
         gzip
         htop
         inotify-tools
+        jo
         jq
         less
         libcap2-bin
