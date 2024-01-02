@@ -932,6 +932,8 @@ function media_history_purge() {
       1080p \
       720p \
       audiobook \
+      cbr \
+      cbz \
       _clean \
       cleanvid \
       epub \
