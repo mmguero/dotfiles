@@ -510,20 +510,21 @@ function InstallEnvPackages {
         colorama \
         colored \
         Cython \
-        dateparser \
         dataset \
+        dateparser \
         defopt \
         dtrx \
         entrypoint2 \
         git+https://github.com/badele/gitcheck.git \
         git-up \
         humanhash3 \
-        more-itertools \
         mmguero \
+        more-itertools \
         ordered-set \
         patool \
         psutil \
         py-cui \
+        pycryptodome \
         pyinputplus \
         python-dateutil \
         python-dotenv \
@@ -536,6 +537,7 @@ function InstallEnvPackages {
         ruamel.yaml \
         snoop \
         stackprinter \
+        stream-zip \
         textual \
         tqdm \
         typer[all]
