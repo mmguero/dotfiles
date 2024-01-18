@@ -2022,7 +2022,6 @@ function InstallCommonPackagesNetworking {
         ngrep
         nmap
         openbsd-inetd
-        openresolv
         openssh-client
         openvpn
         rsync
