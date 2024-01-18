@@ -230,3 +230,12 @@ function qemuiso() {
     exit 1
   fi
 }
+
+# run a fake machine
+function fm() {
+  fakemachine \
+      -c ${QEMU_CPU:-2} \
+      -m ${QEMU_RAM:-4096} \
+      -s ${QEMU_DISK:-50G} \
+      "$@"
+}
