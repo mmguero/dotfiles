@@ -594,28 +594,9 @@ function SetupAptSources {
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         $SUDO_CMD cp -iv "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE"/* /etc/apt/sources.list.d/
-        InstallEssentialPackages
-        command -v gpg >/dev/null 2>&1 || \
-          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends gpg
-        GPG_KEY_URLS=(
-          "https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg"
-          "https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
-          "https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg"
-          "https://build.opensuse.org/projects/home:alvistack/signing_keys/download?kind=gpg|/usr/share/keyrings/home_alvistack.gpg"
-          "https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg"
-          "deb:fasttrack-archive-keyring"
-        )
-        for i in ${GPG_KEY_URLS[@]}; do
-          SOURCE_URL="$(echo "$i" | cut -d'|' -f1)"
-          OUTPUT_FILE="$(echo "$i" | cut -d'|' -f2)"
-          if [[ $SOURCE_URL == deb:* ]]; then
-            DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$(echo "$SOURCE_URL" | sed "s/^deb://")"
-          else
-            curl -sSL "$SOURCE_URL" | gpg --dearmor | $SUDO_CMD tee $OUTPUT_FILE >/dev/null
-          fi
-        done
       fi
     fi
+
     if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d /etc/apt/preferences.d ]] && [[ -d "$GUERO_GITHUB_PATH/linux/apt/preferences.d/$LINUX_RELEASE" ]]; then
       unset CONFIRMATION
       read -p "Install preferences.d entries for $LINUX_RELEASE [Y/n]? " CONFIRMATION
@@ -625,6 +606,35 @@ function SetupAptSources {
       fi
     fi
 
+    # GPG keys
+    read -p "Install repository GPG keys $LINUX_RELEASE [Y/n]? " CONFIRMATION
+    CONFIRMATION=${CONFIRMATION:-Y}
+    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+      InstallEssentialPackages
+      command -v gpg >/dev/null 2>&1 || \
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends gpg
+      GPG_KEY_URLS=(
+        "dearmor:https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg"
+        "dearmor:https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
+        "dearmor:https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg"
+        "dearmor:https://build.opensuse.org/projects/home:alvistack/signing_keys/download?kind=gpg|/usr/share/keyrings/home_alvistack.gpg"
+        "dearmor:https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg"
+        "import:https://packages.mozilla.org/apt/repo-signing-key.gpg|/etc/apt/keyrings/packages.mozilla.org.asc"
+        "deb:fasttrack-archive-keyring"
+      )
+      for i in ${GPG_KEY_URLS[@]}; do
+        SOURCE_URL="$(echo "$i" | cut -d'|' -f1)"
+        OUTPUT_FILE="$(echo "$i" | cut -d'|' -f2)"
+        if [[ $SOURCE_URL == deb:* ]]; then
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$(echo "$SOURCE_URL" | sed "s/^deb://")"
+        elif [[ $SOURCE_URL == dearmor:* ]]; then
+          curl -fsSL "$(echo "$SOURCE_URL" | sed "s/^dearmor://")" | gpg --dearmor | $SUDO_CMD tee $OUTPUT_FILE >/dev/null
+        elif [[ $SOURCE_URL == import:* ]]; then
+          $SUDO_CMD curl -o "$OUTPUT_FILE" -fsSL "$(echo "$SOURCE_URL" | sed "s/^import://")" && \
+            $SUDO_CMD gpg -n -q --import --import-options import-show "$OUTPUT_FILE" | awk '/pub/{getline; gsub(/^ +| +$/,""); print "\n"$0"\n"}'
+        fi
+      done
+    fi
   fi
 }
 
@@ -664,8 +674,6 @@ function InstallDocker {
                                                    curl \
                                                    gnupg2 \
                                                    software-properties-common
-
-        curl -fsSL https://download.docker.com/linux/debian/gpg | $SUDO_CMD apt-key add -
 
         echo "Installing Docker CE..." >&2
         if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
@@ -2185,7 +2193,11 @@ function InstallCommonPackagesNetworkingGUI {
       read -p "Install latest Firefox [y/N]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-N}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        InstallLatestFirefoxLinuxAmd64
+        if [[ -f /etc/apt/sources.list.d/mozilla.list ]]; then
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends firefox
+        else
+          InstallLatestFirefoxLinuxAmd64
+        fi
       fi
     fi
 
