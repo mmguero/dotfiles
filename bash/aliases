@@ -75,6 +75,7 @@ alias crocs='croc --yes'
 alias mine="sudo chown -R $USER:$USER"
 alias rgfile="cut -d: -f1 | sort -u"
 alias unp=dtrx
+alias ncdu='ncdu -x -r --exclude-kernfs'
 
 #json/msgpack/xml/etc
 alias jsontool='python3 -mjson.tool'
