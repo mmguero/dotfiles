@@ -117,7 +117,7 @@ disabled = false
 [localip]
 ssh_only = true
 style = "bg:machine_info_bg"
-format = "[ $localipv4 ](fg:machine_info_fg bg:machine_info_bg)"
+format = "[🖳 $localipv4 ](fg:machine_info_fg bg:machine_info_bg)"
 disabled = false
 
 [git_branch]
