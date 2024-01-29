@@ -1209,6 +1209,7 @@ function InstallVirtualization {
       DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends \
         binfmt-support \
         ebtables \
+        guestfs-tools \
         libguestfs-tools \
         libvirt-clients \
         libvirt-daemon-system \
