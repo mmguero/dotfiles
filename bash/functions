@@ -572,6 +572,19 @@ function nidstest() {
     "${TMPSHDIR}"/tmNIDS "${SHARGS[@]}"
 }
 
+function flightnids () {
+  if command -v tmux >/dev/null 2>&1 && command -v flightsim >/dev/null 2>&1; then
+    pushd "${TMPDIR:-/tmp}" >/dev/null 2>&1
+    tmux new-session \; \
+      split-window -v \; \
+      select-pane -t 1 \; \
+      send-keys 'echo "Running nidstest..."; nidstest -99; echo "Done!"; sleep 5; exit' C-m \; \
+      select-pane -t 2 \; \
+      send-keys 'echo "Running flightsim..."; flightsim run; echo "Done!"; sleep 5; exit' C-m
+    popd >/dev/null 2>&1
+  fi
+}
+
 function tcpbytes()
 {
   PCAPFILE="$1"
