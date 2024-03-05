@@ -984,7 +984,19 @@ function media_history_purge() {
   done && history -w
 }
 
-alias mpv1080='mpv --autofit=1080x100%'
+function idparams () {
+  for FILE in "$@"; do
+    identify -format '%[parameters]' "$FILE"
+  done
+}
+
+function idparam () {
+FIELD="Seed";
+  FILE="$1"
+  FIELD="${2:-}"
+  idparams "${FILE}" | lin 3 | sed -r 's/([^",]*("[^"]*"[^",]*)*),/\1\n/g' | sed 's/^[[:space:]]*//' | { if [[ -n "${FIELD}" ]]; then \cat - | grep "^${FIELD}:" | sed 's/^[^:]*:[[:space:]]*//'; else \cat -; fi; }
+}
+
 
 ########################################################################
 # reference
