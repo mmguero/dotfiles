@@ -507,12 +507,14 @@ function InstallEnvPackages {
       python3 -m pip install -U \
         arrow \
         black \
+        beautifulsoup4 \
         colorama \
         colored \
         Cython \
         dataset \
         dateparser \
         defopt \
+        dominate \
         dtrx \
         entrypoint2 \
         git+https://github.com/badele/gitcheck.git \
@@ -540,7 +542,8 @@ function InstallEnvPackages {
         stream-zip \
         textual \
         tqdm \
-        typer[all]
+        typer[all] \
+        yubikey-manager
 
       if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
         python3 -m pip install -U \
@@ -1656,8 +1659,10 @@ function InstallCommonPackages {
         gdb
         git
         git-lfs
+        gnupg
         gnupg2
         google-perftools
+        gpg-agent
         grep
         gzip
         htop
@@ -1666,10 +1671,13 @@ function InstallCommonPackages {
         jq
         less
         libcap2-bin
+        libpcsclite-dev
+        libpcsclite1
         libsecret-1-0
         libsecret-1-dev
         libsecret-tools
         libsquashfuse0
+        libyubikey-udev
         linux-headers-$(uname -r)
         localepurge
         lshw
@@ -1688,6 +1696,7 @@ function InstallCommonPackages {
         parted
         patch
         patchutils
+        pcsc-tools
         pigz
         pmount
         procps
@@ -1696,6 +1705,7 @@ function InstallCommonPackages {
         qemu-utils
         rar
         rename
+        scdaemon
         sed
         squashfs-tools
         squashfuse
