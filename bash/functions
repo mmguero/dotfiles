@@ -966,11 +966,13 @@ function media_history_purge() {
       music \
       ogg \
       plex \
+      png \
       RARBG\
       roop \
       searchbot \
       season \
       srt \
+      stabletensors \
       torrent \
       webm \
       webrip \
