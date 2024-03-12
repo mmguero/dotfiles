@@ -800,18 +800,40 @@ function umountcrypt() {
   fi
 }
 
-function encrypt_file() {
+# shred a file if possible, and rm it if not
+function shred_file {
+  TARGET="$1"
+  if [[ -n $TARGET ]] && [[ -f "$TARGET" ]]; then
+    type shred >/dev/null 2>&1 && shred -f -u "$TARGET" || rm -f "$TARGET"
+  fi
+  [[ -n $TARGET ]] && [[ ! -f "$TARGET" ]] && return 0 || return 1
+}
+
+# shred a file with user-provided confirmation
+function shred_file_confirm {
+  TARGET="$1"
+  RETURN_CODE=1
+  read -p "Remove "$TARGET" [Y/n]? " CONFIRMATION
+  CONFIRMATION=${CONFIRMATION:-Y}
+  if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+    shred_file "$TARGET"
+    RETURN_CODE=$?
+  fi
+  return $RETURN_CODE
+}
+
+function encrypt_openssl() {
   if [[ -n "$1" ]] && [[ -f "$1" ]]; then
     openssl enc -aes-256-cbc -md sha512 -pbkdf2 -iter 1024 -salt -in "$1" -out "$1.enc" && \
       [[ -f "$1.enc" ]] && \
       ls -l "$1.enc" && \
-      rm -vi "$1"
+      shred_file_confirm "$1"
   else
     echo "No file specified, or invalid/nonexistant file" >&2
   fi
 }
 
-function decrypt_file() {
+function decrypt_openssl() {
   if [[ -n "$1" ]] && [[ -f "$1" ]]; then
     OUT_FILE="$(echo "$1" | sed "s/\.enc$//")"
     if [ "$1" = "$OUT_FILE" ]; then
@@ -820,7 +842,31 @@ function decrypt_file() {
     openssl enc -aes-256-cbc -md sha512 -pbkdf2 -iter 1024 -salt -d -in "$1" -out "$OUT_FILE" && \
       [[ -f "$OUT_FILE" ]] && \
       ls -l "$OUT_FILE" && \
-      rm -vi "$1"
+      shred_file_confirm "$1"
+  else
+    echo "No file specified, or invalid/nonexistant file" >&2
+  fi
+}
+
+function encrypt_gpg () {
+  if [[ -n "${1}" ]] && [[ -f "${1}" ]]; then
+    OUTPUT="${1}".$(date +%s).gpg
+    gpg --encrypt --armor --output "${OUTPUT}" "${1}" && \
+      [[ -f "$OUTPUT" ]] && \
+      ls -l "$OUTPUT" && \
+      shred_file_confirm "${1}"
+  else
+    echo "No file specified, or invalid/nonexistant file" >&2
+  fi
+}
+
+function decrypt_gpg () {
+  if [[ -n "${1}" ]] && [[ -f "${1}" ]]; then
+    OUTPUT="$(echo "${1}" | rev | cut -c16- | rev)"
+    gpg --decrypt --output "${OUTPUT}" "${1}" && \
+      [[ -f "$OUTPUT" ]] && \
+      ls -l "$OUTPUT" && \
+      shred_file_confirm "${1}"
   else
     echo "No file specified, or invalid/nonexistant file" >&2
   fi
