@@ -1641,6 +1641,7 @@ function InstallCommonPackages {
         exfat-fuse
         exfat-utils
         expect
+        f3
         fdisk
         fdupes
         file
