@@ -995,6 +995,8 @@ function media_history_purge() {
       cleanvid \
       epub \
       ffmpeg \
+      idparam \
+      idparams \
       jpg \
       jpeg \
       m4b \
@@ -1010,6 +1012,7 @@ function media_history_purge() {
       music \
       ogg \
       plex \
+      pqiv \
       png \
       RARBG\
       roop \
