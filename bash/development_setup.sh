@@ -443,6 +443,7 @@ function InstallEnvs {
           libxmlsec1-dev \
           llvm \
           make \
+          swig \
           tk-dev \
           wget \
           xz-utils \
