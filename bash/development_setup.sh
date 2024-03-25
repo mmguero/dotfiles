@@ -1030,7 +1030,6 @@ function InstallPodman {
         echo "Installing Podman..." >&2
         brew install podman
         echo "Installed Podman." >&2
-        echo "Please modify settings as needed: https://github.com/containers/podman/blob/main/docs/tutorials/mac_experimental.md" >&2
       fi # podman install confirmation check
     else
       echo "\"podman\" is already installed!" >&2
