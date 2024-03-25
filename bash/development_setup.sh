@@ -1698,6 +1698,7 @@ function InstallCommonPackages {
         patch
         patchutils
         pcsc-tools
+        pcscd
         pigz
         pmount
         procps
