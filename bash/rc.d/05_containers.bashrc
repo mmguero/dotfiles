@@ -503,7 +503,7 @@ function debianp() { CONTAINER_ENGINE=podman crun "$@" oci.guero.top/debian; }
 #     widely used on the supported platforms.
 # In other words, I can just call $CONTAINER_ENGINE compose and have it do the right thing.
 function dc() { docker compose "$@"; }
-function pc() { podman compose "$@"; }
+function pc() { podman compose "$@" 2> >(grep -v 'Executing external compose provider' >&2); }
 
 # Get latest container ID
 function clid() { $CONTAINER_ENGINE ps -l -q "$@"; }
