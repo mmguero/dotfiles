@@ -82,7 +82,7 @@ alias jsontool='python3 -mjson.tool'
 alias xml='xmllint --format -'
 alias norg="gron --ungron"
 alias ungron="gron --ungron"
-alias rg="rg --no-ignore --hidden --glob '!.git/' --ignore-case --max-columns 512"
+alias rg="rg --no-ignore --hidden --glob '!.git/' --ignore-case"
 alias fd="fd --no-ignore --hidden --ignore-case --exclude '.git'"
 
 # net/vpn/tunnel

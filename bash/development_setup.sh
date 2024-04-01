@@ -1069,6 +1069,7 @@ function InstallPodman {
           catatonit \
           crun \
           fuse-overlayfs \
+          passt \
           podman \
           podman-aardvark-dns \
           python3-podman-compose \
