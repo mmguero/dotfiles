@@ -209,6 +209,91 @@ if [[ -f /usr/local/bin/k3s ]]; then
 fi
 command -v kubectl >/dev/null 2>&1 && alias k=kubectl
 
+function kctl () {
+  if [[ -n "${KUBECONFIG}" ]]; then
+    kubectl --kubeconfig "${KUBECONFIG}" "$@"
+  else
+    kubectl "$@"
+  fi
+}
+
+function kstern () {
+  if [[ -n "${KUBECONFIG}" ]]; then
+    stern --kubeconfig "${KUBECONFIG}" "$@"
+  else
+    stern "$@"
+  fi
+}
+
+function kpods () {
+  NAMESPACE="${1:-$KUBESPACE}"
+  if [[ -n "$NAMESPACE" ]]; then
+    NAMESPACE_ARGS=( --namespace "${NAMESPACE}" )
+  else
+    NAMESPACE_ARGS=( --all-namespaces )
+  fi
+  kctl get pods --no-headers "${NAMESPACE_ARGS[@]}"
+}
+
+function kshell () {
+  SERVICE="${1}"
+  if [[ -n "${SERVICE}" ]]; then
+    NAMESPACE="${2:-$KUBESPACE}"
+    if [[ -n "$NAMESPACE" ]]; then
+      NAMESPACE_ARGS=( --namespace "${NAMESPACE}" )
+      AWK_ARGS=( '{print $1}' )
+    else
+      NAMESPACE_ARGS=( --all-namespaces )
+      AWK_ARGS=( '{print $2}' )
+    fi
+    SHELL="${3:-/bin/bash}"
+    POD="$(kctl get pods --no-headers "${NAMESPACE_ARGS[@]}" | grep -P "\b${SERVICE}\b" | awk "${AWK_ARGS[@]}" | sort | head -n 1)"
+    if [[ -n "${POD}" ]]; then
+        kctl exec --stdin --tty "${POD}" -- "${SHELL}"
+    else
+        echo "Unable to identify pod for ${SERVICE}" >&2
+    fi
+  else
+    echo "No service specified" >&2
+  fi
+}
+
+function klogs () {
+  SERVICE="${1}"
+  if [[ -n "${SERVICE}" ]]; then
+    NAMESPACE="${2:-$KUBESPACE}"
+    if [[ -n "$NAMESPACE" ]]; then
+      NAMESPACE_ARGS=( --namespace "${NAMESPACE}" )
+      AWK_ARGS=( '{print $1}' )
+    else
+      NAMESPACE_ARGS=( --all-namespaces )
+      AWK_ARGS=( '{print $2}' )
+    fi
+    POD="$(kctl get pods --no-headers "${NAMESPACE_ARGS[@]}" | grep -P "\b${SERVICE}\b" | awk "${AWK_ARGS[@]}" | sort | head -n 1)"
+    if [[ -n "${POD}" ]]; then
+        if command -v stern >/dev/null 2>&1; then
+            kstern "${NAMESPACE_ARGS[@]}" --container '.*' --container-state all "${POD}"
+        else
+            kctl logs --follow=true --all-containers "${POD}"
+        fi
+    else
+        echo "Unable to identify pod for ${SERVICE}" >&2
+    fi
+  else
+    echo "No service specified" >&2
+  fi
+}
+
+function kresources () {
+    NAMESPACE="${1:-$KUBESPACE}"
+    if [[ -n "$NAMESPACE" ]]; then
+      NAMESPACE_ARGS=( --namespace "${NAMESPACE}" )
+    else
+      NAMESPACE_ARGS=( --all-namespaces )
+    fi
+    kctl api-resources --verbs=list --namespaced -o name  | xargs -r -n 1 kubectl get --show-kind --ignore-not-found "${NAMESPACE_ARGS[@]}"
+}
+
 ########################################################################
 # communications
 ########################################################################
