@@ -131,27 +131,58 @@ function git_get_latest_artifacts () {
   fi
 }
 
-function git_list_packages () {
+function git_list_versions_for_packages () {
+  if [[ -n "$1" ]]; then
+    if [[ -n $GITHUB_TOKEN ]]; then
+      PKG_OWNER="$(echo "$1" | cut -d'/' -f1)"
+      PKG_NAME="$(echo "$1" | cut -d':' -f2)"
+      for PKG_TAGS in $(curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                        "https://api.github.com/users/${PKG_OWNER}/packages/container/${PKG_NAME}/versions" \
+                        | jq -r '.[] | .metadata.container.tags | .[]' 2>/dev/null | grep -Pv "\-\d{6}\d*$"); do
+        echo "ghcr.io/${PKG_OWNER}/${PKG_NAME}:${PKG_TAGS}"
+      done
+    else
+      echo "\$GITHUB_TOKEN not defined">&2
+    fi
+  else
+    echo "package not specified">&2
+  fi
+}
+
+function git_list_packages_base () {
+  WANT_TAGS=${1:-false}
   if [[ -n $GITHUB_TOKEN ]]; then
-    curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+    for PKG in $(curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
       https://api.github.com/user/packages?package_type=container \
       | jq -r '.[] | .repository.full_name,.name' \
       | sed '$!N;s/\n/:/' \
       | grep -Piv "(malcolm|network-architecture-verification-and-validation)" \
-      | sort -f
+      | sort -f); do
+      [[ "${WANT_TAGS}" == "true" ]] && git_list_versions_for_packages "$PKG" || ( echo "$PKG" | sed "s@:@/@g" )
+    done
     if [[ -n $GITHUB_ORGS ]]; then
       for ORG in $(echo "$GITHUB_ORGS" | sed "s/,/ /g"); do \
-        curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+        for PKG in $(curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
               https://api.github.com/orgs/$ORG/packages?package_type=container \
               | jq -r '.[] | .repository.full_name,.name' \
               | sed '$!N;s/\n/:/' \
               | grep -Piv "(malcolm|network-architecture-verification-and-validation)" \
-              | sort -f
+              | sort -f); do
+          [[ "${WANT_TAGS}" == "true" ]] && git_list_versions_for_packages "$PKG" || ( echo "$PKG" | sed "s@:@/@g" )
+        done
       done
     fi
   else
     echo "\$GITHUB_TOKEN not defined">&2
   fi
+}
+
+function git_list_packages () {
+  git_list_packages_base false
+}
+
+function git_list_package_tags () {
+  git_list_packages_base true
 }
 
 function git_trigger_repo_dispatch () {
