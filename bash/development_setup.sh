@@ -1022,19 +1022,20 @@ function DockerPullImages {
 function InstallPodman {
   if [[ -n $MACOS ]]; then
 
-    # install podman, if needed
-    if ! brew list --cask --versions podman >/dev/null 2>&1 ; then
-      unset CONFIRMATION
-      read -p "\"podman\" cask is not installed, attempt to install podman via brew [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        echo "Installing Podman..." >&2
-        brew install podman
-        echo "Installed Podman." >&2
-      fi # podman install confirmation check
-    else
-      echo "\"podman\" is already installed!" >&2
-    fi # podman install check
+    for PKG in podman minikube; do
+      if ! brew list --cask --versions "${PKG}" >/dev/null 2>&1 ; then
+        unset CONFIRMATION
+        read -p "\"${PKG}\" cask is not installed, attempt to install ${PKG} via brew [Y/n]? " CONFIRMATION
+        CONFIRMATION=${CONFIRMATION:-Y}
+        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+          echo "Installing ${PKG}..." >&2
+          brew install "${PKG}"
+          echo "Installed ${PKG}." >&2
+        fi # install confirmation check
+      else
+        echo "\"${PKG}\" is already installed!" >&2
+      fi
+    done
 
   elif [[ -n $LINUX ]] && [[ -z $WSL ]]; then
 
