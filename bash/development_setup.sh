@@ -1023,7 +1023,7 @@ function InstallPodman {
   if [[ -n $MACOS ]]; then
 
     for PKG in podman minikube; do
-      if ! brew list --cask --versions "${PKG}" >/dev/null 2>&1 ; then
+      if ! brew list --versions "${PKG}" >/dev/null 2>&1 ; then
         unset CONFIRMATION
         read -p "\"${PKG}\" cask is not installed, attempt to install ${PKG} via brew [Y/n]? " CONFIRMATION
         CONFIRMATION=${CONFIRMATION:-Y}
