@@ -66,6 +66,7 @@ ENV_LIST=(
   fd
   fzf
   ghorg
+  minikube
   packer
   peco
   jq
@@ -2645,6 +2646,7 @@ function InstallUserLocalBinaries {
               "https://github.com/FiloSottile/age|^age-v.+-linux-arm64\.tar\.gz$|/tmp/age.tar.gz"
               "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_arm64\.tar\.gz$|/tmp/ghorg.tar.gz"
               "https://github.com/gcla/termshark|^termshark_.+_linux_arm64\.tar\.gz$|/tmp/termshark.tar.gz"
+              "https://github.com/kubernetes/minikube|^minikube-linux-arm64$|$LOCAL_BIN_PATH/minikube|755"
               "https://github.com/mikefarah/yq|^yq_linux_arm64$|$LOCAL_BIN_PATH/yq|755"
               "https://github.com/neilotoole/sq|^sq-.+arm64-arm64\.tar\.gz$|/tmp/sq.tar.gz"
               "https://github.com/nektos/act|^act_Linux_arm64\.tar\.gz$|/tmp/act.tar.gz"
@@ -2676,6 +2678,7 @@ function InstallUserLocalBinaries {
               "https://github.com/eza-community/eza|^eza_arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/eza.tar.gz"
               "https://github.com/FiloSottile/age|^age-v.+-linux-arm\.tar\.gz$|/tmp/age.tar.gz"
               "https://github.com/gcla/termshark|^termshark_.+_linux_armv6\.tar\.gz$|/tmp/termshark.tar.gz"
+              "https://github.com/kubernetes/minikube|^minikube-linux-armv6$|$LOCAL_BIN_PATH/minikube|755"
               "https://github.com/mikefarah/yq|^yq_linux_arm$|$LOCAL_BIN_PATH/yq|755"
               "https://github.com/nektos/act|^act_Linux_armv6\.tar\.gz$|/tmp/act.tar.gz"
               "https://github.com/peco/peco|^peco_linux_arm\.tar\.gz$|/tmp/peco.tar.gz"
@@ -2703,6 +2706,7 @@ function InstallUserLocalBinaries {
               "https://github.com/eza-community/eza|^eza_arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/eza.tar.gz"
               "https://github.com/FiloSottile/age|^age-v.+-linux-arm\.tar\.gz$|/tmp/age.tar.gz"
               "https://github.com/gcla/termshark|^termshark_.+_linux_armv6\.tar\.gz$|/tmp/termshark.tar.gz"
+              "https://github.com/kubernetes/minikube|^minikube-linux-arm$|$LOCAL_BIN_PATH/minikube|755"
               "https://github.com/mikefarah/yq|^yq_linux_arm$|$LOCAL_BIN_PATH/yq|755"
               "https://github.com/nektos/act|^act_Linux_armv7\.tar\.gz$|/tmp/act.tar.gz"
               "https://github.com/peco/peco|^peco_linux_arm\.tar\.gz$|/tmp/peco.tar.gz"
@@ -2736,6 +2740,7 @@ function InstallUserLocalBinaries {
             "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_x86_64\.tar\.gz$|/tmp/ghorg.tar.gz"
             "https://github.com/gcla/termshark|^termshark_.+_linux_x64\.tar\.gz$|/tmp/termshark.tar.gz"
             "https://github.com/jez/as-tree|^as-tree-.+-linux\.zip$|/tmp/as-tree.zip"
+            "https://github.com/kubernetes/minikube|^minikube-linux-amd64$|$LOCAL_BIN_PATH/minikube|755"
             "https://github.com/mikefarah/yq|^yq_linux_amd64$|$LOCAL_BIN_PATH/yq|755"
             "https://github.com/neilotoole/sq|^sq-.+amd64-amd64\.tar\.gz$|/tmp/sq.tar.gz"
             "https://github.com/nektos/act|^act_Linux_x86_64\.tar\.gz$|/tmp/act.tar.gz"
