@@ -2918,6 +2918,7 @@ function SetupNICPrivs {
         /usr/sbin/stenotype
         /usr/sbin/trafgen
       )
+      # /usr/bin/passt
       for i in ${EXE_LESS_CAP[@]}; do
         [[ -e "$i" ]] && \
         $SUDO_CMD chown root:netdev "$i" && \
@@ -3000,7 +3001,6 @@ function SystemConfig {
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         $SUDO_CMD tee -a /etc/sysctl.conf > /dev/null <<'EOT'
-
 # allow dmg reading
 kernel.dmesg_restrict=0
 
@@ -3009,6 +3009,12 @@ fs.file-max=65536
 
 # the maximum number of user inotify watches
 fs.inotify.max_user_watches=131072
+
+# how many inotify filesystem events will be held in the kernel queue if the application does not read them
+fs.inotify.max_queued_events=131072
+
+# limits (roughly) how many applications can watch files (per user)
+fs.inotify.max_user_instances=512
 
 # the maximum number of memory map areas a process may have
 vm.max_map_count=262144
@@ -3024,6 +3030,12 @@ vm.dirty_background_ratio=40
 
 # maximum % of dirty system memory before committing everything
 vm.dirty_ratio=80
+
+# allow unprivileged user namespaces
+kernel.unprivileged_userns_clone=1
+
+# allow lower unprivileged port bind
+net.ipv4.ip_unprivileged_port_start=80
 
 # network buffer sizes
 net.core.netdev_max_backlog=250000
