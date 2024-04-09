@@ -53,7 +53,7 @@
       <property name="XF86Display" type="string" value="xfce4-display-settings --minimal"/>
       <property name="override" type="bool" value="true"/>
       <property name="HomePage" type="string" value="thunar"/>
-      <property name="Mail" type="string" value="/opt/firefox/firefox-bin"/>
+      <property name="Mail" type="string" value="/usr/bin/firefox"/>
       <property name="F12" type="string" value="/usr/bin/tilix -q"/>
       <property name="Favorites" type="string" value="tilix"/>
       <property name="Search" type="string" value="/opt/sublime_text/sublime_text"/>
