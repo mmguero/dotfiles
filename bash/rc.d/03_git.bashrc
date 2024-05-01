@@ -172,7 +172,6 @@ function git_list_packages_base () {
       https://api.github.com/user/packages?package_type=container \
       | jq -r '.[] | .repository.full_name,.name' \
       | sed '$!N;s/\n/:/' \
-      | grep -Piv "(malcolm|network-architecture-verification-and-validation)" \
       | sort -f); do
       [[ "${WANT_TAGS}" == "true" ]] && git_list_versions_for_packages "$PKG" || ( echo "$PKG" | sed "s@:@/@g" )
     done
@@ -182,7 +181,6 @@ function git_list_packages_base () {
               https://api.github.com/orgs/$ORG/packages?package_type=container \
               | jq -r '.[] | .repository.full_name,.name' \
               | sed '$!N;s/\n/:/' \
-              | grep -Piv "(malcolm|network-architecture-verification-and-validation)" \
               | sort -f); do
           [[ "${WANT_TAGS}" == "true" ]] && git_list_versions_for_packages "$PKG" || ( echo "$PKG" | sed "s@:@/@g" )
         done
