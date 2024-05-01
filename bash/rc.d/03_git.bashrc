@@ -39,6 +39,22 @@ function git_latest_release () {
   fi
 }
 
+function git_release_download_counts () {
+  if [[ -n "$1" ]]; then
+    GITHUB_API_CURL_ARGS=()
+    GITHUB_API_CURL_ARGS+=( -fsSL )
+    GITHUB_API_CURL_ARGS+=( -H )
+    GITHUB_API_CURL_ARGS+=( "Accept: application/vnd.github.v3+json" )
+    [[ -n "$GITHUB_TOKEN" ]] && \
+      GITHUB_API_CURL_ARGS+=( -H ) && \
+      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
+    (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases" | jq 'reverse | [.[] | select(.assets | length > 0) | { tag_name: .tag_name, assets: [.assets[] | select(.download_count > 0) | { name: .name, download_count: .download_count }] }]' ) || \
+      echo unknown
+  else
+    echo unknown>&2
+  fi
+}
+
 function git_deep_search () {
   if [ "$1" ]; then
     PATTERN="$1"
