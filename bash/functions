@@ -979,6 +979,10 @@ function tox264mp4acopy() {
   printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a copy -movflags +faststart \"\$INFILE_BASE.mp4\""
 }
 
+function downmixtoaacmkv() {
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v copy -af 'pan=stereo|FL=0.8*FC + 0.6*FL + 0.6*BL + 0.5*LFE|FR=0.8*FC + 0.6*FR + 0.6*BR + 0.5*LFE' -c:a aac -ab 224k -ar 48000 \"\$INFILE_BASE.downmix.mkv\""
+}
+
 function brownnoise() {
   play -c2 -n synth pinknoise band -n 280 80 band -n 60 25 gain +20 treble +40 500 bass -3 20 flanger 4 2 95 50 .3 sine 50 lin
 }
