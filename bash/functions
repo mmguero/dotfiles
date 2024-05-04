@@ -963,6 +963,10 @@ function ytsearch() {
   yt-dlp -F --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1"
 }
 
+function toogg() {
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vn -c:a libvorbis -qscale:a 7 \"\$INFILE_BASE.ogg\""
+}
+
 function tox264mkvaac() {
   printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a aac -ac 2 -ab 224k -ar 44100 \"\$INFILE_BASE.mkv\""
 }
