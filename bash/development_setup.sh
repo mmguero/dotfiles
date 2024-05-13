@@ -437,6 +437,7 @@ function InstallEnvs {
           libfribidi-dev \
           liblzma-dev \
           libncurses5-dev \
+          libpcsclite-dev \
           libreadline-dev \
           libsqlite3-dev \
           libssl-dev \
