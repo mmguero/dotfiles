@@ -168,7 +168,7 @@ function up { cd $(eval printf '../'%.0s {1..$1}) && pwd; }
 
 function realpath {
   if [ $MACOS ]; then
-    /opt/homebrew/bin/realpath "$@"
+    /opt/homebrew/opt/coreutils/libexec/gnubin/realpath "$@"
   else
     readlink -f "$@"
   fi
