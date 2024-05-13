@@ -11,6 +11,8 @@ if [[ $MACOS ]]; then
   [[ -d "/opt/homebrew/opt/gnu-which/libexec/gnubin" ]]  && PATH="/opt/homebrew/opt/gnu-which/libexec/gnubin:$PATH"
   [[ -d "/opt/homebrew/opt/grep/libexec/gnubin" ]]       && PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
   [[ -d "/opt/homebrew/opt/openssl@1.1/bin" ]]           && PATH="/opt/homebrew/opt/openssl@1.1/bin:$PATH"
+  [[ -d "/opt/homebrew/bin" ]]                           && PATH="/opt/homebrew/bin:$PATH"
+  [[ -d "/opt/homebrew/sbin" ]]                          && PATH="/opt/homebrew/sbin:$PATH"
 fi
 
 if [[ $WINDOWS10 ]]; then
