@@ -3,14 +3,14 @@
 ###############################################################################
 
 if [[ $MACOS ]]; then
-  [[ -d "/usr/local/opt/coreutils/libexec/gnubin" ]]  && PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-  [[ -d "/usr/local/opt/findutils/libexec/gnubin" ]]  && PATH="/usr/local/opt/findutils/libexec/gnubin:$PATH"
-  [[ -d "/usr/local/opt/gnu-indent/libexec/gnubin" ]] && PATH="/usr/local/opt/gnu-indent/libexec/gnubin:$PATH"
-  [[ -d "/usr/local/opt/gnu-sed/libexec/gnubin" ]]    && PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
-  [[ -d "/usr/local/opt/gnu-tar/libexec/gnubin" ]]    && PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH"
-  [[ -d "/usr/local/opt/gnu-which/libexec/gnubin" ]]  && PATH="/usr/local/opt/gnu-which/libexec/gnubin:$PATH"
-  [[ -d "/usr/local/opt/grep/libexec/gnubin" ]]       && PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
-  [[ -d "/usr/local/opt/openssl@1.1/bin" ]]           && PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
+  [[ -d "/opt/homebrew/opt/coreutils/libexec/gnubin" ]]  && PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+  [[ -d "/opt/homebrew/opt/findutils/libexec/gnubin" ]]  && PATH="/opt/homebrew/opt/findutils/libexec/gnubin:$PATH"
+  [[ -d "/opt/homebrew/opt/gnu-indent/libexec/gnubin" ]] && PATH="/opt/homebrew/opt/gnu-indent/libexec/gnubin:$PATH"
+  [[ -d "/opt/homebrew/opt/gnu-sed/libexec/gnubin" ]]    && PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"
+  [[ -d "/opt/homebrew/opt/gnu-tar/libexec/gnubin" ]]    && PATH="/opt/homebrew/opt/gnu-tar/libexec/gnubin:$PATH"
+  [[ -d "/opt/homebrew/opt/gnu-which/libexec/gnubin" ]]  && PATH="/opt/homebrew/opt/gnu-which/libexec/gnubin:$PATH"
+  [[ -d "/opt/homebrew/opt/grep/libexec/gnubin" ]]       && PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
+  [[ -d "/opt/homebrew/opt/openssl@1.1/bin" ]]           && PATH="/opt/homebrew/opt/openssl@1.1/bin:$PATH"
 fi
 
 if [[ $WINDOWS10 ]]; then

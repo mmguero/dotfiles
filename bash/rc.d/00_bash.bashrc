@@ -89,7 +89,7 @@ if [[ $LINUX ]]; then
 fi
 
 if [[ $MACOS ]]; then
-  [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+  [[ -r "/opt/homebrew/etc/profile.d/bash_completion.sh" ]] && . "/opt/homebrew/etc/profile.d/bash_completion.sh"
   [[ -r "$HOME/.iterm2_shell_integration.bash" ]] && . "$HOME/.iterm2_shell_integration.bash"
   bind '"\e[5C": forward-word'
   bind '"\e[5D": backward-word'

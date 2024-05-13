@@ -168,7 +168,7 @@ function up { cd $(eval printf '../'%.0s {1..$1}) && pwd; }
 
 function realpath {
   if [ $MACOS ]; then
-    /usr/local/bin/realpath "$@"
+    /opt/homebrew/bin/realpath "$@"
   else
     readlink -f "$@"
   fi
@@ -275,7 +275,7 @@ function psgrep() {
   if [ ! $MACOS ]; then
     ps axuf | grep -v grep | grep "$@" -i --color=auto;
   else
-    /usr/local/bin/psgrep "$@"
+    /opt/homebrew/bin/psgrep "$@"
   fi
 }
 

@@ -4670,7 +4670,7 @@
 		</dict>
 	</dict>
 	<key>PrefsCustomFolder</key>
-	<string>/Users/tlacuache/.config/sgrover.config/macOS/iTerm2</string>
+	<string>/Users/analyst/.config/sgrover-dotfiles/macOS/iTerm2</string>
 	<key>PromptOnQuit</key>
 	<false/>
 	<key>QuitWhenAllWindowsClosed</key>
