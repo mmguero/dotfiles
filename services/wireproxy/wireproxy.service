@@ -1,0 +1,17 @@
+[Unit]
+AssertPathExists=%h/.local/share/wireproxy/wireproxy.conf
+AssertPathExists=%h/.local/bin/wireproxy
+Description=userland wireguard client that exposes itself as a socks5 proxy
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+WorkingDirectory=%h/.local/share/wireproxy/
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=%h/.local/bin/wireproxy -s -c %h/.local/share/wireproxy/wireproxy.conf
+
+[Install]
+WantedBy=default.target
+

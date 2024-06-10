@@ -4,5 +4,9 @@
   { "keys": ["ctrl+b"], "command": "toggle_bookmark" },
   { "keys": ["ctrl+pageup"], "command": "next_bookmark" },
   { "keys": ["ctrl+pagedown"], "command": "prev_bookmark" },
-  { "keys": ["ctrl+alt+m"], "command": "markdown_preview", "args": {"target": "browser", "parser":"markdown"} }
+  { "keys": ["ctrl+alt+m"], "command": "markdown_preview", "args": {"target": "browser", "parser":"markdown"} },
+  {
+      "keys": ["ctrl+alt+shift+w"],
+      "command": "close_all_without_confirm"
+  }
 ]
