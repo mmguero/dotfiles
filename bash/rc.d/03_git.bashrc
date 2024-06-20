@@ -64,6 +64,17 @@ function git_deep_search () {
   fi
 }
 
+function git_default_branch () {
+  if [[ -n $GITHUB_TOKEN ]]; then
+    REPO="$1"
+    curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+      "https://api.github.com/repos/$REPO" \
+      | jq -r '.default_branch'
+  else
+    echo "\$GITHUB_TOKEN not defined">&2
+  fi
+}
+
 function git_list_workflows () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
@@ -77,21 +88,27 @@ function git_list_workflows () {
   fi
 }
 
-function git_get_workflow_id () {
+function git_workflow_id () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     WORKFLOW="$2"
-    git_list_workflows "$REPO" | grep -i "$WORKFLOW" | cols 1
+    declare -A WORKFLOW_NAMES_TO_IDS
+    while IFS= read -r line; do
+        ID=$(echo "${line}" | cut -d' ' -f1)
+        NAME=$(echo "${line}" | sed 's/^[^[:space:]]*[[:space:]]\{1,\}//')
+        WORKFLOW_NAMES_TO_IDS["$NAME"]=$ID
+    done <<< "$(git_list_workflows "$REPO")"
+    echo "${WORKFLOW_NAMES_TO_IDS[$WORKFLOW]}"
   else
     echo "\$GITHUB_TOKEN not defined">&2
   fi
 }
 
-function git_get_workflow () {
+function git_workflow () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     WORKFLOW="$2"
-    [[ $1 == ?(-)+([0-9]) ]] || WORKFLOW=$(git_get_workflow_id "$REPO" "$WORKFLOW" )
+    [[ $1 == ?(-)+([0-9]) ]] || WORKFLOW=$(git_workflow_id "$REPO" "$WORKFLOW" )
     curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
       "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW"
   else
@@ -103,7 +120,7 @@ function git_list_workflow_runs () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     WORKFLOW="$2"
-    [[ $1 == ?(-)+([0-9]) ]] || WORKFLOW=$(git_get_workflow_id "$REPO" "$WORKFLOW" )
+    [[ $1 == ?(-)+([0-9]) ]] || WORKFLOW=$(git_workflow_id "$REPO" "$WORKFLOW" )
     curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
       "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/runs"
   else
@@ -111,7 +128,7 @@ function git_list_workflow_runs () {
   fi
 }
 
-function git_get_latest_workflow_run_success () {
+function git_latest_workflow_run_success () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     WORKFLOW="$2"
@@ -122,7 +139,18 @@ function git_get_latest_workflow_run_success () {
   fi
 }
 
-function git_get_latest_workflow_run () {
+function git_latest_workflow_run_in_progress () {
+  if [[ -n $GITHUB_TOKEN ]]; then
+    REPO="$1"
+    WORKFLOW="$2"
+    git_list_workflow_runs "$REPO" "$WORKFLOW" \
+      | jq '.workflow_runs | map(select(.status == "in_progress")) | sort_by(.run_started_at) | last'
+  else
+    echo "\$GITHUB_TOKEN not defined">&2
+  fi
+}
+
+function git_latest_workflow_run () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     WORKFLOW="$2"
@@ -133,11 +161,23 @@ function git_get_latest_workflow_run () {
   fi
 }
 
-function git_get_latest_artifacts () {
+function git_workflow_run_logs () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     WORKFLOW="$2"
-    ARTIFACTS_URL="$(git_get_latest_workflow_run_success "$REPO" "$WORKFLOW" | jq '.artifacts_url' | tr -d '"')"
+    RUN_ID="${3:-$(git_latest_workflow_run_success "$REPO" "$WORKFLOW" | jq -r '.id')}"
+    curl -sSL -J -O -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+      "https://api.github.com/repos/$REPO/actions/runs/$RUN_ID/logs"
+  else
+    echo "\$GITHUB_TOKEN not defined">&2
+  fi
+}
+
+function git_latest_artifacts () {
+  if [[ -n $GITHUB_TOKEN ]]; then
+    REPO="$1"
+    WORKFLOW="$2"
+    ARTIFACTS_URL="$(git_latest_workflow_run_success "$REPO" "$WORKFLOW" | jq '.artifacts_url' | tr -d '"')"
     if [[ -n "$ARTIFACTS_URL" ]]; then
         curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
             "$ARTIFACTS_URL"
@@ -197,6 +237,22 @@ function git_list_packages () {
 
 function git_list_package_tags () {
   git_list_packages_base true
+}
+
+function git_trigger_workflow_dispatch () {
+  if [[ -n $GITHUB_TOKEN ]]; then
+    REPO="$1"
+    WORKFLOW="$2"
+    BRANCH="${3:-$(git_default_branch "$REPO")}"
+    WORKFLOW_ID="$(git_workflow_id "$REPO" "$WORKFLOW")"
+    [[ -z "$WORKFLOW_ID" ]] && WORKFLOW_ID="$WORKFLOW"
+    echo "Issuing workflow_dispatch for $WORKFLOW ($WORKFLOW_ID) on $REPO at $BRANCH"
+    curl -sSL -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+      --data "{\"ref\": \"$BRANCH\"}" \
+      "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW_ID/dispatches"
+  else
+    echo "\$GITHUB_TOKEN not defined">&2
+  fi
 }
 
 function git_trigger_repo_dispatch () {
