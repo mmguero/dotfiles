@@ -251,7 +251,7 @@ function git_trigger_packages_build () {
 
 function github_runner_ubuntu_space_free () {
   if [[ -n $GITHUB_RUN_ID ]] && [[ -n $RUNNER_ENVIRONMENT ]]; then
-    sudo docker rmi \$(docker image ls -aq) >/dev/null 2>&1 || true
+    sudo docker rmi $(docker image ls -aq) >/dev/null 2>&1 || true
     sudo rm -rf \
       /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/lib/jvm \
       /usr/local/share/powershell /usr/share/swift /usr/local/.ghcup || true
