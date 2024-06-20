@@ -507,7 +507,7 @@ function hysi_cleanup()
   [[ -n "${HYS_PID}" ]] && kill ${HYS_PID} 2>/dev/null
 }
 
-function hysi()
+function _hysi()
 {
   local DEL_IDX=
   local HYS_PID=
@@ -525,6 +525,11 @@ function hysi()
       (( ($(date +%s) - $(date +%s -r "${DEL_IDX}" 2>/dev/null || date +%s)) >= 60 )) && \
       tree -x --dirsfirst --gitignore -H . -o "${DEL_IDX}" >/dev/null 2>&1
   done
+}
+
+function hysi()
+{
+  _hysi 2>/dev/null
 }
 
 function arps()
