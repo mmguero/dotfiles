@@ -31,8 +31,8 @@ function git_latest_release () {
     [[ -n "$GITHUB_TOKEN" ]] && \
       GITHUB_API_CURL_ARGS+=( -H ) && \
       GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
-    (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases/latest" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
-      (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
+    (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases/latest?per_page=500" | jq '.tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
+      (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases?per_page=500" | jq '.[0].tag_name' | sed -e 's/^"//' -e 's/"$//' ) || \
       echo unknown
   else
     echo unknown>&2
@@ -48,7 +48,7 @@ function git_release_download_counts () {
     [[ -n "$GITHUB_TOKEN" ]] && \
       GITHUB_API_CURL_ARGS+=( -H ) && \
       GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
-    (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases" | jq 'reverse | [.[] | select(.assets | length > 0) | { tag_name: .tag_name, assets: [.assets[] | select(.download_count > 0) | { name: .name, download_count: .download_count }] }]' ) || \
+    (set -o pipefail && curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$1/releases?per_page=500" | jq 'reverse | [.[] | select(.assets | length > 0) | { tag_name: .tag_name, assets: [.assets[] | select(.download_count > 0) | { name: .name, download_count: .download_count }] }]' ) || \
       echo unknown
   else
     echo unknown>&2
@@ -75,11 +75,26 @@ function git_default_branch () {
   fi
 }
 
+function git_list_repos () {
+  WANT_TAGS=${1:-false}
+  if [[ -n $GITHUB_TOKEN ]]; then
+    for REPO in $(curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+      "https://api.github.com/user/repos?per_page=500" \
+      | jq -r '.[] | .full_name' \
+      | sort -f); do
+      echo "$REPO"
+    done
+  else
+    echo "\$GITHUB_TOKEN not defined">&2
+  fi
+}
+
+
 function git_list_workflows () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-      "https://api.github.com/repos/$REPO/actions/workflows" \
+      "https://api.github.com/repos/$REPO/actions/workflows?per_page=500" \
       | jq -r '.workflows | .[] | .id, .name' \
       | sed '$!N;s/\n/ /' \
       | sort -f -k 2,2 -t ' '
@@ -122,7 +137,7 @@ function git_list_workflow_runs () {
     WORKFLOW="$2"
     [[ $1 == ?(-)+([0-9]) ]] || WORKFLOW=$(git_workflow_id "$REPO" "$WORKFLOW" )
     curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-      "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/runs"
+      "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=500"
   else
     echo "\$GITHUB_TOKEN not defined">&2
   fi
@@ -209,7 +224,7 @@ function git_list_packages_base () {
   WANT_TAGS=${1:-false}
   if [[ -n $GITHUB_TOKEN ]]; then
     for PKG in $(curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-      https://api.github.com/user/packages?package_type=container \
+      "https://api.github.com/user/packages?package_type=container&per_page=500" \
       | jq -r '.[] | .repository.full_name,.name' \
       | sed '$!N;s/\n/:/' \
       | sort -f); do
@@ -218,7 +233,7 @@ function git_list_packages_base () {
     if [[ -n $GITHUB_ORGS ]]; then
       for ORG in $(echo "$GITHUB_ORGS" | sed "s/,/ /g"); do \
         for PKG in $(curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-              https://api.github.com/orgs/$ORG/packages?package_type=container \
+              "https://api.github.com/orgs/$ORG/packages?package_type=container&per_page=500" \
               | jq -r '.[] | .repository.full_name,.name' \
               | sed '$!N;s/\n/:/' \
               | sort -f); do
