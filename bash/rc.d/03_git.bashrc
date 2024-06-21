@@ -285,7 +285,7 @@ function git_trigger_packages_build () {
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         ALL_REPOS=( "${PACKAGES[@]%:*}" )
-        UNIQUE_REPOS=($(echo "${ALL_REPOS[@]}" | tr ' ' '\n' | grep -v '^null$' | sort -u | tr '\n' ' '))
+        UNIQUE_REPOS=($(echo "${ALL_REPOS[@]}" | tr ' ' '\n' | grep -v '^null$' | sed 's|\(.*\)/.*|\1|' | sort -u | tr '\n' ' '))
         for i in "${!UNIQUE_REPOS[@]}"; do
           git_trigger_repo_dispatch "${UNIQUE_REPOS[$i]}"
         done
@@ -294,7 +294,7 @@ function git_trigger_packages_build () {
     elif (( $USER_FUNCTION_IDX > 0 )) && (( $USER_FUNCTION_IDX <= "${#PACKAGES[@]}" )); then
       # execute one function, à la carte
       USER_FUNCTION="${PACKAGES[((USER_FUNCTION_IDX-1))]}"
-      git_trigger_repo_dispatch "$(echo "$USER_FUNCTION" | cut -d: -f1)"
+      git_trigger_repo_dispatch "$(echo "$USER_FUNCTION" | cut -d: -f1 | sed 's|\(.*\)/.*|\1|')"
 
     else
       # some people just want to watch the world burn
