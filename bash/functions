@@ -980,6 +980,10 @@ function ytsearch() {
   yt-dlp -F --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1"
 }
 
+function resolution() {
+  ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$1"
+}
+
 function toogg() {
   printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vn -c:a libvorbis -qscale:a 7 \"\$INFILE_BASE.ogg\""
 }
@@ -1005,7 +1009,7 @@ function downmixtoaacmkv() {
 }
 
 function hwscale720() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v main -rc:v vbr -cq:v 0 -qmin:v 19 -qmax:v 25 -c:a copy -c:s copy \"\$INFILE_BASE.720p.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v main -rc:v vbr -cq:v 0 -qmin:v 23 -qmax:v 29 -c:a copy -c:s copy \"\$INFILE_BASE.720p.\$INFILE_EXT\""
 }
 
 function brownnoise() {
