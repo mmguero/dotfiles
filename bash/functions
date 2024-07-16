@@ -295,6 +295,10 @@ function howmuchmem () {
   echo "$RAM";
 }
 
+function ramhogs () {
+  ps wwaux | sort -nsk 6 | awk '$6/=1024' | cut -f6,11- -d' ' | cut -c 1-$COLUMNS
+}
+
 function mempercent () {
   PROCNAME="$@";
   ps -eo pmem,comm | grep "$PROCNAME" | awk '{sum+=$1} END {print sum " % of RAM"}'
