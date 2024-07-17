@@ -1014,6 +1014,7 @@ function downmixtoaacmkv() {
 
 function hwscale720() {
   printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v main -rc:v vbr -cq:v 0 -qmin:v 23 -qmax:v 29 -c:a copy -c:s copy \"\$INFILE_BASE.720p.\$INFILE_EXT\""
+
 }
 
 function brownnoise() {
@@ -1026,6 +1027,10 @@ function noise() {
 
 function matrix() {
   while :;do echo $LINES $COLUMNS $(( $RANDOM % $COLUMNS)) $(printf "\U$(($RANDOM % 500))");sleep 0.05;done|gawk '{a[$3]=0;for (x in a){o=a[x];a[x]=a[x]+1;printf "\033[%s;%sH\033[2;32m%s",o,x,$4;printf "\033[%s;%sH\033[1;37m%s\033[0;0H",a[x],x,$4;if (a[x] >= $1){a[x]=0;} }}'
+}
+
+function mpvshuf() {
+  printf "%s\n" "$@" | shuf | xargs -r -P 1 -I XXX mpv "XXX"
 }
 
 function media_history_purge() {
