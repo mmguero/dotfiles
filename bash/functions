@@ -1072,11 +1072,13 @@ function media_history_purge() {
       torrent \
       webm \
       webrip \
+      vault \
       yify \
       ytdlp \
       yt-dlp \
       ytplaylist \
       ytogg \
+      wmv \
    ; do \
       while read n; do history -d $n; done < <(history | tac | awk "/${TERM}/{print \$1}" IGNORECASE=1); \
   done && history -w

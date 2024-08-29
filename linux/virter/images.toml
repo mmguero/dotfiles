@@ -1,3 +1,6 @@
+[ubuntu-noble]
+url = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
+
 [ubuntu-mantic]
 url = "https://cloud-images.ubuntu.com/mantic/current/mantic-server-cloudimg-amd64.img"
 
