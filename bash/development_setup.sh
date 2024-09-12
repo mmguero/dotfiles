@@ -2917,7 +2917,6 @@ function SetupNICPrivs {
         /usr/sbin/stenotype
         /usr/sbin/trafgen
       )
-      # /usr/bin/passt
       for i in ${EXE_LESS_CAP[@]}; do
         [[ -e "$i" ]] && \
         $SUDO_CMD chown root:netdev "$i" && \
