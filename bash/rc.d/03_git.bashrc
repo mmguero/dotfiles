@@ -320,6 +320,21 @@ function git_trigger_packages_build () {
   fi
 }
 
+function github_malcolm_release_stats () {
+  RELEASE_IDX=${1:--1}
+  FORK_1=${2:-idaholab/Malcolm}
+  FORK_2=${3:-cisagov/Malcolm}
+  jq -s '
+    map(.assets) | add |
+    group_by(.name) |
+    map({
+      name: .[0].name,
+      download_count: map(.download_count) | add
+    })
+  ' <( git_release_download_counts "${FORK_1}" | jq ".[${RELEASE_IDX}]" ) \
+     <( git_release_download_counts "${FORK_2}" | jq ".[${RELEASE_IDX}]" )
+}
+
 function github_runner_ubuntu_space_free () {
   if [[ -n $GITHUB_RUN_ID ]] && [[ -n $RUNNER_ENVIRONMENT ]]; then
     sudo docker rmi $(docker image ls -aq) >/dev/null 2>&1 || true
