@@ -60,7 +60,7 @@ function audacityd() {
   if [[ "$(realpath "$DOCS_FOLDER")" == "$(realpath "$HOME")" ]]; then
     echo "\$DOCS_FOLDER needs to be a directory other than \"$HOME\"" >&2
   else
-    x11docker --backend=$CONTAINER_ENGINE --alsa $(find /dev/snd/ -type c | sed 's/^/--share /') --workdir=/Audio -- "-v" "$DOCS_FOLDER:/Audio" -- oci.guero.top/audacity
+    x11docker --backend=$CONTAINER_ENGINE --pulseaudio --alsa --workdir=/Audio -- "-v" "$DOCS_FOLDER:/Audio" -- oci.guero.top/audacity
   fi
 }
 
