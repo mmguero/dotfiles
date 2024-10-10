@@ -153,6 +153,7 @@ if [[ $LINUX ]]; then
     IMG_USERS[ubuntu-lunar]=ubuntu
     IMG_USERS[ubuntu-mantic]=ubuntu
     IMG_USERS[ubuntu-noble]=ubuntu
+    IMG_USERS[ubuntu-oracular]=ubuntu
     IMG_USERS[ubuntu-xenial]=ubuntu
 
     virter vm run "${IMG}${IMG_SUFFIX}" \
