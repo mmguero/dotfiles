@@ -1017,8 +1017,11 @@ function downmixtoaacmkv() {
 }
 
 function hwscale720() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v main -rc:v vbr -cq:v 0 -qmin:v 23 -qmax:v 29 -c:a copy -c:s copy \"\$INFILE_BASE.720p.\$INFILE_EXT\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high -rc:v vbr -cq:v 0 -qmin:v 23 -qmax:v 29 -c:a copy -c:s copy \"\$INFILE_BASE.720p.\$INFILE_EXT\""
+}
 
+function hwscale1080() {
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=1080:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high -rc:v vbr -cq:v 0 -qmin:v 22 -qmax:v 26 -c:a copy -c:s copy \"\$INFILE_BASE.1080p.\$INFILE_EXT\""
 }
 
 function brownnoise() {
