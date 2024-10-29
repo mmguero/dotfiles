@@ -6,6 +6,9 @@
 export LIBVIRT_DEFAULT_URI='qemu:///system'
 alias vs='virsh'
 alias vls='virsh list --all'
+alias vt='virter'
+alias vti='virter image'
+alias vtv='virter vm'
 alias vv='virter vm'
 
 ########################################################################
