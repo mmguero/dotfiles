@@ -649,7 +649,7 @@ function worm()
 }
 
 function dighost() {
-  local host="${1:-guero.top}"
+  local host="${1:-guero.org}"
   if [[ -n "$2" ]]; then
     dig +short "${host}" @"${2}"
   else
@@ -1002,6 +1002,10 @@ function tox264mkvaac() {
 
 function tox264mkvacopy() {
   printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a copy \"\$INFILE_BASE.x264.mkv\""
+}
+
+function tox264mkvacopy30fps() {
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf \"format=yuv420p,fps=fps=30\" -c:a copy \"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mp4aac() {
