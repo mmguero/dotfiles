@@ -35,7 +35,7 @@ if [[ $LINUX ]]; then
         --pull=never \
         --entrypoint /bin/bash \
         --security-opt label=disable \
-        ghcr.io/mmguero-dev/vagrant-libvirt:latest \
+        oci.guero.org/vagrant-libvirt:latest \
         /usr/bin/vagrant "$@"
     else
       $ENGINE run -it --rm \
@@ -50,7 +50,7 @@ if [[ $LINUX ]]; then
         $CONTAINER_SHARE_TMP \
         --network host \
         --pull=never \
-        ghcr.io/mmguero-dev/vagrant-libvirt:latest \
+        oci.guero.org/vagrant-libvirt:latest \
         /usr/bin/vagrant "$@"
     fi
   }
