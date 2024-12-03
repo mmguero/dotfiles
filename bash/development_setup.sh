@@ -566,11 +566,11 @@ function InstallEnvPackages {
     fi
 
     if command -v go >/dev/null 2>&1; then
-      go get -u -v github.com/rogpeppe/godef
-      go get -u -v golang.org/x/tools/cmd/goimports
-      go get -u -v golang.org/x/tools/cmd/gorename
-      go get -u -v golang.org/x/term
-      go get -u -v github.com/nsf/gocode
+      go install github.com/rogpeppe/godef@latest
+      go install golang.org/x/tools/cmd/goimports@latest
+      go install golang.org/x/tools/cmd/gorename@latest
+      go install golang.org/x/term@latest
+      go install github.com/nsf/gocode@latest
       popd >/dev/null 2>&1
     fi
   fi

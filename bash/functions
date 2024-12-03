@@ -988,6 +988,10 @@ function ytsearch() {
   yt-dlp -F --max-downloads 1 --no-playlist --default-search ${2:-ytsearch} "$1"
 }
 
+function fprobe() {
+  ffprobe -hide_banner -v error -print_format json -show_format -show_streams "$1"
+}
+
 function resolution() {
   ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$1"
 }
