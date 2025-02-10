@@ -1093,6 +1093,7 @@ function media_history_purge() {
       yt-dlp \
       ytplaylist \
       ytogg \
+      vault \
       wmv \
    ; do \
       while read n; do history -d $n; done < <(history | tac | awk "/${TERM}/{print \$1}" IGNORECASE=1); \

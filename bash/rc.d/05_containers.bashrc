@@ -17,6 +17,7 @@ command -v xhost >/dev/null 2>&1 && xhost +SI:localuser:"$USER" >/dev/null 2>&1
 export CONTAINER_ENGINE=podman
 export DBX_CONTAINER_MANAGER=$CONTAINER_ENGINE
 export DBX_CONTAINER_IMAGE="docker.io/library/debian:stable-slim"
+export DBX_CONTAINER_ALWAYS_PULL="0"
 export DBX_NON_INTERACTIVE="0"
 
 # If you're using just podman, you could uncomment this to have

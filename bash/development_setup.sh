@@ -257,26 +257,24 @@ function _GitLatestRelease {
 # function to set up paths and init things after env installations
 function _EnvSetup {
   if [[ -z $MSYSTEM ]]; then
+    export ASDF_DATA_DIR="$HOME/.asdf"
 
-    if [[ -d "${ASDF_DIR:-$HOME/.asdf}" ]]; then
-      . "${ASDF_DIR:-$HOME/.asdf}"/asdf.sh
-      if [[ -n $ASDF_DIR ]]; then
-        . "${ASDF_DIR:-$HOME/.asdf}"/completions/asdf.bash
-        for i in ${ENV_LIST[@]}; do
-          asdf reshim "$i" >/dev/null 2>&1 || true
-        done
-      fi
+    if ! command -v asdf >/dev/null 2>&1 && [[ -x "$LOCAL_BIN_PATH"/asdf ]]; then
+      export PATH="$LOCAL_BIN_PATH:$PATH"
     fi
-
-    export PYTHONDONTWRITEBYTECODE=1
-
-    if [[ -n $ASDF_DIR ]]; then
+    if command -v asdf >/dev/null 2>&1 && [[ -d "${ASDF_DATA_DIR}" ]]; then
+      export PATH="${ASDF_DATA_DIR}/shims:$PATH"
+      [[ -n $BASH_VERSION ]] && . <(asdf completion bash)
+      for i in ${ENV_LIST[@]}; do
+        asdf reshim "$i" >/dev/null 2>&1 || true
+      done
+      export PYTHONDONTWRITEBYTECODE=1
       if asdf plugin list | grep -q golang; then
         [[ -z $GOROOT ]] && go version >/dev/null 2>&1 && export GOROOT="$(go env GOROOT)"
         [[ -z $GOPATH ]] && go version >/dev/null 2>&1 && export GOPATH="$(go env GOPATH)"
       fi
       if (asdf plugin list | grep -q rust) && (asdf current rust >/dev/null 2>&1); then
-        . "$ASDF_DIR"/installs/rust/"$(asdf current rust | awk '{print $2}')"/env
+        . "$ASDF_DATA_DIR"/installs/rust/"$(asdf current rust | awk '{print $2}')"/env
       fi
     fi
   fi
@@ -366,28 +364,44 @@ function SetupWindowsScoop {
 # envs (via asdf)
 function InstallEnvs {
   if [[ -z $MSYSTEM ]]; then
+
     declare -A ENVS_INSTALLED
     for i in ${ENV_LIST[@]}; do
       ENVS_INSTALLED[$i]=false
     done
 
-    if ([[ -n $ASDF_DIR ]] && [[ ! -d "$ASDF_DIR" ]]) || ([[ -z $ASDF_DIR ]] && [[ ! -d "$HOME"/.asdf ]]) ; then
-      ASDF_DIR="${ASDF_DIR:-$HOME/.asdf}"
+    if [[ -n $MACOS ]]; then
+      ASDF_PLATFORM=darwin
+    else
+      ASDF_PLATFORM=linux
+    fi
+    if [[ $LINUX_ARCH =~ ^arm ]]; then
+      if [[ $LINUX_CPU == aarch64 ]]; then
+        ASDF_ARCH=arm64
+      else
+        ASDF_ARCH=
+      fi
+    else
+      ASDF_ARCH=amd64
+    fi
+
+    if [[ -n "$ASDF_PLATFORM" ]] && [[ -n "$ASDF_ARCH" ]] && ! command -v asdf >/dev/null 2>&1; then
+      export ASDF_DATA_DIR="$HOME/.asdf"
       unset CONFIRMATION
       read -p "\"asdf\" is not installed, attempt to install it [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        git clone --recurse-submodules --shallow-submodules https://github.com/asdf-vm/asdf.git "$ASDF_DIR"
-        pushd "$ASDF_DIR" >/dev/null 2>&1
-        git checkout "$(git describe --abbrev=0 --tags)"
-        popd >/dev/null 2>&1
+        mkdir -p "${LOCAL_BIN_PATH}" "${ASDF_DATA_DIR}"
+        ASDF_RELEASE="$(_GitLatestRelease asdf-vm/asdf)"
+        ASDF_URL="https://github.com/asdf-vm/asdf/releases/download/${ASDF_RELEASE}/asdf-${ASDF_RELEASE}-${ASDF_PLATFORM}-${ASDF_ARCH}.tar.gz"
+        curl -sSL "$ASDF_URL" | tar xzf - -C "${LOCAL_BIN_PATH}"
+        [[ -f "${LOCAL_BIN_PATH}"/asdf ]] && chmod 755 "${LOCAL_BIN_PATH}"/asdf
       fi
     fi
 
-    if [[ -d "${ASDF_DIR:-$HOME/.asdf}" ]]; then
+    if command -v asdf >/dev/null 2>&1 || [[ -x "${LOCAL_BIN_PATH}"/asdf ]] ; then
       _EnvSetup
-      if [[ -n $ASDF_DIR ]]; then
-        asdf update
+      if [[ -n $ASDF_DATA_DIR ]]; then
 
         unset CONFIRMATION
         read -p "Update all installed envs [Y/n]? " CONFIRMATION
@@ -478,7 +492,7 @@ function InstallEnvs {
       if [[ ${ENVS_INSTALLED[$i]} = 'true' ]]; then
         asdf plugin update $i
         asdf install $i latest
-        asdf global $i latest
+        asdf set -u $i latest
         asdf reshim $i
       fi
     done
@@ -801,7 +815,7 @@ function InstallKubernetes {
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
         asdf plugin update $UTIL
         asdf install $UTIL latest
-        asdf global $UTIL latest
+        asdf set -u $UTIL latest
         asdf reshim $UTIL
       fi
     done
