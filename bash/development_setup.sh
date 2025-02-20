@@ -1529,6 +1529,7 @@ function InstallCommonPackages {
       brew install htop
       brew install iproute2mac
       brew install less
+      brew install jc
       brew install jo
       brew install jq
       brew install openssh
@@ -1574,6 +1575,7 @@ function InstallCommonPackages {
           main/fx
           main/gnupg
           main/gron
+          main/jc
           main/jdupes
           main/patch
           main/peco
@@ -1686,6 +1688,7 @@ function InstallCommonPackages {
         gzip
         htop
         inotify-tools
+        jc
         jo
         jq
         less
