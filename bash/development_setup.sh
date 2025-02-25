@@ -70,6 +70,7 @@ ENV_LIST=(
   packer
   peco
   jq
+  just
   rclone
   ripgrep
   sops
@@ -1532,6 +1533,7 @@ function InstallCommonPackages {
       brew install jc
       brew install jo
       brew install jq
+      brew install just
       brew install openssh
       brew install moreutils
       brew install p7zip
@@ -1577,6 +1579,7 @@ function InstallCommonPackages {
           main/gron
           main/jc
           main/jdupes
+          main/just
           main/patch
           main/peco
           main/python
