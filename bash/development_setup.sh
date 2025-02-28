@@ -575,9 +575,14 @@ function InstallEnvPackages {
         openssl
       ruby -S gem install \
         faraday \
-        lru_redux \
         fuzzy-string-match \
         stringex
+      TMP_BUNDLER_DIR="$(mktemp -d)"
+      pushd "$TMP_BUNDLER_DIR" >/dev/null 2>&1
+      echo "gem 'lru_reredux', git: 'https://github.com/mmguero-dev/lru_reredux'" >> Gemfile
+      bundle install
+      popd >/dev/null 2>&1
+      rm -rf "$TMP_BUNDLER_DIR"
     fi
 
     if command -v go >/dev/null 2>&1; then
