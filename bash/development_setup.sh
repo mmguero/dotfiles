@@ -3203,6 +3203,7 @@ function GueroSymlinks {
         store_unique.sh
         window_dimensions.sh
         tx-rx-secure.sh
+        xkcd936.sh
       )
       for i in ${LINKED_SCRIPTS[@]}; do
         rm -vf "$LOCAL_BIN_PATH"/"$i" && ln $LNFLAGS "$GUERO_GITHUB_PATH"/scripts/"$i" "$LOCAL_BIN_PATH"/
