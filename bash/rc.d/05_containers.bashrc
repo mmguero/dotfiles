@@ -19,6 +19,7 @@ export DBX_CONTAINER_MANAGER=$CONTAINER_ENGINE
 export DBX_CONTAINER_IMAGE="docker.io/library/debian:stable-slim"
 export DBX_CONTAINER_ALWAYS_PULL="0"
 export DBX_NON_INTERACTIVE="0"
+export CONTAINER_IMAGE_ARCH_SUFFIX="$(uname -m | sed 's/^x86_64$//' | sed 's/^arm64$/-arm64/' | sed 's/^aarch64$/-arm64/')"
 
 # If you're using just podman, you could uncomment this to have
 # docker/podman clients work more cleanly together.
@@ -61,7 +62,7 @@ function audacityd() {
   if [[ "$(realpath "$DOCS_FOLDER")" == "$(realpath "$HOME")" ]]; then
     echo "\$DOCS_FOLDER needs to be a directory other than \"$HOME\"" >&2
   else
-    x11docker --backend=$CONTAINER_ENGINE --pulseaudio --alsa --workdir=/Audio -- "-v" "$DOCS_FOLDER:/Audio" -- oci.guero.org/audacity
+    x11docker --backend=$CONTAINER_ENGINE --pulseaudio --alsa --workdir=/Audio -- "-v" "$DOCS_FOLDER:/Audio" -- oci.guero.org/audacity:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
   fi
 }
 
@@ -78,7 +79,7 @@ function losslesscut() {
   if [[ "$(realpath "$DOCS_FOLDER")" == "$(realpath "$HOME")" ]]; then
     echo "\$DOCS_FOLDER needs to be a directory other than \"$HOME\"" >&2
   else
-    nohup x11docker --no-entrypoint --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- oci.guero.org/lossless-cut /opt/LosslessCut-linux-x64/losslesscut --no-sandbox </dev/null >/dev/null 2>&1 &
+    nohup x11docker --no-entrypoint --backend=$CONTAINER_ENGINE --pulseaudio --gpu --workdir=/Videos -- "-v" "$DOCS_FOLDER:/Videos" -- oci.guero.org/lossless-cut:latest${CONTAINER_IMAGE_ARCH_SUFFIX} /opt/LosslessCut-linux-x64/losslesscut --no-sandbox </dev/null >/dev/null 2>&1 &
   fi
 }
 
@@ -159,7 +160,7 @@ function ytdlpc() {
     -v "$DIR:$DIR:rw" \
     -w "$DIR" \
     --pull=never \
-    oci.guero.org/yt-dlp "$@"
+    oci.guero.org/yt-dlp:latest${CONTAINER_IMAGE_ARCH_SUFFIX} "$@"
 }
 function ytdlpd() { CONTAINER_ENGINE=docker ytdlpc "$@"; }
 function ytdlpp() { CONTAINER_ENGINE=podman ytdlpc "$@"; }
@@ -309,14 +310,14 @@ function kresources () {
 #}
 
 #function teams() {
-#  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --alsa --webcam --hostuser=$USER --workdir=/usr/share/teams -- "--tmpfs" "/dev/shm" -- oci.guero.org/teams "$@" </dev/null >/dev/null 2>&1 &
+#  nohup x11docker --backend=$CONTAINER_ENGINE --network --gpu --alsa --webcam --hostuser=$USER --workdir=/usr/share/teams -- "--tmpfs" "/dev/shm" -- oci.guero.org/teams:latest${CONTAINER_IMAGE_ARCH_SUFFIX} "$@" </dev/null >/dev/null 2>&1 &
 #}
 
 # signal (oci.guero.org/signal) via x11docker
 function signal() {
   mkdir -p "$HOME/.config/Signal"
   # --pulseaudio --webcam
-  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER --workdir=/opt/Signal -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- oci.guero.org/signal </dev/null >/dev/null 2>&1 &
+  nohup x11docker --backend=$CONTAINER_ENGINE --network --hostuser=$USER --workdir=/opt/Signal -- "-v" "$HOME/.config/Signal:/home.tmp/$USER/.config/Signal" -- oci.guero.org/signal:latest${CONTAINER_IMAGE_ARCH_SUFFIX} </dev/null >/dev/null 2>&1 &
 }
 
 ########################################################################
@@ -380,7 +381,7 @@ function cssh() {
     -w "$DIR" \
     --pull=never \
     --entrypoint=ssh \
-    oci.guero.org/debian \
+    oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX} \
     -F "$CONTAINER_SHARE_HOME"/.ssh/config \
     -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
@@ -413,7 +414,7 @@ function cclient() {
     -w "$DIR" \
     --pull=never \
     --entrypoint="$CLIENT_EXE" \
-    oci.guero.org/debian \
+    oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX} \
     "$@"
 }
 function dclient() { CONTAINER_ENGINE=docker cclient "$@"; }
@@ -442,7 +443,7 @@ function x11desktop() {
       --group-add=docker \
       --group-add=fuse \
       --group-add=libvirt \
-    oci.guero.org/xfce </dev/null >/dev/null 2>&1 &
+    oci.guero.org/xfce:latest${CONTAINER_IMAGE_ARCH_SUFFIX} </dev/null >/dev/null 2>&1 &
 
   elif [[ "$CONTAINER_ENGINE" == "podman" ]]; then
     nohup x11docker \
@@ -460,7 +461,7 @@ function x11desktop() {
       --share /var/run/libvirt/ \
       --group-add=fuse \
       --group-add=libvirt \
-    oci.guero.org/xfce </dev/null >/dev/null 2>&1 &
+    oci.guero.org/xfce:latest${CONTAINER_IMAGE_ARCH_SUFFIX} </dev/null >/dev/null 2>&1 &
 
   else
     echo "\$CONTAINER_ENGINE invalid or unspecified" >&2
@@ -498,7 +499,7 @@ function ciso() {
             --device /dev/kvm \
             --volume "$(realpath "$1")":/image/live.iso:ro \
             --pull=never \
-            oci.guero.org/qemu-live-iso)
+            oci.guero.org/qemu-live-iso:latest${CONTAINER_IMAGE_ARCH_SUFFIX})
         else
             echo "No image file specified" >&2
         fi
@@ -521,7 +522,7 @@ function deblive() {
       -e QEMU_CDROM=/image/live.iso \
       --device /dev/kvm \
       --pull=never \
-      oci.guero.org/deblive)
+      oci.guero.org/deblive:latest${CONTAINER_IMAGE_ARCH_SUFFIX})
     else
       echo "/dev/kvm not found" >&2
     fi
@@ -573,9 +574,9 @@ function crun() {
 function drun() { CONTAINER_ENGINE=docker crun "$@"; }
 function prun() { CONTAINER_ENGINE=podman crun "$@"; }
 
-function debian() { crun "$@" oci.guero.org/debian; }
-function debiand() { CONTAINER_ENGINE=docker crun "$@" oci.guero.org/debian; }
-function debianp() { CONTAINER_ENGINE=podman crun "$@" oci.guero.org/debian; }
+function debian() { crun "$@" oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX}; }
+function debiand() { CONTAINER_ENGINE=docker crun "$@" oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX}; }
+function debianp() { CONTAINER_ENGINE=podman crun "$@" oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX}; }
 
 # compose
 # the "podman compose" help says:

@@ -35,6 +35,7 @@ LOCAL_DATA_PATH=${XDG_DATA_HOME:-$HOME/.local/share}
 LOCAL_BIN_PATH=$HOME/.local/bin
 LOCAL_CONFIG_PATH=${XDG_CONFIG_HOME:-$HOME/.config}
 CONTAINER_ENGINE=${CONTAINER_ENGINE:-docker}
+CONTAINER_IMG_PREFIX=
 
 # see if this has been cloned from github.com/mmguero/dotfiles
 # (so we can assume other stuff might be here for symlinking)
@@ -144,6 +145,7 @@ fi
 if [[ -n $MACOS ]]; then
   SCRIPT_USER="$(whoami)"
   SUDO_CMD=""
+  LINUX_CPU="$(uname -m)"
 
 elif [[ -n $MSYSTEM ]]; then
   SCRIPT_USER="$(whoami)"
@@ -164,6 +166,7 @@ else
   LINUX_ARCH="$(dpkg --print-architecture)"
   LINUX_CPU="$(uname -m)"
 fi
+CONTAINER_IMAGE_ARCH_SUFFIX="$(echo "${LINUX_CPU:-}" | sed 's/^x86_64$//' | sed 's/^arm64$/-arm64/' | sed 's/^aarch64$/-arm64/')"
 
 ###################################################################################
 function _AptUpdate {
@@ -889,7 +892,7 @@ function DockerPullImages {
         debian:stable-slim
         debian:bookworm-slim
         bitnami/minideb:latest
-        oci.guero.org/debian:latest
+        oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
         ubuntu:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -902,10 +905,10 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        oci.guero.org/cleanvid:latest
-        oci.guero.org/lossless-cut:latest
-        oci.guero.org/montag:latest
-        oci.guero.org/monkeyplug:small
+        oci.guero.org/cleanvid:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/lossless-cut:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/montag:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/monkeyplug:small${CONTAINER_IMAGE_ARCH_SUFFIX}
         jess/spotify:latest
         mwader/static-ffmpeg:latest
       )
@@ -919,11 +922,11 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        oci.guero.org/net-clients:latest
-        oci.guero.org/nginx-ldap:latest
-        oci.guero.org/stunnel:latest
-        oci.guero.org/tunneler:latest
-        oci.guero.org/wireproxy:latest
+        oci.guero.org/net-clients:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/nginx-ldap:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/stunnel:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/tunneler:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/wireproxy:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
         haugene/transmission-openvpn:latest
         nginx:latest
         osminogin/tor-simple:latest
@@ -942,8 +945,8 @@ function DockerPullImages {
       DOCKER_IMAGES=(
         andrewmackrodt/chromium-x11:latest
         fathyb/carbonyl:latest
-        oci.guero.org/firefox:latest
-        oci.guero.org/net-clients:latest
+        oci.guero.org/firefox:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/net-clients:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
       )
       for i in ${DOCKER_IMAGES[@]}; do
         ${CONTAINER_ENGINE} pull "$i"
@@ -956,7 +959,7 @@ function DockerPullImages {
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
         lscr.io/linuxserver/libreoffice:latest
-        oci.guero.org/gimp:LATEST
+        oci.guero.org/gimp:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
       )
       for i in ${DOCKER_IMAGES[@]}; do
         ${CONTAINER_ENGINE} pull "$i"
@@ -968,8 +971,8 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        oci.guero.org/xfce-base:latest
-        oci.guero.org/xfce:latest
+        oci.guero.org/xfce-base:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/xfce:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
       )
       for i in ${DOCKER_IMAGES[@]}; do
         ${CONTAINER_ENGINE} pull "$i"
@@ -981,7 +984,7 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        oci.guero.org/deblive:latest
+        oci.guero.org/deblive:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
         tianon/qemu:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -994,11 +997,11 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        oci.guero.org/mattermost:latest
-        oci.guero.org/mirotalk:latest
-        oci.guero.org/postgres:latest
-        oci.guero.org/signal:latest
-        oci.guero.org/teams:latest
+        oci.guero.org/mattermost:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/mirotalk:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/postgres:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/signal:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/teams:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
         mdouchement/zoom-us:latest
       )
       for i in ${DOCKER_IMAGES[@]}; do
@@ -1011,8 +1014,8 @@ function DockerPullImages {
     CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       DOCKER_IMAGES=(
-        oci.guero.org/capa:latest
-        oci.guero.org/zeek:latest
+        oci.guero.org/capa:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
+        oci.guero.org/zeek:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
         ghcr.io/cisagov/network-architecture-verification-and-validation
         mpepping/cyberchef:latest
       )
