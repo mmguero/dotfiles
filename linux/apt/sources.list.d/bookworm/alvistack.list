@@ -1,1 +1,1 @@
-deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] http://mirror.aardsoft.fi/opensuse/repositories/home:/alvistack/Debian_12/ /
+deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/Debian_12/ /

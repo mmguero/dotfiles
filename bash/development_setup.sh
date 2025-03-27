@@ -1083,10 +1083,10 @@ function InstallPodman {
         curl -sSL "https://build.opensuse.org/projects/home:alvistack/signing_keys/download?kind=gpg" | gpg --dearmor | $SUDO_CMD tee /usr/share/keyrings/home_alvistack.gpg >/dev/null
         if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
           $SUDO_CMD add-apt-repository -y \
-             "deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] http://mirror.aardsoft.fi/opensuse/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/ /"
+             "deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/ /"
         elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
           $SUDO_CMD add-apt-repository -y \
-             "deb  [signed-by=/usr/share/keyrings/home_alvistack.gpg] http://mirror.aardsoft.fi/opensuse/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /"
+             "deb  [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /"
         fi
 
         _AptUpdate
