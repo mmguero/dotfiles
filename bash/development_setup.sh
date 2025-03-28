@@ -1073,21 +1073,30 @@ function InstallPodman {
         InstallEssentialPackages
 
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
-                                                   apt-transport-https \
                                                    ca-certificates \
-                                                   curl \
-                                                   gnupg2 \
-                                                   software-properties-common
+                                                   gnupg2
 
         echo "Installing Podman..." >&2
-        curl -sSL "https://build.opensuse.org/projects/home:alvistack/signing_keys/download?kind=gpg" | gpg --dearmor | $SUDO_CMD tee /usr/share/keyrings/home_alvistack.gpg >/dev/null
-        if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
-          $SUDO_CMD add-apt-repository -y \
-             "deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/ /"
-        elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
-          $SUDO_CMD add-apt-repository -y \
-             "deb  [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /"
+        if [[ ! -f /etc/apt/sources.list.d/alvistack.list ]]; then
+          curl -sSL "https://build.opensuse.org/projects/home:alvistack/signing_keys/download?kind=gpg" | gpg --dearmor | $SUDO_CMD tee /usr/share/keyrings/home_alvistack.gpg >/dev/null
+          $SUDO_CMD mkdir -p /etc/apt/sources.list.d
+          if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
+            echo -e "deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/ /" | $SUDO_CMD tee /etc/apt/sources.list.d/alvistack.list
+          elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
+            echo -e "deb  [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /" | $SUDO_CMD tee /etc/apt/sources.list.d/alvistack.list
+          fi
         fi
+        [[ ! -f /etc/apt/preferences.d/99-alvistack ]] && \
+          $SUDO_CMD mkdir -p /etc/apt/preferences.d && \
+          $SUDO_CMD tee -a /etc/apt/preferences.d/99-alvistack > /dev/null <<'EOT'
+Package: *
+Pin: origin mirrorcache-jp.opensuse.org
+Pin-Priority: 1
+
+Package: buildah catatonit conmon containernetworking containernetworking-plugins containers-common cri-o-runc crun libcharon-standard-plugins libslirp0 passt podman podman-aardvark-dns podman-netavark python3-podman-compose slirp4netns
+Pin: origin mirrorcache-jp.opensuse.org
+Pin-Priority: 500
+EOT
 
         _AptUpdate
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
