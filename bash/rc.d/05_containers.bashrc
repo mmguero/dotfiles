@@ -709,7 +709,7 @@ function dive () {
     $CONTAINER_ENGINE run --rm -it \
       -v /var/run/docker.sock:/var/run/docker.sock \
       --pull=never \
-      wagoodman/dive "$@"
+      ghcr.io/wagoodman/dive:latest "$@"
   else
     echo "wagoodman/dive requires docker (/var/run/docker.sock)" >&2
   fi
