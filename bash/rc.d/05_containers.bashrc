@@ -251,7 +251,7 @@ function kshell () {
     SHELL="${3:-/bin/bash}"
     POD="$(kctl get pods --no-headers "${NAMESPACE_ARGS[@]}" | grep -P "\b${SERVICE}\b" | awk "${AWK_ARGS[@]}" | sort | head -n 1)"
     if [[ -n "${POD}" ]]; then
-        kctl exec --stdin --tty "${POD}" -- "${SHELL}"
+        kctl exec "${NAMESPACE_ARGS[@]}" --stdin --tty "${POD}" -- "${SHELL}"
     else
         echo "Unable to identify pod for ${SERVICE}" >&2
     fi
