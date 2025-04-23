@@ -294,7 +294,7 @@ function kresources () {
       NAMESPACE_ARGS=( --all-namespaces )
     fi
     for RESOURCE in $(kubectl api-resources --verbs=list --namespaced -o name); do
-      if [[ "$RESOURCE" != "events" ]]; then
+      if [[ ! "$RESOURCE" =~ ^events.* ]]; then
         echo "============================="
         echo $RESOURCE
         echo "-----------------------------"
