@@ -293,7 +293,14 @@ function kresources () {
     else
       NAMESPACE_ARGS=( --all-namespaces )
     fi
-    kctl api-resources --verbs=list --namespaced -o name  | xargs -r -n 1 kubectl get --show-kind --ignore-not-found "${NAMESPACE_ARGS[@]}"
+    for RESOURCE in $(kubectl api-resources --verbs=list --namespaced -o name); do
+      if [[ "$RESOURCE" != "events" ]]; then
+        echo "============================="
+        echo $RESOURCE
+        echo "-----------------------------"
+        kctl get --show-kind --ignore-not-found "${NAMESPACE_ARGS[@]}" "$RESOURCE"
+      fi
+    done
 }
 
 ########################################################################

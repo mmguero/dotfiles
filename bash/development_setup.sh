@@ -60,13 +60,16 @@ ENV_LIST=(
   perl
   rust
   age
+  awscli
   bat
   difftastic
   direnv
+  eksctl
   eza
   fd
   fzf
   ghorg
+  helm
   minikube
   packer
   peco
