@@ -1012,6 +1012,10 @@ function tox264mkv720acopy() {
   printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vf \"scale=-2:720,format=yuv420p\" -c:v libx264 -preset slow -crf 22 -c:a copy \"\$INFILE_BASE.x264.mkv\""
 }
 
+function tox264mkv1080acopy() {
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vf \"scale=-2:1080,format=yuv420p\" -c:v libx264 -preset slow -crf 22 -c:a copy \"\$INFILE_BASE.x264.mkv\""
+}
+
 function tox264mkvacopy30fps() {
   printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf \"format=yuv420p,fps=fps=30\" -c:a copy \"\$INFILE_BASE.x264.mkv\""
 }
