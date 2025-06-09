@@ -2653,24 +2653,6 @@ function InstallUserLocalBinaries {
         BINARY_UPDATE_ALL=false
       fi
 
-      # pcloud (and other one-offs)
-      if [[ "$LINUX_ARCH" == "amd64" ]] && [[ -z $WSL ]]; then
-        [[ "$BINARY_UPDATE_ALL" == "true" ]] && BINARY_UPDATE=true || BINARY_UPDATE=false
-        if [[ "$BINARY_UPDATE" == "false" ]]; then
-          unset CONFIRMATION
-          read -p "Download pcloud [y/N]? " CONFIRMATION
-          CONFIRMATION=${CONFIRMATION:-N}
-          [[ $CONFIRMATION =~ ^[Yy] ]] && BINARY_UPDATE=true
-        fi
-        if [[ "$BINARY_UPDATE" == "true" ]]; then
-          PCLOUD_URL="https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Linux/pcloud"
-          curl -fsSL "$PCLOUD_URL" > "$LOCAL_BIN_PATH"/pcloud.new
-          chmod 755 "$LOCAL_BIN_PATH"/pcloud.new
-          [[ -f "$LOCAL_BIN_PATH"/pcloud ]] && mv "$LOCAL_BIN_PATH"/pcloud "$LOCAL_BIN_PATH"/pcloud.old
-          mv "$LOCAL_BIN_PATH"/pcloud.new "$LOCAL_BIN_PATH"/pcloud && rm -f "$LOCAL_BIN_PATH"/pcloud.old
-        fi
-      fi
-
       # github releases via fetch
       if [[ -x "$LOCAL_BIN_PATH"/fetch ]]; then
         if [[ "$LINUX_ARCH" =~ ^arm ]]; then
@@ -2682,6 +2664,7 @@ function InstallUserLocalBinaries {
               "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
               "https://github.com/darkhz/bluetuith|^bluetuith_.*_Linux_arm64.tar.gz$|/tmp/bluetuith.tar.gz"
               "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_arm64\.tar\.gz$|/tmp/rclone-tui.tar.gz"
+              "https://github.com/derailed/k9s|^k9s_Linux_arm64\.tar\.gz$|/tmp/k9s.tar.gz"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
               "https://github.com/eza-community/eza|^eza_aarch64-unknown-linux-gnu\.tar\.gz$|/tmp/eza.tar.gz"
@@ -2743,6 +2726,7 @@ function InstallUserLocalBinaries {
               "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
               "https://github.com/darkhz/bluetuith|^bluetuith_.*_Linux_armv7.tar.gz$|/tmp/bluetuith.tar.gz"
               "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_armv7\.tar\.gz$|/tmp/rclone-tui.tar.gz"
+              "https://github.com/derailed/k9s|^k9s_Linux_armv7\.tar\.gz$|/tmp/k9s.tar.gz"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-armv7$|$LOCAL_BIN_PATH/docker-credential-pass|755"
               "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-armv7$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
               "https://github.com/eza-community/eza|^eza_arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/eza.tar.gz"
@@ -2775,6 +2759,7 @@ function InstallUserLocalBinaries {
             "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-x86_64-unknown-linux-musl\.tar\.gz$|/tmp/ripgrep.tar.gz"
             "https://github.com/darkhz/bluetuith|^bluetuith_.*_Linux_x86_64.tar.gz$|/tmp/bluetuith.tar.gz"
             "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_x86_64\.tar\.gz$|/tmp/rclone-tui.tar.gz"
+            "https://github.com/derailed/k9s|^k9s_Linux_amd64\.tar\.gz$|/tmp/k9s.tar.gz"
             "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
             "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
             "https://github.com/eza-community/eza|^eza_x86_64-unknown-linux-musl\.tar\.gz$|/tmp/eza.tar.gz"
@@ -2836,8 +2821,6 @@ function InstallUserLocalBinaries {
         curl -L -J -O "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio "https://.+?VeraCrypt_Setup_x64.+?\.msi" | sed "s/&#43;/+/" | head -n 1)"
         OPENSHELL_RELEASE="$(_GitLatestRelease Open-Shell/Open-Shell-Menu | sed 's/^v//')"
         curl -L -J -O "https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v${OPENSHELL_RELEASE}/OpenShellSetup_$(echo "${OPENSHELL_RELEASE}" | sed 's/\./_/g').exe"
-        curl -L -J -O 'https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Windows/synergy_windows_x64.msi'
-        curl -L -J -O 'https://filedn.com/lqGgqyaOApSjKzN216iPGQf/Software/Windows/pCloud_Windows_x64.exe'
         echo "Some installers downloaded to \"$(pwd)\"" >&2
         popd >/dev/null 2>&1
     fi
