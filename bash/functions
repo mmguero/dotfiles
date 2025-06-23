@@ -113,6 +113,12 @@ function humanhash () {
   python -c "import humanhash, sys; [print(humanhash.humanize(line.strip()) if all(c.lower() in '0123456789abcdef' for c in line.strip()) else f'\'{line.strip()}\\' is not a digest') for line in sys.stdin]"
 }
 
+function shakeysum () {
+  for FILE in "$@"; do
+    python3 -c "import sys; from mmguero import shakeysum; print(shakeysum(sys.argv[1]))" "$FILE"
+  done
+}
+
 function base () {
   echo "${1%.*}"
 }
