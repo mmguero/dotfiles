@@ -138,6 +138,7 @@ if [[ $LINUX ]]; then
     IMG_USER="${QEMU_USER:-}"
     if [[ -z "${IMG_USER}" ]]; then
       declare -A IMG_USERS
+      IMG_USERS[alma-10]=almalinux
       IMG_USERS[alma-8]=almalinux
       IMG_USERS[alma-9]=almalinux
       IMG_USERS[amazonlinux-2023]=ec2-user
@@ -150,6 +151,7 @@ if [[ $LINUX ]]; then
       IMG_USERS[debian-12-arm64]=debian
       IMG_USERS[debian-12]=debian
       IMG_USERS[debian-9]=debian
+      IMG_USERS[rocky-10]=rocky
       IMG_USERS[rocky-8]=rocky
       IMG_USERS[rocky-9]=rocky
       IMG_USERS[ubuntu-bionic]=ubuntu
@@ -159,6 +161,7 @@ if [[ $LINUX ]]; then
       IMG_USERS[ubuntu-mantic]=ubuntu
       IMG_USERS[ubuntu-noble]=ubuntu
       IMG_USERS[ubuntu-oracular]=ubuntu
+      IMG_USERS[ubuntu-plucky]=ubuntu
       IMG_USERS[ubuntu-xenial]=ubuntu
       IMG_USER="${IMG_USERS["${IMG}"]:-root}"
     fi
@@ -169,7 +172,7 @@ if [[ $LINUX ]]; then
       --arch "${QEMU_ARCH:-amd64}" \
       --vcpus ${QEMU_CPU:-2} \
       --memory ${MEMGB} \
-      --bootcapacity ${QEMU_DISK:-50G} \
+      --bootcapacity ${QEMU_DISK:-40G} \
       --mount "host=$(pwd),vm=/host" \
       --user "${IMG_USER}" \
       --wait-ssh \
