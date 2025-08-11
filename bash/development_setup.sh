@@ -893,7 +893,7 @@ function DockerPullImages {
         alpine:latest
         amazonlinux:2023
         debian:stable-slim
-        debian:bookworm-slim
+        debian:trixie-slim
         bitnami/minideb:latest
         oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX}
         ubuntu:latest
