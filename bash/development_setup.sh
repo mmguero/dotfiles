@@ -649,7 +649,6 @@ function SetupAptSources {
         "dearmor:https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg"
         "dearmor:https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
         "dearmor:https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg"
-        "dearmor:https://build.opensuse.org/projects/home:alvistack/signing_keys/download?kind=gpg|/usr/share/keyrings/home_alvistack.gpg"
         "dearmor:https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg"
         "import:https://packages.mozilla.org/apt/repo-signing-key.gpg|/etc/apt/keyrings/packages.mozilla.org.asc"
         "deb:fasttrack-archive-keyring"
@@ -1080,27 +1079,6 @@ function InstallPodman {
                                                    gnupg2
 
         echo "Installing Podman..." >&2
-        if [[ ! -f /etc/apt/sources.list.d/alvistack.list ]]; then
-          curl -sSL "https://build.opensuse.org/projects/home:alvistack/signing_keys/download?kind=gpg" | gpg --dearmor | $SUDO_CMD tee /usr/share/keyrings/home_alvistack.gpg >/dev/null
-          $SUDO_CMD mkdir -p /etc/apt/sources.list.d
-          if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
-            echo -e "deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/xUbuntu_${LINUX_RELEASE_NUMBER}/ /" | $SUDO_CMD tee /etc/apt/sources.list.d/alvistack.list
-          elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
-            echo -e "deb  [signed-by=/usr/share/keyrings/home_alvistack.gpg] https://mirrorcache-jp.opensuse.org/download/repositories/home:/alvistack/Debian_${LINUX_RELEASE_NUMBER}/ /" | $SUDO_CMD tee /etc/apt/sources.list.d/alvistack.list
-          fi
-        fi
-        [[ ! -f /etc/apt/preferences.d/99-alvistack ]] && \
-          $SUDO_CMD mkdir -p /etc/apt/preferences.d && \
-          $SUDO_CMD tee -a /etc/apt/preferences.d/99-alvistack > /dev/null <<'EOT'
-Package: *
-Pin: origin mirrorcache-jp.opensuse.org
-Pin-Priority: 1
-
-Package: buildah catatonit conmon containernetworking containernetworking-plugins containers-common cri-o-runc crun libcharon-standard-plugins libslirp0 passt podman podman-aardvark-dns podman-netavark python3-podman-compose slirp4netns
-Pin: origin mirrorcache-jp.opensuse.org
-Pin-Priority: 500
-EOT
-
         _AptUpdate
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
           buildah \
@@ -1109,9 +1087,6 @@ EOT
           fuse-overlayfs \
           passt \
           podman \
-          podman-aardvark-dns \
-          python3-podman-compose \
-          podman-netavark \
           slirp4netns \
           uidmap
 
