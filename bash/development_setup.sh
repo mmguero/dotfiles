@@ -1236,7 +1236,8 @@ function InstallVirtualization {
         qemu-system \
         ruby-fog-libvirt \
         ruby-libvirt \
-        virtinst
+        virtinst \
+        virtiofsd
       unset CONFIRMATION
       read -p "Install kvm/libvirt/qemu GUI packages [Y/n]? " CONFIRMATION
       CONFIRMATION=${CONFIRMATION:-Y}

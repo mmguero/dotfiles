@@ -76,3 +76,6 @@ url = "https://repo.almalinux.org/almalinux/9/cloud/x86_64/images/AlmaLinux-9-Ge
 
 [alma-8]
 url = "https://repo.almalinux.org/almalinux/8/cloud/x86_64/images/AlmaLinux-8-GenericCloud-latest.x86_64.qcow2"
+
+[fedora-42]
+url = "https://download.fedoraproject.org/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2"
