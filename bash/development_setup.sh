@@ -542,7 +542,7 @@ function InstallEnvPackages {
         dtrx \
         entrypoint2 \
         git+https://github.com/badele/gitcheck.git \
-        git-up \
+        git+https://github.com/mmguero/PyGitUp.git \
         humanhash3 \
         mmguero \
         more-itertools \
