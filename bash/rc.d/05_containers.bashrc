@@ -210,6 +210,7 @@ if [[ -f /usr/local/bin/k3s ]]; then
   alias crictl="sudo /usr/local/bin/crictl"
 fi
 command -v kubectl >/dev/null 2>&1 && alias k=kubectl
+alias k9s='k9s --logoless --splashless'
 
 function kctl () {
   if [[ -n "${KUBECONFIG}" ]]; then
