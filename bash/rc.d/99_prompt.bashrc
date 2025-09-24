@@ -61,5 +61,5 @@ fi
 
 if [[ -n $BASH_VERSION ]]; then
   command -v direnv >/dev/null 2>&1 && eval "$(direnv hook bash)"
-  command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
+  command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)" && alias cd="z"
 fi
