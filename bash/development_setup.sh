@@ -592,6 +592,7 @@ function InstallEnvPackages {
     fi
 
     if command -v go >/dev/null 2>&1; then
+      go install github.com/go-bindata/go-bindata/go-bindata@latest
       go install github.com/rogpeppe/godef@latest
       go install golang.org/x/tools/cmd/goimports@latest
       go install golang.org/x/tools/cmd/gorename@latest
@@ -2634,6 +2635,7 @@ function InstallUserLocalBinaries {
         if [[ "$LINUX_ARCH" =~ ^arm ]]; then
           if [[ "$LINUX_CPU" == "aarch64" ]]; then
             ASSETS=(
+              "https://github.com/ajeetdsouza/zoxide|^zoxide-.+-aarch64-unknown-linux-musl\.tar\.gz|/tmp/zoxide.tar.gz"
               "https://github.com/antonmedv/fx|^fx_linux_arm64$|$LOCAL_BIN_PATH/fx|755"
               "https://github.com/aptible/supercronic|^supercronic-linux-arm64$|$LOCAL_BIN_PATH/supercronic|755"
               "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm64$|$LOCAL_BIN_PATH/boringproxy|755"
@@ -2670,6 +2672,7 @@ function InstallUserLocalBinaries {
             )
           elif [[ "$LINUX_CPU" == "armv6l" ]]; then
             ASSETS=(
+              "https://github.com/ajeetdsouza/zoxide|^zoxide-.+-arm-unknown-linux-musleabihf\.tar\.gz|/tmp/zoxide.tar.gz"
               "https://github.com/aptible/supercronic|^supercronic-linux-arm$|$LOCAL_BIN_PATH/supercronic|755"
               "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm$|$LOCAL_BIN_PATH/boringproxy|755"
               "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
@@ -2697,6 +2700,7 @@ function InstallUserLocalBinaries {
             )
           else
             ASSETS=(
+              "https://github.com/ajeetdsouza/zoxide|^zoxide-.+-armv7-unknown-linux-musleabihf\.tar\.gz|/tmp/zoxide.tar.gz"
               "https://github.com/aptible/supercronic|^supercronic-linux-arm$|$LOCAL_BIN_PATH/supercronic|755"
               "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm$|$LOCAL_BIN_PATH/boringproxy|755"
               "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
@@ -2728,6 +2732,7 @@ function InstallUserLocalBinaries {
           fi
         else
           ASSETS=(
+            "https://github.com/ajeetdsouza/zoxide|^zoxide-.+-x86_64-unknown-linux-musl\.tar\.gz|/tmp/zoxide.tar.gz"
             "https://github.com/alphasoc/flightsim|^flightsim_.+_linux_amd64\.tar\.gz$|/tmp/flightsim.tar.gz"
             "https://github.com/antonmedv/fx|^fx_linux_amd64$|$LOCAL_BIN_PATH/fx|755"
             "https://github.com/aptible/supercronic|^supercronic-linux-amd64$|$LOCAL_BIN_PATH/supercronic|755"
