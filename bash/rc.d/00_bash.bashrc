@@ -96,5 +96,3 @@ if [[ $MACOS ]]; then
   bind '"\e[1;5C": forward-word'
   bind '"\e[1;5D": backward-word'
 fi
-
-[[ -n $BASH_VERSION ]] && command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"

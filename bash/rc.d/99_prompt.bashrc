@@ -59,4 +59,7 @@ else
   fi
 fi
 
-command -v direnv >/dev/null 2>&1 && eval "$(direnv hook bash)"
+if [[ -n $BASH_VERSION ]]; then
+  command -v direnv >/dev/null 2>&1 && eval "$(direnv hook bash)"
+  command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init bash)"
+fi
