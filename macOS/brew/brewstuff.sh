@@ -78,6 +78,7 @@ brew install vim
 brew install watch
 brew install wdiff
 brew install wget
+brew install zoxide
 
 brew install neilotoole/sq/sq
 
