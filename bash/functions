@@ -115,7 +115,7 @@ function humanhash () {
 
 function shakeysum () {
   for FILE in "$@"; do
-    [[ -f "$FILE" ]] && python3 -c "import sys; from mmguero import shakeysum; print(f'{sys.argv[1]}\t{shakeysum(sys.argv[1])}')" "$FILE"
+    [[ -f "$FILE" ]] && python3 -c "import sys; from mmguero import shakey_sum; print(f'{sys.argv[1]}\t{shakey_sum(sys.argv[1])}')" "$FILE"
   done
 }
 
