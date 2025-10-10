@@ -1,3 +1,12 @@
+[ubuntu-questing]
+url = "https://cloud-images.ubuntu.com/questing/current/questing-server-cloudimg-amd64.img"
+
+[ubuntu-plucky]
+url = "https://cloud-images.ubuntu.com/plucky/current/plucky-server-cloudimg-amd64.img"
+
+[ubuntu-oracular]
+url = "https://cloud-images.ubuntu.com/oracular/current/oracular-server-cloudimg-amd64.img"
+
 [ubuntu-noble]
 url = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
 
@@ -7,20 +16,11 @@ url = "https://cloud-images.ubuntu.com/mantic/current/mantic-server-cloudimg-amd
 [ubuntu-lunar]
 url = "https://cloud-images.ubuntu.com/lunar/current/lunar-server-cloudimg-amd64.img"
 
-[ubuntu-oracular]
-url = "https://cloud-images.ubuntu.com/oracular/current/oracular-server-cloudimg-amd64.img"
+[ubuntu-kinetic]
+url = "https://cloud-images.ubuntu.com/kinetic/current/kinetic-server-cloudimg-amd64.img"
 
 [ubuntu-jammy]
 url = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
-
-[ubuntu-focal]
-url = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
-
-[ubuntu-bionic]
-url = "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
-
-[ubuntu-xenial]
-url = "https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img"
 
 [debian-13]
 url = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.qcow2"
@@ -34,15 +34,11 @@ url = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-a
 [debian-12-arm64]
 url = "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2"
 
-[debian-11]
-url = "https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2"
+[centos-10]
+url = "https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-10-latest.x86_64.qcow2"
 
-[debian-10]
-url = "https://cloud.debian.org/images/cloud/buster/latest/debian-10-generic-amd64.qcow2"
-
-[debian-9]
-# There is no publicly available "generic" image, but the OpenStack one works
-url = "https://cdimage.debian.org/cdimage/openstack/current-9/debian-9-openstack-amd64.qcow2"
+[centos-9]
+url = "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2"
 
 [centos-8]
 url = "https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.4.2105-20210603.0.x86_64.qcow2"
@@ -50,14 +46,11 @@ url = "https://cloud.centos.org/centos/8/x86_64/images/CentOS-8-GenericCloud-8.4
 [centos-7]
 url = "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2"
 
-[centos-6]
-url = "https://cloud.centos.org/centos/6/images/CentOS-6-x86_64-GenericCloud.qcow2"
+[amazonlinux-2023]
+url = "https://cdn.amazonlinux.com/al2023/os-images/2023.5.20241001.1/kvm/al2023-kvm-2023.5.20241001.1-kernel-6.1-x86_64.xfs.gpt.qcow2"
 
 [amazonlinux-2]
 url = "https://cdn.amazonlinux.com/os-images/2.0.20241001.0/kvm/amzn2-kvm-2.0.20241001.0-x86_64.xfs.gpt.qcow2"
-
-[amazonlinux-2023]
-url = "https://cdn.amazonlinux.com/al2023/os-images/2023.5.20241001.1/kvm/al2023-kvm-2023.5.20241001.1-kernel-6.1-x86_64.xfs.gpt.qcow2"
 
 [rocky-10]
 url = "https://download.rockylinux.org/pub/rocky/10/images/x86_64/Rocky-10-GenericCloud-Base.latest.x86_64.qcow2"
@@ -79,3 +72,6 @@ url = "https://repo.almalinux.org/almalinux/8/cloud/x86_64/images/AlmaLinux-8-Ge
 
 [fedora-42]
 url = "https://download.fedoraproject.org/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2"
+
+[fedora-41]
+url = "https://download.fedoraproject.org/pub/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2"
