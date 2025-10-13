@@ -137,35 +137,17 @@ if [[ $LINUX ]]; then
 
     IMG_USER="${QEMU_USER:-}"
     if [[ -z "${IMG_USER}" ]]; then
-      declare -A IMG_USERS
-      IMG_USERS[alma-10]=almalinux
-      IMG_USERS[alma-8]=almalinux
-      IMG_USERS[alma-9]=almalinux
-      IMG_USERS[amazonlinux-2023]=ec2-user
-      IMG_USERS[amazonlinux-2]=ec2-user
-      IMG_USERS[centos-6]=centos
-      IMG_USERS[centos-7]=centos
-      IMG_USERS[centos-8]=centos
-      IMG_USERS[debian-10]=debian
-      IMG_USERS[debian-11]=debian
-      IMG_USERS[debian-12-arm64]=debian
-      IMG_USERS[debian-12]=debian
-      IMG_USERS[debian-9]=debian
-      IMG_USERS[rocky-10]=rocky
-      IMG_USERS[rocky-8]=rocky
-      IMG_USERS[rocky-9]=rocky
-      IMG_USERS[ubuntu-bionic]=ubuntu
-      IMG_USERS[ubuntu-focal]=ubuntu
-      IMG_USERS[ubuntu-jammy]=ubuntu
-      IMG_USERS[ubuntu-lunar]=ubuntu
-      IMG_USERS[ubuntu-mantic]=ubuntu
-      IMG_USERS[ubuntu-noble]=ubuntu
-      IMG_USERS[ubuntu-oracular]=ubuntu
-      IMG_USERS[ubuntu-plucky]=ubuntu
-      IMG_USERS[ubuntu-xenial]=ubuntu
-      IMG_USER="${IMG_USERS["${IMG}"]:-root}"
+      case "${IMG}" in
+        alma-* )         IMG_USER=almalinux ;;
+        amazonlinux-* )  IMG_USER=ec2-user ;;
+        centos-* )       IMG_USER=centos ;;
+        debian-* )       IMG_USER=debian ;;
+        fedora-* )       IMG_USER=fedora ;;
+        rocky-* )        IMG_USER=rocky ;;
+        ubuntu-* )       IMG_USER=ubuntu ;;
+        * )              IMG_USER=root ;;
+      esac
     fi
-
     virter vm run "${IMG}${IMG_SUFFIX}" \
       --id ${ID} \
       --name "${IMG}-${ID}" \

@@ -154,7 +154,7 @@ read_only = " 🔒"
 [aws]
 style = "bg:tool_bg"
 format = "[ $symbol ]($style)"
-disabled = false
+disabled = true
 
 [bun]
 style = "bg:tool_bg"
