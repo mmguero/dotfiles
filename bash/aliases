@@ -83,6 +83,7 @@ alias xml='xmllint --format -'
 alias norg="gron --ungron"
 alias ungron="gron --ungron"
 alias rg="rg --no-ignore --hidden --glob '!.git/' --glob '!.threat_autogen.zeek*' --glob '!*.geojson' --glob '!*.svg' --smart-case"
+alias rgp="rg --no-ignore --hidden --glob '!.git/' --glob '!.threat_autogen.zeek*' --glob '!*.geojson' --glob '!*.svg' --iglob='*.py' --smart-case"
 alias fd="fd --no-ignore --hidden --ignore-case --exclude '.git'"
 
 # net/vpn/tunnel
