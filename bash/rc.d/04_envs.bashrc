@@ -20,8 +20,8 @@ if command -v asdf >/dev/null 2>&1; then
   fi
 
   function asdf-latest () {
-    asdf list | grep -P "^\S" | xargs -I XXX -r asdf install "XXX" latest
-    asdf list | grep -P "^\S" | xargs -I XXX -r asdf set -u "XXX" latest
+    asdf list | grep -P "^\S" | grep -v ^python | xargs -I XXX -r asdf install "XXX" latest
+    asdf list | grep -P "^\S" | grep -v ^python | xargs -I XXX -r asdf set -u "XXX" latest
   }
 
   function asdf-prune () {
