@@ -1102,7 +1102,6 @@ EOT
           catatonit \
           crun \
           fuse-overlayfs \
-          nftables \
           passt \
           podman \
           podman-aardvark-dns \
