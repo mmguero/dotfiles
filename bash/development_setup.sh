@@ -644,6 +644,7 @@ function SetupAptSources {
     CONFIRMATION=${CONFIRMATION:-Y}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       InstallEssentialPackages
+      $SUDO_CMD mkdir -p /usr/share/keyrings
       command -v gpg >/dev/null 2>&1 || \
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends gpg
       GPG_KEY_URLS=(
@@ -651,6 +652,7 @@ function SetupAptSources {
         "dearmor:https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
         "dearmor:https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg"
         "dearmor:https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg"
+        "dearmor:https://download.opensuse.org/repositories/home:alvistack/Debian_13/Release.key|/usr/share/keyrings/home_alvistack.gpg"
         "import:https://packages.mozilla.org/apt/repo-signing-key.gpg|/etc/apt/keyrings/packages.mozilla.org.asc"
         "deb:fasttrack-archive-keyring"
       )
@@ -1074,10 +1076,24 @@ function InstallPodman {
       if [[ $CONFIRMATION =~ ^[Yy] ]]; then
 
         InstallEssentialPackages
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y ca-certificates gnupg2
 
-        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
-                                                   ca-certificates \
-                                                   gnupg2
+        $SUDO_CMD mkdir -p /usr/share/keyrings
+        curl -fsSL https://download.opensuse.org/repositories/home:alvistack/Debian_13/Release.key | \
+          gpg --dearmor | \
+          $SUDO_CMD tee /usr/share/keyrings/home_alvistack.gpg >/dev/null
+
+        $SUDO_CMD tee /etc/apt/sources.list.d/alvistack.list > /dev/null <<'EOT'
+deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] http://download.opensuse.org/repositories/home:/alvistack/Debian_13/ /
+EOT
+        $SUDO_CMD tee /etc/apt/preferences.d/99-alvistack > /dev/null <<'EOT'
+Package: *
+Pin: origin download.opensuse.org
+Pin-Priority: 1
+Package: buildah catatonit conmon containernetworking containernetworking-plugins containers-common cri-o-runc crun libcharon-standard-plugins libslirp0 passt podman podman-aardvark-dns podman-netavark python3-podman-compose slirp4netns
+Pin: origin download.opensuse.org
+Pin-Priority: 500
+EOT
 
         echo "Installing Podman..." >&2
         _AptUpdate
@@ -1086,8 +1102,11 @@ function InstallPodman {
           catatonit \
           crun \
           fuse-overlayfs \
+          nftables \
           passt \
           podman \
+          podman-aardvark-dns \
+          podman-netavark \
           slirp4netns \
           uidmap
 
