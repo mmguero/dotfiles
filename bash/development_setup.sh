@@ -1088,11 +1088,13 @@ deb [signed-by=/usr/share/keyrings/home_alvistack.gpg] http://download.opensuse.
 EOT
         $SUDO_CMD tee /etc/apt/preferences.d/99-alvistack > /dev/null <<'EOT'
 Package: *
-Pin: origin download.opensuse.org
+Pin: origin "download.opensuse.org"
 Pin-Priority: 1
-Package: buildah catatonit conmon containernetworking containernetworking-plugins containers-common cri-o-runc crun libcharon-standard-plugins libslirp0 passt podman podman-aardvark-dns podman-netavark python3-podman-compose slirp4netns
-Pin: origin download.opensuse.org
-Pin-Priority: 500
+
+Package: buildah catatonit conmon containernetworking containernetworking-plugins containers-common cri-o-runc crun libcharon-standard-plugins libs
+lirp0 passt podman podman-aardvark-dns podman-netavark python3-podman-compose slirp4netns
+Pin: release o=download.opensuse.org
+Pin-Priority: 1001
 EOT
 
         echo "Installing Podman..." >&2
