@@ -89,6 +89,88 @@ function git_list_repos () {
   fi
 }
 
+################################################################################
+# git_install_tool - generalized GitHub binary installer
+# Usage:
+#   git_install_tool <repo> <binary_name> <asset_pattern_amd64> <asset_pattern_arm64> [--strip N]
+#
+# Examples:
+#   git_install_tool schollz/croc croc \
+#     "croc_{ver}_Linux-64bit.tar.gz" "croc_{ver}_Linux-ARM64.tar.gz" --strip 0
+#
+#   git_install_tool mikefarah/yq yq \
+#     "yq_linux_amd64" "yq_linux_arm64"
+################################################################################
+function git_install_tool {
+  local repo="$1"
+  local bin_name="$2"
+  local amd64_pattern="$3"
+  local arm64_pattern="$4"
+  local strip_components=1
+
+  shift 4
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --strip) strip_components="$2"; shift ;;
+    esac
+    shift
+  done
+
+  local release="$(git_latest_release "$repo")"
+  local dest_dir="$HOME"/.local/bin
+  mkdir -p "$dest_dir"
+  local tmp_dir="$(mktemp -d)"
+
+  local linux_cpu="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+  local arch_pattern=""
+  case "$linux_cpu" in
+    amd64) arch_pattern="$amd64_pattern" ;;
+    arm64) arch_pattern="$arm64_pattern" ;;
+    *) echo "Unsupported architecture: $linux_cpu" >&2; return 1 ;;
+  esac
+
+  arch_pattern="${arch_pattern//\{ver\}/$release}"
+  local url="https://github.com/${repo}/releases/download/${release}/${arch_pattern}"
+
+  # Default binary name = repo basename if omitted or '-'
+  if [[ -z "$bin_name" || "$bin_name" == "-" ]]; then
+    bin_name="$(basename "$repo")"
+  fi
+
+  echo "Installing $bin_name from $url" >&2
+
+  local is_tarball=false
+  [[ "$arch_pattern" =~ \.tar\.gz$|\.tgz$ ]] && is_tarball=true
+
+  if $is_tarball; then
+    if [[ "$strip_components" -eq 0 ]]; then
+      curl -sSL "$url" | tar xzf - -C "$tmp_dir"
+    else
+      curl -sSL "$url" | tar xzf - --strip-components "$strip_components" -C "$tmp_dir"
+    fi
+
+    # Try to locate binary
+    local found_bin
+    found_bin="$(find "$tmp_dir" -type f -executable \( -name "$bin_name" -o -printf "%f\n" \) 2>/dev/null | head -n1)"
+    if [[ -z "$found_bin" ]]; then
+      # fallback: just grab first executable file
+      found_bin="$(find "$tmp_dir" -type f -perm -111 | head -n1)"
+    fi
+    if [[ -z "$found_bin" ]]; then
+      echo "Error: could not detect binary in tarball" >&2
+      rm -rf "$tmp_dir"
+      return 1
+    fi
+
+    cp -f "$found_bin" "$dest_dir/$bin_name"
+  else
+    curl -sSL -o "$dest_dir/$bin_name" "$url"
+  fi
+
+  chmod 755 "$dest_dir/$bin_name"
+  rm -rf "$tmp_dir"
+}
+
 
 function git_list_workflows () {
   if [[ -n $GITHUB_TOKEN ]]; then
