@@ -274,6 +274,24 @@ function sfind() {
   find "$FIND_FOLDER" -type f -iname "$FIND_PATTERN" -print0 | xargs -r -0 ls -la | awk '{system("numfmt -z --to=iec-i --suffix=B --padding=7 "$5) ; out=""; for(i=9;i<=NF;i++){out=out" "$i}; print " KB\t"out}' | sort -h
 }
 
+function rg-repl() {
+    local search="$1"
+    local replace="$2"
+
+    # Escape for ripgrep (literal match)
+    local rg_pat
+    rg_pat="$(printf '%s' "$search" | sed 's/[.[\*^$(){}+?|]/\\&/g')"
+
+    # Escape for sed
+    local sed_pat
+    sed_pat="$(printf '%s' "$search" | sed 's/[.[\*^$(){}+?|/]/\\&/g')"
+
+    local sed_rep
+    sed_rep="$(printf '%s' "$replace" | sed 's|&|\\&|g')"
+
+    rg "${rg_pat}" -l | sort -u | xargs -r -I{} sed -i "s/${sed_pat}/${sed_rep}/g" "{}"
+}
+
 ########################################################################
 # examine running processes
 ########################################################################
@@ -1002,6 +1020,10 @@ function resolution() {
   ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$1"
 }
 
+function codec() {
+  ffprobe -hide_banner -v error -print_format json -show_format -show_streams "$1" | jq -r '.streams[] | select(.codec_type=="video") | .codec_name'
+}
+
 function toogg() {
   printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vn -c:a libvorbis -qscale:a 7 \"\$INFILE_BASE.ogg\""
 }
@@ -1011,19 +1033,19 @@ function tox264mkvaac() {
 }
 
 function tox264mkvacopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a copy \"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 23 -vf format=yuv420p -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mkv720acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vf \"scale=-2:720,format=yuv420p\" -c:v libx264 -preset slow -crf 22 -c:a copy \"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -vf \"format=yuv420p\" -c:v libx264 -preset veryslow -tune film -crf 23 -c:a copy -c:s copy ./new/\"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mkv1080acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vf \"scale=-2:1080,format=yuv420p\" -c:v libx264 -preset slow -crf 22 -c:a copy \"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vf \"scale=-2:1080,format=yuv420p\" -c:v libx264 -preset slow -crf 22 -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mkvacopy30fps() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf \"format=yuv420p,fps=fps=30\" -c:a copy \"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf \"format=yuv420p,fps=fps=30\" -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mp4aac() {
@@ -1031,7 +1053,7 @@ function tox264mp4aac() {
 }
 
 function tox264mp4acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a copy -movflags +faststart \"\$INFILE_BASE.x264.mp4\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a copy -c:s copy -movflags +faststart \"\$INFILE_BASE.x264.mp4\""
 }
 
 function downmixtoaacmkv() {
@@ -1062,6 +1084,10 @@ function mpvshuf() {
   printf "%s\n" "$@" | shuf | xargs -r -P 1 -I XXX mpv "XXX"
 }
 
+function mpvloop() {
+  printf "%s\n" "$@" | xargs -r -P 999 -I XXX mpv --loop-file=inf "XXX"
+}
+
 function media_history_purge() {
   for TERM in \
       1080p \
@@ -1073,6 +1099,7 @@ function media_history_purge() {
       cleanvid \
       epub \
       ffmpeg \
+      gallery-dl \
       idparam \
       idparams \
       jpg \
