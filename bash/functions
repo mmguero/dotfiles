@@ -977,6 +977,10 @@ function yt () {
   yt-dlp -o - "$1" | mpv -
 }
 
+function ytid () {
+  yt-dlp -o '%(id)s.%(ext)s' "$@"
+}
+
 function ytsel () {
   yt-dlp -o - "$(xsel)" | mpv -
 }
