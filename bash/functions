@@ -1025,47 +1025,47 @@ function codec() {
 }
 
 function toogg() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vn -c:a libvorbis -qscale:a 7 \"\$INFILE_BASE.ogg\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -vn -c:a libvorbis -qscale:a 7 \"\$INFILE_BASE.ogg\""
 }
 
 function tox264mkvaac() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a aac -ac 2 -ab 224k -ar 44100 \"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p -c:a aac -ac 2 -ab 224k -ar 48000 -c:s copy \"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mkvacopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 23 -vf format=yuv420p -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mkv720acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -vf \"format=yuv420p\" -c:v libx264 -preset veryslow -tune film -crf 23 -c:a copy -c:s copy ./new/\"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -vf \"scale=-2:720,format=yuv420p\" -c:v libx264 -preset veryslow -crf 22 -c:a copy -c:s copy ./new/\"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mkv1080acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -vf \"scale=-2:1080,format=yuv420p\" -c:v libx264 -preset slow -crf 22 -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -vf \"scale=-2:1080,format=yuv420p\" -c:v libx264 -preset veryslow -crf 22 -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mkvacopy30fps() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf \"format=yuv420p,fps=fps=30\" -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf \"format=yuv420p,fps=fps=30\" -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
 }
 
 function tox264mp4aac() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a aac -ac 2 -ab 224k -ar 44100 -movflags +faststart \"\$INFILE_BASE.x264.mp4\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p -c:a aac -ac 2 -ab 224k -ar 48000 -c:s copy -movflags +faststart \"\$INFILE_BASE.x264.mp4\""
 }
 
 function tox264mp4acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v libx264 -preset slow -crf 22 -vf format=yuv420p -c:a copy -c:s copy -movflags +faststart \"\$INFILE_BASE.x264.mp4\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p -c:a copy -c:s copy -movflags +faststart \"\$INFILE_BASE.x264.mp4\""
 }
 
 function downmixtoaacmkv() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -i \"\$INFILE\" -map 0 -c:v copy -af 'pan=stereo|FL=0.8*FC + 0.6*FL + 0.6*BL + 0.5*LFE|FR=0.8*FC + 0.6*FR + 0.6*BR + 0.5*LFE' -c:a aac -ab 224k -ar 48000 \"\$INFILE_BASE.downmix.mkv\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v copy -af 'pan=stereo|FL=0.8*FC + 0.6*FL + 0.6*BL + 0.5*LFE|FR=0.8*FC + 0.6*FR + 0.6*BR + 0.5*LFE' -c:a aac -ab 224k -ar 48000 -c:s copy \"\$INFILE_BASE.downmix.mkv\""
 }
 
 function hwscale720() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high -rc:v vbr -cq:v 0 -qmin:v 23 -qmax:v 29 -c:a copy -c:s copy \"\$INFILE_BASE.720p.\$INFILE_EXT\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high -rc:v vbr -cq:v 0 -qmin:v 23 -qmax:v 29 -c:a copy -c:s copy \"\$INFILE_BASE.720p.\$INFILE_EXT\""
 }
 
 function hwscale1080() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -y -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=1080:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high -rc:v vbr -cq:v 0 -qmin:v 22 -qmax:v 26 -c:a copy -c:s copy \"\$INFILE_BASE.1080p.\$INFILE_EXT\""
+  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=1080:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high -rc:v vbr -cq:v 0 -qmin:v 22 -qmax:v 26 -c:a copy -c:s copy \"\$INFILE_BASE.1080p.\$INFILE_EXT\""
 }
 
 function brownnoise() {
