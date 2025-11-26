@@ -278,18 +278,23 @@ function rg-repl() {
     local search="$1"
     local replace="$2"
 
-    # Escape for ripgrep (literal match)
+    # Escape for ripgrep: escape regex metacharacters, but NOT slashes
     local rg_pat
-    rg_pat="$(printf '%s' "$search" | sed 's/[.[\*^$(){}+?|]/\\&/g')"
+    rg_pat="$(printf '%s' "$search" \
+        | sed 's/[.[\*^$(){}+?|]/\\&/g')"
 
-    # Escape for sed
+    # Escape for sed: but since we won't use '/' as delimiter, we skip escaping '/'
     local sed_pat
-    sed_pat="$(printf '%s' "$search" | sed 's/[.[\*^$(){}+?|/]/\\&/g')"
+    sed_pat="$(printf '%s' "$search" \
+        | sed 's/[.[\*^$(){}+?|]/\\&/g')"
 
+    # Escape '&' in the replacement (sed uses & to refer to the whole match)
     local sed_rep
-    sed_rep="$(printf '%s' "$replace" | sed 's|&|\\&|g')"
+    sed_rep="$(printf '%s' "$replace" | sed 's/&/\\&/g')"
 
-    rg "${rg_pat}" -l | sort -u | xargs -r -I{} sed -i "s/${sed_pat}/${sed_rep}/g" "{}"
+    rg -l "$rg_pat" \
+        | sort -u \
+        | xargs -r -I{} sed -i "s|${sed_pat}|${sed_rep}|g" "{}"
 }
 
 ########################################################################
