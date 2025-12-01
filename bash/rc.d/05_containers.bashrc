@@ -618,12 +618,115 @@ function dpa() { CONTAINER_ENGINE=docker cpa "$@"; }
 function ppa() { CONTAINER_ENGINE=podman cpa "$@"; }
 
 # List images without details (just names)
-function cis() { $CONTAINER_ENGINE images "$@" | tail -n +2 | tac | cols 1 2 | sed "s/ /:/"; }
+function cis() {
+  if command -v jq >/dev/null 2>&1; then
+      case "$CONTAINER_ENGINE" in
+        docker)
+          FORMAT_STRING='{{json .}}'
+          JQ_ADAPTER='
+            (
+              {
+                repo: .Repository,
+                tag: .Tag
+              }
+            )
+          '
+          ;;
+        podman)
+          FORMAT_STRING='{{json .}}'
+          JQ_ADAPTER='
+            (
+              {
+                repo: .repository,
+                tag: .tag
+              }
+            )
+          '
+          ;;
+        *)
+          echo "Unknown container engine: $CONTAINER_ENGINE" >&2
+          return 1
+          ;;
+      esac
+
+      $CONTAINER_ENGINE images --format "$FORMAT_STRING" "$@" |
+        jq -r "
+          $JQ_ADAPTER |
+          \"\(.repo):\(.tag)\"
+        " |
+        sort
+
+    else
+      case "$CONTAINER_ENGINE" in
+        docker)
+          AWK_FILTER='{print $1}'
+          ;;
+        podman)
+          AWK_FILTER='{print $1":"$2}'
+          ;;
+        *)
+          echo "Unknown container engine: $CONTAINER_ENGINE" >&2
+          return 1
+          ;;
+      esac
+      $CONTAINER_ENGINE images "$@" 2>/dev/null | tail -n +2 | sort | awk "$AWK_FILTER"
+    fi
+}
 function dis() { CONTAINER_ENGINE=docker cis "$@"; }
 function pis() { CONTAINER_ENGINE=podman cis "$@"; }
 
 # List images with details
-function ci() { $CONTAINER_ENGINE images "$@" | tail -n +2 | tac; }
+function ci() {
+  if command -v jq >/dev/null 2>&1; then
+    case "$CONTAINER_ENGINE" in
+      docker)
+        FORMAT_STRING='{{json .}}'
+        JQ_ADAPTER='
+          (
+            {
+              repo: .Repository,
+              tag: .Tag,
+              id: (.ID | sub("^sha256:";"")[:12]),
+              created: .CreatedSince,
+              size: .Size
+            }
+          )
+        '
+        ;;
+      podman)
+        FORMAT_STRING='{"repository":"{{.Repository}}","tag":"{{.Tag}}","id":"{{.ID}}","created":"{{.CreatedSince}}","size":"{{.Size}}"}'
+        JQ_ADAPTER='
+          (
+            {
+              repo: .repository,
+              tag: .tag,
+              id: (.id | sub("^sha256:";"")[:12]),
+              created: .created,
+              size: .size
+            }
+          )
+        '
+        ;;
+      *)
+        echo "Unknown container engine: $CONTAINER_ENGINE" >&2
+        return 1
+        ;;
+    esac
+
+    $CONTAINER_ENGINE images --format "$FORMAT_STRING" "$@" |
+      jq -r "
+        $JQ_ADAPTER |
+        [ .repo, .tag, .id, .created, .size ] |
+        # Join the array elements with a Tab character (\t)
+        map(tostring) | join(\"\\t\")
+      " | tac |
+      column -t -s$'\t' \
+        -N "REPOSITORY","TAG","IMAGE ID","CREATED","SIZE"
+
+  else
+    $CONTAINER_ENGINE images "$@" 2>/dev/null | tail -n +2 | tac
+  fi
+}
 function di() { CONTAINER_ENGINE=docker ci "$@"; }
 function pi() { CONTAINER_ENGINE=podman ci "$@"; }
 
