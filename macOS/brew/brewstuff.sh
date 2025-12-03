@@ -17,6 +17,9 @@ brew install zeek
 #   PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
 brew install coreutils
 
+# PATH="/opt/homebrew/opt/util-linux/bin:$PATH"
+brew install util-linux
+
 brew install diffutils
 brew install dos2unix
 

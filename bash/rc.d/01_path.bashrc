@@ -5,6 +5,7 @@
 if [[ $MACOS ]]; then
   [[ -d "/opt/homebrew/opt/coreutils/libexec/gnubin" ]]  && PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
   [[ -d "/opt/homebrew/opt/findutils/libexec/gnubin" ]]  && PATH="/opt/homebrew/opt/findutils/libexec/gnubin:$PATH"
+  [[ -d "/opt/homebrew/opt/util-linux/bin" ]]            && PATH="/opt/homebrew/opt/util-linux/bin:$PATH"
   [[ -d "/opt/homebrew/opt/gnu-indent/libexec/gnubin" ]] && PATH="/opt/homebrew/opt/gnu-indent/libexec/gnubin:$PATH"
   [[ -d "/opt/homebrew/opt/gnu-sed/libexec/gnubin" ]]    && PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"
   [[ -d "/opt/homebrew/opt/gnu-tar/libexec/gnubin" ]]    && PATH="/opt/homebrew/opt/gnu-tar/libexec/gnubin:$PATH"
