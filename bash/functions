@@ -1150,19 +1150,19 @@ function media_history_purge() {
   done && history -w
 }
 
-function idparams () {
+function comfyprompt () {
   for FILE in "$@"; do
-    identify -format '%[parameters]' "$FILE"
+    exiftool -j "$FILE" \
+      | jq -r '
+          .[0].Prompt
+          | fromjson
+          | to_entries[]
+          | select(.value.class_type == "CLIPTextEncode")
+          | select(.value.inputs.text != "")
+          | .value.inputs.text
+        '
   done
 }
-
-function idparam () {
-FIELD="Seed";
-  FILE="$1"
-  FIELD="${2:-}"
-  idparams "${FILE}" | lin 3 | sed -r 's/([^",]*("[^"]*"[^",]*)*),/\1\n/g' | sed 's/^[[:space:]]*//' | { if [[ -n "${FIELD}" ]]; then \cat - | grep "^${FIELD}:" | sed 's/^[^:]*:[[:space:]]*//'; else \cat -; fi; }
-}
-
 
 ########################################################################
 # reference
@@ -1218,28 +1218,16 @@ function subl() {
   sublime "$@"
 }
 
-function rdp() {
-  nohup "$(which rdesktop)" -g 1600x1024 -z -x m -P -r sound:off -0 $@ </dev/null >/dev/null 2>&1 &
-}
-
 function regexxer() {
   nohup "$(which regexxer)" $@ </dev/null >/dev/null 2>&1 &
-}
-
-function spice() {
-  nohup "$(which spicy)" --uri="$(virsh -c qemu:///system domdisplay $1)" </dev/null >/dev/null 2>&1 &
-}
-
-function spiceport() {
-  nohup "$(which spicy)" -h 127.0.0.1 -p "$1" </dev/null >/dev/null 2>&1 &
 }
 
 function wireshark() {
   nohup "$(which wireshark)" "$@" </dev/null >/dev/null 2>&1 &
 }
 
-function pithos() {
-  nohup "$(which pithos)" "$@" </dev/null >/dev/null 2>&1 &
+function xdiff() {
+  nohup "$(which xxdiff)" "$@" </dev/null >/dev/null 2>&1 &
 }
 
 ####
