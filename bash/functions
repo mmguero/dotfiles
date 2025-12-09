@@ -825,6 +825,30 @@ function watch_file_size() {
   }' "$1" "$2"
 }
 
+function viddys_cleanup() {
+    local TMP_SH="$1"
+    rm -f "$TMP_SH"
+}
+
+# run `viddy` or `watch` without dealing with quote hell
+#   e.g.,
+#   viddys 10 'find . -type f -regex ".*\.log$" | sed "s@.*/@@" | sort | uniq -c | sort -n'
+function viddys() {
+    local INTERVAL="$1"
+    shift
+
+    local TMP_SH
+    TMP_SH=$(mktemp --suffix=.sh)
+
+    printf '%s\n' "$*" > "$TMP_SH"
+
+    trap "viddys_cleanup '$TMP_SH'" SIGINT EXIT RETURN
+
+    command -v viddy >/dev/null 2>&1 && \
+      viddy -n "$INTERVAL" -- bash "$TMP_SH" || \
+      watch -n "$INTERVAL" -- bash "$TMP_SH"
+}
+
 function dux() {
   du -x --max-depth=1|sort -rn|awk -F / -v c=$COLUMNS 'NR==1{t=$1} NR>1{r=int($1/t*c+.5); b="\033[1;31m"; for (i=0; i<r; i++) b=b"#"; printf " %5.2f%% %s\033[0m %s\n", $1/t*100, b, $2}'|tac
 }
