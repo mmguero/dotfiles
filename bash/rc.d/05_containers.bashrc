@@ -94,7 +94,7 @@ function fluentbit() {
     CONTAINER_PGID=$(id -g)
   fi
 
-  if $CONTAINER_ENGINE images 2>/dev/null | grep -q fluent/fluent-bit >/dev/null 2>&1; then
+  if $CONTAINER_ENGINE cis 2>/dev/null | grep -q fluent/fluent-bit >/dev/null 2>&1; then
     $CONTAINER_ENGINE run -i -t --rm \
       -u $CONTAINER_PUID:$CONTAINER_PGID \
       -v "$DIR:$DIR:rw" \
@@ -120,14 +120,14 @@ function ffmpegc() {
     CONTAINER_PGID=$(id -g)
   fi
 
-  if $CONTAINER_ENGINE images 2>/dev/null | grep -q mwader/static-ffmpeg >/dev/null 2>&1; then
+  if $CONTAINER_ENGINE cis 2>/dev/null | grep -q mwader/static-ffmpeg >/dev/null 2>&1; then
     $CONTAINER_ENGINE run -i -t --rm \
       -u $CONTAINER_PUID:$CONTAINER_PGID \
       -v "$DIR:$DIR:rw" \
       -w "$DIR" \
       mwader/static-ffmpeg "$@"
 
-  elif $CONTAINER_ENGINE images 2>/dev/null | grep -q linuxserver/ffmpeg >/dev/null 2>&1; then
+  elif $CONTAINER_ENGINE cis 2>/dev/null | grep -q linuxserver/ffmpeg >/dev/null 2>&1; then
     $CONTAINER_ENGINE run -i -t --rm \
       -e PUID=$CONTAINER_PUID \
       -e PGID=$CONTAINER_PGID \
@@ -756,13 +756,13 @@ function phealth() { CONTAINER_ENGINE=podman chealth "$@"; }
 
 # backup *all* images!
 function docker_backup() {
-  for IMAGE in $(docker images | tail -n +2 | cols 1 2 | sed "s/ /:/" | grep -Pv "(malcolm)"); do
+  for IMAGE in $(dis | grep -Pv "(<none>|malcolm)"); do
     export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g')
     docker save "$IMAGE" | pv | pigz > "$FN.tgz"
   done
 }
 function podman_backup() {
-  for IMAGE in $(podman images | tail -n +2 | cols 1 2 | sed "s/ /:/"); do
+  for IMAGE in $(pis | grep -Pv "(<none>|malcolm)"); do
     export FN=$(echo "$IMAGE" | sed -e 's/[^A-Za-z0-9._-]/_/g')
     podman save --format oci-archive "$IMAGE" | pv | pigz > "$FN.tgz"
   done
@@ -770,7 +770,7 @@ function podman_backup() {
 
 # pull updates for images
 function contup() {
-  $CONTAINER_ENGINE images | tail -n +2 | grep -Piv "(roop|mimic|sd-auto|monkeyplug|malcolm)" | cols 1 2 | tr ' ' ':' | xargs -r -l $CONTAINER_ENGINE pull
+  cis | grep -Piv "(facefusion|mimic|monkeyplug|malcolm)" | xargs -r -l $CONTAINER_ENGINE pull
 }
 function dockup() { CONTAINER_ENGINE=docker contup "$@"; }
 function podup()  { CONTAINER_ENGINE=podman contup "$@"; }
