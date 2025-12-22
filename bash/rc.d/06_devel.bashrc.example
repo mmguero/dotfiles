@@ -1,0 +1,40 @@
+# file sharing
+export CROC_PASS=
+export CROC_RELAY=
+export HOSTYOSELF_URL=
+export WORMHOLE_TRANSIT_HELPER=
+
+# source code repositories
+export GITHUB_ORGS=
+export GITHUB_TOKEN=
+export GITHUB_OAUTH_TOKEN=
+export GITLAB_PRIVATE_TOKEN=
+export FORGEJO_TOKEN=
+
+# threat intel
+export GTI_API_KEY=
+export NOZOMI_TAXII_PW=
+export NOZOMI_TAXII_USER=
+export MATI_API_KEY_ID=
+export MATI_API_KEY_SECRET=
+export VIRUSTOTAL_API2_KEY=
+
+# AWS
+export AWS_ACCOUNT_ID=
+export AWS_DEFAULT_OUTPUT=
+export AWS_DEFAULT_REGION=
+export AWS_PROFILE=
+
+# malcolm
+export MALCOLM_REPO_BRANCH=
+export MALCOLM_REPO_URL=
+export MALCOLM_TEST_ARTIFACTS_PATH=
+export ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=
+
+# other services
+export MAXMIND_GEOIP_DB_ALTERNATE_DOWNLOAD_URL=
+export MAXMIND_GEOIP_DB_LICENSE_KEY=
+
+# local stuff
+export QEMU_CPU=
+export QEMU_RAM=
