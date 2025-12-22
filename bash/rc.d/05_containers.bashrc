@@ -770,7 +770,7 @@ function podman_backup() {
 
 # pull updates for images
 function contup() {
-  cis | grep -Piv "(facefusion|mimic|monkeyplug|malcolm)" | xargs -r -l $CONTAINER_ENGINE pull
+  cis | grep -Piv "(<none>|facefusion|mimic|monkeyplug|malcolm)" | xargs -r -l $CONTAINER_ENGINE pull
 }
 function dockup() { CONTAINER_ENGINE=docker contup "$@"; }
 function podup()  { CONTAINER_ENGINE=podman contup "$@"; }
