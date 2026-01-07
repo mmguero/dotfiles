@@ -139,7 +139,7 @@ function oscsv2json () {
       -e 's/"$//' \
       -e 's/""/"/g' \
     | tail -n +2 \
-    | jq '
+    | jq --compact-output '
       # If a value is a JSON-encoded array/object string, parse it
       def maybe_fromjson:
         if type == "string" and (startswith("[") or startswith("{"))
