@@ -127,6 +127,32 @@ function ext () {
   echo "${1##*.}"
 }
 
+# quick-and-dirty exported CSV from OpenSearch Dashboard's discover to JSON
+function oscsv2json () {
+  for FILE in "$@"; do
+    quoting=csv.QUOTE_NONE csvcut \
+      -z 1000000 \
+      -c _source \
+      "$FILE" \
+    | sed \
+      -e 's/^"//' \
+      -e 's/"$//' \
+      -e 's/""/"/g' \
+    | tail -n +2 \
+    | jq '
+      # If a value is a JSON-encoded array/object string, parse it
+      def maybe_fromjson:
+        if type == "string" and (startswith("[") or startswith("{"))
+           then try fromjson catch .
+           else .
+        end;
+
+      # Rebuild nested objects from dotted keys
+      reduce to_entries[] as $item
+        ({}; setpath(($item.key | split(".")); ($item.value | maybe_fromjson)))'
+  done
+}
+
 ########################################################################
 # math
 ########################################################################
