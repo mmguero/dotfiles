@@ -130,26 +130,46 @@ function ext () {
 # quick-and-dirty exported CSV from OpenSearch Dashboard's discover to JSON
 function oscsv2json () {
   for FILE in "$@"; do
+    first_line="$(head -n 1 "${FILE}" | tr -d '[:space:]')"
+    [[ "${first_line}" == '"firstPacket","_source"' ]] && head_line=2 || head_line=1
     quoting=csv.QUOTE_NONE csvcut \
       -z 1000000 \
-      -c _source \
-      "$FILE" \
+      -c 2 \
+      "${FILE}" \
     | sed \
       -e 's/^"//' \
       -e 's/"$//' \
       -e 's/""/"/g' \
-    | tail -n +2 \
+    | tail -n +${head_line} \
     | jq --compact-output '
-      # If a value is a JSON-encoded array/object string, parse it
-      def maybe_fromjson:
-        if type == "string" and (startswith("[") or startswith("{"))
-           then try fromjson catch .
-           else .
-        end;
+  def deep_fromjson:
+    if type == "string" and (startswith("{") or startswith("["))
+      then try (fromjson | deep_fromjson) catch .
+    elif type == "array"
+      then map(deep_fromjson)
+    elif type == "object"
+      then with_entries(.value |= deep_fromjson)
+    else .
+    end;
 
-      # Rebuild nested objects from dotted keys
-      reduce to_entries[] as $item
-        ({}; setpath(($item.key | split(".")); ($item.value | maybe_fromjson)))'
+  def safe_set($obj; $path; $value):
+    if ($path | length) == 1 then
+      $obj + { ($path[0]): $value }
+    else
+      ($obj[$path[0]] | type) as $t
+      | if $t == "array" then
+          $obj
+        else
+          $obj
+          | .[$path[0]] = (
+              safe_set(.[$path[0]] // {}; $path[1:]; $value)
+            )
+        end
+    end;
+
+  reduce to_entries[] as $item
+    ({}; safe_set(.; ($item.key | split(".")); ($item.value | deep_fromjson)))
+'
   done
 }
 
