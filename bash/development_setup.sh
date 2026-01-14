@@ -84,6 +84,7 @@ ENV_LIST=(
   step
   stern
   tmux
+  uv
   viddy
   websocat
   wtfutil

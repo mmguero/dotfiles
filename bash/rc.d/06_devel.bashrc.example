@@ -38,3 +38,4 @@ export MAXMIND_GEOIP_DB_LICENSE_KEY=
 # local stuff
 export QEMU_CPU=
 export QEMU_RAM=
+export VAGRANT_HOME=
