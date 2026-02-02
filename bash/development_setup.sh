@@ -2693,6 +2693,7 @@ function InstallUserLocalBinaries {
               "https://github.com/tomnomnom/gron|^gron-linux-arm64-.+\.tgz$|/tmp/gron.tgz"
               "https://github.com/wader/fq|^fq_.+_linux_arm64\.tar\.gz$|/tmp/fq.tar.gz"
               "https://github.com/watchexec/watchexec|^watchexec-.+-aarch64-unknown-linux-musl\.tar\.xz$|/tmp/watchexec.tar.xz"
+              "https://github.com/yannh/kubeconform|^kubeconform-linux-arm64\.tar\.gz$|/tmp/kubeconform.tar.gz"
             )
           elif [[ "$LINUX_CPU" == "armv6l" ]]; then
             ASSETS=(
@@ -2721,6 +2722,7 @@ function InstallUserLocalBinaries {
               "https://github.com/smallstep/cli|^step_linux_.+_armv6\.tar\.gz$|/tmp/step.tar.gz"
               "https://github.com/starship/starship|^starship-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/starship.tar.gz"
               "https://github.com/watchexec/watchexec|^watchexec-.+-armv7-unknown-linux-gnueabihf\.tar\.xz$|/tmp/watchexec.tar.xz"
+              "https://github.com/yannh/kubeconform|^kubeconform-linux-armv6\.tar\.gz$|/tmp/kubeconform.tar.gz"
             )
           else
             ASSETS=(
@@ -2752,6 +2754,7 @@ function InstallUserLocalBinaries {
               "https://github.com/starship/starship|^starship-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/starship.tar.gz"
               "https://github.com/stern/stern|^stern_.+_linux_arm\.tar\.gz$|/tmp/stern.tar.gz"
               "https://github.com/watchexec/watchexec|^watchexec-.+-armv7-unknown-linux-gnueabihf\.tar\.xz$|/tmp/watchexec.tar.xz"
+              "https://github.com/yannh/kubeconform|^kubeconform-linux-armv6\.tar\.gz$|/tmp/kubeconform.tar.gz"
             )
           fi
         else
@@ -2794,6 +2797,7 @@ function InstallUserLocalBinaries {
             "https://github.com/wader/fq|^fq_.+_linux_amd64\.tar\.gz$|/tmp/fq.tar.gz"
             "https://github.com/watchexec/watchexec|^watchexec-.+-x86_64-unknown-linux-musl\.tar\.xz$|/tmp/watchexec.tar.xz"
             "https://github.com/Wilfred/difftastic|^difft-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/difft.tar.gz"
+            "https://github.com/yannh/kubeconform|^kubeconform-linux-amd64\.tar\.gz$|/tmp/kubeconform.tar.gz"
           )
         fi
 
