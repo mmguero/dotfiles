@@ -90,7 +90,7 @@ alias fd="fd --no-ignore --hidden --exclude '.git'"
 alias ov='sudo openvpn'
 alias wwg='sudo wwg.sh'
 alias wgq='sudo wg-quick'
-alias ffl='bash fflo.com'
+alias ffl='bash fflo.com --cli --e2ee'
 
 #development/misc
 alias pycheck='python3 -m py_compile'
