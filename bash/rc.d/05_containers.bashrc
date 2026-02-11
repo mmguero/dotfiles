@@ -238,6 +238,46 @@ function kpods () {
   kctl get pods --no-headers "${NAMESPACE_ARGS[@]}"
 }
 
+function knodes () {
+  local re="${1:-}"   # optional regex to filter labels (and optionally nodes)
+
+  kubectl get nodes -o json \
+  | jq -r --arg re "$re" '
+    def roles:
+      (.metadata.labels // {})
+      | to_entries
+      | map(select(.key|startswith("node-role.kubernetes.io/")))
+      | map(.key | sub("^node-role\\.kubernetes\\.io/";""))
+      | map(select(length>0))
+      | unique
+      | sort
+      | join(",");
+
+    def status:
+      (.status.conditions // [])
+      | map(select(.type=="Ready"))
+      | (if length>0 and .[0].status=="True" then "Ready" else "NotReady" end);
+
+    # Keep only labels matching $re (if provided). Match against "key=value".
+    def filtered_labels:
+      (.metadata.labels // {})
+      | to_entries
+      | sort_by(.key)
+      | map(select($re == "" or ((.key + "=" + (.value|tostring)) | test($re))))
+      | map("  - " + .key + "=" + (.value|tostring))
+      | join("\n");
+
+    .items[]
+    | . as $n
+    | (filtered_labels) as $labels
+    # If a regex was provided, only show nodes that have at least one matching label
+    | select($re == "" or ($labels | length) > 0)
+    | ($n.metadata.name + " (" + status + ", " + (roles | if .=="" then "none" else . end) + "):\n"
+       + $labels
+       + "\n")
+  '
+}
+
 function kshell () {
   SERVICE="${1}"
   if [[ -n "${SERVICE}" ]]; then
@@ -278,7 +318,7 @@ function klogs () {
     POD=
 
   if command -v stern >/dev/null 2>&1; then
-      kstern "${POD:-.*}" "${NAMESPACE_ARGS[@]}" --container '.*' --container-state all
+      kstern "${POD:-.*}" "${NAMESPACE_ARGS[@]}" --container '.*' --container-state all --max-log-requests 999
   else
     [[ -n "${POD}" ]] && \
       kctl logs --follow=true --all-containers "${POD}" "${NAMESPACE_ARGS[@]}" ||
