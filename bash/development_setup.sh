@@ -93,6 +93,15 @@ ENV_LIST=(
   yj
 )
 
+EXTREPO_LIST=(
+  docker-ce
+  fasttrack_backports
+  google_chrome
+  hashicorp
+  mozilla
+  sublime_stable
+)
+
 ###################################################################################
 # determine OS
 unset MACOS
@@ -621,6 +630,31 @@ function SetupAptSources {
       fi
     fi
 
+    dpkg -s extrepo >/dev/null 2>&1 || \
+      ( _AptUpdate && \
+        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y extrepo && \
+        $SUDO_CMD sed -i 's/# - non-free/- non-free/' /etc/extrepo/config.yaml && \
+        $SUDO_CMD sed -i 's/# - contrib/- contrib/' /etc/extrepo/config.yaml )
+
+    declare -A EXTREPOS_ENABLED
+    for i in ${EXTREPO_LIST[@]}; do
+      EXTREPOS_ENABLED[$i]=false
+    done
+    for i in ${EXTREPO_LIST[@]}; do
+      unset CONFIRMATION
+      read -p "Enable extrepo for \"$i\" [n/Y]? " CONFIRMATION
+      CONFIRMATION=${CONFIRMATION:-N}
+      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
+        EXTREPOS_ENABLED[$i]=true
+      fi
+    done
+    for i in ${EXTREPO_LIST[@]}; do
+      if [[ ${EXTREPOS_ENABLED[$i]} = 'true' ]]; then
+        $SUDO_CMD extrepo enable "$i"
+      fi
+    done
+    _AptUpdate
+
     # sources.list.d and preferences.d entries for this release
     if [[ -n $GUERO_GITHUB_PATH ]] && [[ -d /etc/apt/sources.list.d ]] && [[ -d "$GUERO_GITHUB_PATH/linux/apt/sources.list.d/$LINUX_RELEASE" ]]; then
       unset CONFIRMATION
@@ -649,13 +683,8 @@ function SetupAptSources {
       command -v gpg >/dev/null 2>&1 || \
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y --no-install-recommends gpg
       GPG_KEY_URLS=(
-        "dearmor:https://download.docker.com/linux/debian/gpg|/usr/share/keyrings/docker-archive-keyring.gpg"
-        "dearmor:https://download.sublimetext.com/sublimehq-pub.gpg|/usr/share/keyrings/sublimetext-keyring.gpg"
-        "dearmor:https://packages.microsoft.com/keys/microsoft.asc|/usr/share/keyrings/microsoft.gpg"
         "dearmor:https://packages.fluentbit.io/fluentbit.key|/usr/share/keyrings/fluentbit-keyring.gpg"
         "dearmor:https://download.opensuse.org/repositories/home:alvistack/Debian_13/Release.key|/usr/share/keyrings/home_alvistack.gpg"
-        "import:https://packages.mozilla.org/apt/repo-signing-key.gpg|/etc/apt/keyrings/packages.mozilla.org.asc"
-        "deb:fasttrack-archive-keyring"
       )
       for i in ${GPG_KEY_URLS[@]}; do
         SOURCE_URL="$(echo "$i" | cut -d'|' -f1)"
@@ -703,29 +732,31 @@ function InstallDocker {
 
         InstallEssentialPackages
 
-        DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
-                                                   apt-transport-https \
-                                                   ca-certificates \
-                                                   curl \
-                                                   gnupg2 \
-                                                   software-properties-common
+        if ! dpkg -s extrepo >/dev/null 2>&1 || [[ ! -f /etc/apt/sources.list.d/extrepo_docker-ce.sources ]]; then
+          DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y \
+                                                     apt-transport-https \
+                                                     ca-certificates \
+                                                     curl \
+                                                     gnupg2 \
+                                                     software-properties-common
 
-        echo "Installing Docker CE..." >&2
-        if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
-          $SUDO_CMD add-apt-repository -y \
-             "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/ubuntu \
-             $LINUX_RELEASE \
-             stable"
-        elif [[ "$LINUX_DISTRO" == "Raspbian" ]]; then
-          $SUDO_CMD add-apt-repository -y \
-             "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/raspbian \
-             $LINUX_RELEASE \
-             stable"
-        elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
-          $SUDO_CMD add-apt-repository -y \
-             "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/debian \
-             $LINUX_RELEASE \
-             stable"
+          echo "Installing Docker CE..." >&2
+          if [[ "$LINUX_DISTRO" == "Ubuntu" ]]; then
+            $SUDO_CMD add-apt-repository -y \
+               "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/ubuntu \
+               $LINUX_RELEASE \
+               stable"
+          elif [[ "$LINUX_DISTRO" == "Raspbian" ]]; then
+            $SUDO_CMD add-apt-repository -y \
+               "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/raspbian \
+               $LINUX_RELEASE \
+               stable"
+          elif [[ "$LINUX_DISTRO" == "Debian" ]]; then
+            $SUDO_CMD add-apt-repository -y \
+               "deb [arch=$LINUX_ARCH] https://download.docker.com/linux/debian \
+               $LINUX_RELEASE \
+               stable"
+          fi
         fi
 
         _AptUpdate
@@ -2673,6 +2704,7 @@ function InstallUserLocalBinaries {
               "https://github.com/FiloSottile/age|^age-v.+-linux-arm64\.tar\.gz$|/tmp/age.tar.gz"
               "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_arm64\.tar\.gz$|/tmp/ghorg.tar.gz"
               "https://github.com/gcla/termshark|^termshark_.+_linux_arm64\.tar\.gz$|/tmp/termshark.tar.gz"
+              "https://github.com/josephburnett/jd|^jd-amd64-linux$|$LOCAL_BIN_PATH/jd|755"
               "https://github.com/kubernetes/minikube|^minikube-linux-arm64$|$LOCAL_BIN_PATH/minikube|755"
               "https://github.com/mikefarah/yq|^yq_linux_arm64$|$LOCAL_BIN_PATH/yq|755"
               "https://github.com/neilotoole/sq|^sq.+linux-arm64\.tar\.gz$|/tmp/sq.tar.gz"
@@ -2776,6 +2808,7 @@ function InstallUserLocalBinaries {
             "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_x86_64\.tar\.gz$|/tmp/ghorg.tar.gz"
             "https://github.com/gcla/termshark|^termshark_.+_linux_x64\.tar\.gz$|/tmp/termshark.tar.gz"
             "https://github.com/jez/as-tree|^as-tree-.+-linux\.zip$|/tmp/as-tree.zip"
+            "https://github.com/josephburnett/jd|^jd-amd64-linux$|$LOCAL_BIN_PATH/jd|755"
             "https://github.com/kubernetes/minikube|^minikube-linux-amd64$|$LOCAL_BIN_PATH/minikube|755"
             "https://github.com/mikefarah/yq|^yq_linux_amd64$|$LOCAL_BIN_PATH/yq|755"
             "https://github.com/neilotoole/sq|^sq.+linux-amd64\.tar\.gz$|/tmp/sq.tar.gz"
