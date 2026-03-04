@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Checks if any packages listed in stdin (pkg==ver or pkg>=ver etc.) have newer versions on PyPI
 
+# uses:
+#   yq '.project.dependencies[]' -oy pyproject.toml | pypi_check.sh
+#   pypi_check.sh < requirements.txt
+
 # Make sure "packaging" is installed
 python3 -m pip show packaging >/dev/null 2>&1 || {
   echo "Installing missing dependency: packaging..."
