@@ -12,13 +12,13 @@ while read -r line; do
   [[ -z "$line" || "$line" =~ ^# ]] && continue
 
   # Extract package name (before any comparator)
-  pkg=$(echo "$line" | sed -E 's/[<>=!~].*//')
+  pkg=$(echo "$line" | tr -d ",\"'" | sed -E 's/[<>=!~].*//')
 
   # Extract version (if pinned)
-  ver=$(echo "$line" | grep -oP '(?<===)[^ ]+')
+  ver=$(echo "$line" | tr -d ",\"'" | grep -oP '(?<===)[^ ]+')
 
   # Query PyPI
-  latest=$(curl -s "https://pypi.org/pypi/${pkg}/json" | jq -r '.info.version' 2>/dev/null)
+  latest=$(curl -sSL "https://pypi.org/pypi/${pkg}/json" | jq -r '.info.version' 2>/dev/null)
 
   if [[ "$latest" != "null" && -n "$latest" ]]; then
     if [[ -n "$ver" ]]; then
