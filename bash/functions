@@ -119,6 +119,56 @@ function shakeysum () {
   done
 }
 
+function fhash() {
+  local file="$1"
+
+  if [[ -z "$file" ]]; then
+    echo "Usage: fhash <filename>" >&2
+    return 1
+  fi
+
+  if [[ ! -f "$file" ]]; then
+    echo "Error: '$file' is not a regular file" >&2
+    return 1
+  fi
+
+  local md5 sha1 sha224 sha256 sha384 sha512 ssdeep tlsh human shakey
+
+  md5=$(md5sum -- "$file" 2>/dev/null | awk '{print $1}')
+  sha1=$(sha1sum -- "$file" 2>/dev/null | awk '{print $1}')
+  sha224=$(sha224sum -- "$file" 2>/dev/null | awk '{print $1}')
+  sha256=$(sha256sum -- "$file" 2>/dev/null | awk '{print $1}')
+  sha384=$(sha384sum -- "$file" 2>/dev/null | awk '{print $1}')
+  sha512=$(sha512sum -- "$file" 2>/dev/null | awk '{print $1}')
+  shakey=$(shakeysum "$file" 2>/dev/null | awk '{print $2}')
+  human=$(echo "$sha512" | humanhash)
+
+  if command -v ssdeep >/dev/null 2>&1; then
+    ssdeep=$(ssdeep -b -- "$file" 2>/dev/null | tail -n 1 | cut -d, -f1)
+  else
+    ssdeep="-"
+  fi
+
+  if command -v tlsh >/dev/null 2>&1; then
+    tlsh=$(tlsh -f "$file" 2>/dev/null | awk '{print $1}')
+  else
+    tlsh="-"
+  fi
+
+  printf 'file:\t%s\n' "$file"
+  printf 'md5:\t%s\n' "$md5"
+  printf 'sha1:\t%s\n' "$sha1"
+  printf 'sha224:\t%s\n' "$sha224"
+  printf 'sha256:\t%s\n' "$sha256"
+  printf 'sha384:\t%s\n' "$sha384"
+  printf 'sha512:\t%s\n' "$sha512"
+  printf 'ssdeep:\t%s\n' "$ssdeep"
+  printf 'tlsh:\t%s\n' "$tlsh"
+  printf 'shakey:\t%s\n' "$shakey"
+  printf 'human:\t%s\n' "$human"
+}
+
+
 function base () {
   echo "${1%.*}"
 }
