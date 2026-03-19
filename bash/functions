@@ -393,6 +393,29 @@ function rg-repl() {
         | xargs -r -I{} sed -i "s|${sed_pat}|${sed_rep}|g" "{}"
 }
 
+function rg-replmd() {
+    local search="$1"
+    local replace="$2"
+
+    # Escape for ripgrep: escape regex metacharacters, but NOT slashes
+    local rg_pat
+    rg_pat="$(printf '%s' "$search" \
+        | sed 's/[.[\*^$(){}+?|]/\\&/g')"
+
+    # Escape for sed: but since we won't use '/' as delimiter, we skip escaping '/'
+    local sed_pat
+    sed_pat="$(printf '%s' "$search" \
+        | sed 's/[.[\*^$(){}+?|]/\\&/g')"
+
+    # Escape '&' in the replacement (sed uses & to refer to the whole match)
+    local sed_rep
+    sed_rep="$(printf '%s' "$replace" | sed 's/&/\\&/g')"
+
+    rg --iglob='*.md' -l "$rg_pat" \
+        | sort -u \
+        | xargs -r -I{} sed -i "s|${sed_pat}|${sed_rep}|g" "{}"
+}
+
 ########################################################################
 # examine running processes
 ########################################################################
@@ -1098,6 +1121,11 @@ function saysel () {
 ########################################################################
 # media
 ########################################################################
+function ytdl () {
+  BROWSER=$(xdg-settings get default-web-browser 2>/dev/null| cut -d '.' -f 1)
+  yt-dlp --js-runtimes "node:$(which node)" --remote-components ejs:github --cookies-from-browser ${BROWSER:-firefox} "$@"
+}
+
 function yt () {
   yt-dlp -o - "$1" | mpv -
 }
