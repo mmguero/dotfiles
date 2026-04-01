@@ -623,6 +623,10 @@ function crun() {
 }
 function drun() { CONTAINER_ENGINE=docker crun "$@"; }
 function prun() { CONTAINER_ENGINE=podman crun "$@"; }
+function drbash() { CONTAINER_ENGINE=docker crun --entrypoint=/bin/bash "$@"; }
+function prbash() { CONTAINER_ENGINE=podman crun --entrypoint=/bin/bash "$@"; }
+function drsh() { CONTAINER_ENGINE=docker crun --entrypoint=/bin/sh "$@"; }
+function prsh() { CONTAINER_ENGINE=podman crun --entrypoint=/bin/sh "$@"; }
 
 function debian() { crun "$@" oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX}; }
 function debiand() { CONTAINER_ENGINE=docker crun "$@" oci.guero.org/debian:latest${CONTAINER_IMAGE_ARCH_SUFFIX}; }
