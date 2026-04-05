@@ -1019,7 +1019,31 @@ function shred_file_confirm {
   return $RETURN_CODE
 }
 
-function encrypt_openssl() {
+function age-encrypt() {
+  if [[ -n "${1}" ]] && [[ -f "${1}" ]]; then
+    OUTPUT="${1}".$(date +%s).age
+    age -e -p -o "${OUTPUT}" "${1}" && \
+      [[ -f "$OUTPUT" ]] && \
+      ls -l "$OUTPUT" && \
+      shred_file_confirm "${1}"
+  else
+    echo "No file specified, or invalid/nonexistant file" >&2
+  fi
+}
+
+function age-decrypt() {
+  if [[ -n "${1}" ]] && [[ -f "${1}" ]]; then
+    OUTPUT="$(echo "${1}" | rev | cut -c16- | rev)"
+    age -d -o "${OUTPUT}" "${1}" && \
+      [[ -f "$OUTPUT" ]] && \
+      ls -l "$OUTPUT" && \
+      shred_file_confirm "${1}"
+  else
+    echo "No file specified, or invalid/nonexistant file" >&2
+  fi
+}
+
+function openssl-encrypt() {
   if [[ -n "${1}" ]] && [[ -f "${1}" ]]; then
     OUTPUT="${1}".$(date +%s).enc
     openssl enc -aes-256-cbc -md sha512 -pbkdf2 -iter 1024 -salt -in "${1}" -out "${OUTPUT}" && \
@@ -1031,7 +1055,7 @@ function encrypt_openssl() {
   fi
 }
 
-function decrypt_openssl() {
+function openssl-decrypt() {
   if [[ -n "${1}" ]] && [[ -f "${1}" ]]; then
     OUTPUT="$(echo "${1}" | rev | cut -c16- | rev)"
     openssl enc -aes-256-cbc -md sha512 -pbkdf2 -iter 1024 -salt -d -in "${1}" -out "${OUTPUT}" && \
@@ -1043,7 +1067,7 @@ function decrypt_openssl() {
   fi
 }
 
-function encrypt_gpg () {
+function gpg-encrypt () {
   if [[ -n "${1}" ]] && [[ -f "${1}" ]]; then
     OUTPUT="${1}".$(date +%s).gpg
     gpg --encrypt --armor --output "${OUTPUT}" "${1}" && \
@@ -1055,7 +1079,7 @@ function encrypt_gpg () {
   fi
 }
 
-function decrypt_gpg () {
+function gpg-decrypt () {
   if [[ -n "${1}" ]] && [[ -f "${1}" ]]; then
     OUTPUT="$(echo "${1}" | rev | cut -c16- | rev)"
     gpg --decrypt --output "${OUTPUT}" "${1}" && \
@@ -1123,7 +1147,7 @@ function saysel () {
 ########################################################################
 function ytdl () {
   BROWSER=$(xdg-settings get default-web-browser 2>/dev/null| cut -d '.' -f 1)
-  yt-dlp --js-runtimes "node:$(which node)" --remote-components ejs:github --cookies-from-browser ${BROWSER:-firefox} "$@"
+  yt-dlp --extractor-args "youtubetab:skip=authcheck" --js-runtimes "node:$(which node)" --remote-components ejs:github --cookies-from-browser ${BROWSER:-firefox} "$@"
 }
 
 function yt () {
@@ -1150,10 +1174,11 @@ function ytmusic() {
   format="$1"
   search="$2"
   quality="${3:-2}"
+  BROWSER=$(xdg-settings get default-web-browser 2>/dev/null| cut -d '.' -f 1)
   if [[ "$search" =~ ^http ]]; then
-    yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 "$search"
+    yt-dlp --extractor-args "youtubetab:skip=authcheck" --js-runtimes "node:$(which node)" --remote-components ejs:github --cookies-from-browser ${BROWSER:-firefox} -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 "$search"
   else
-    yt-dlp -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 --no-playlist --default-search ytsearch "$search"
+    yt-dlp --extractor-args "youtubetab:skip=authcheck" --js-runtimes "node:$(which node)" --remote-components ejs:github --cookies-from-browser ${BROWSER:-firefox} -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 --no-playlist --default-search ytsearch "$search"
   fi
 }
 
