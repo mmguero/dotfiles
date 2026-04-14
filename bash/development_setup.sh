@@ -1928,8 +1928,8 @@ function InstallCommonPackagesGUI {
       DEBIAN_PACKAGE_LIST=(
         arandr
         dconf-cli
-        fonts-noto-color-emoji
         fonts-hack-ttf
+        fonts-noto-color-emoji
         ghex
         gparted
         gtk2-engines-murrine
@@ -1947,13 +1947,16 @@ function InstallCommonPackagesGUI {
         thunar-volman
         tilix
         ttf-mscorefonts-installer
+        wmctrl
+        x11-utils
         xautomation
         xbindkeys
         xdiskusage
+        xdotool
         xfdesktop4
+        xsel
         xxdiff
         xxdiff-scripts
-        xsel
       )
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
@@ -3247,6 +3250,7 @@ function GueroSymlinks {
         self_signed_key_gen.sh
         store_unique.sh
         window_dimensions.sh
+        tile.sh
         tx-rx-secure.sh
         xkcd936.sh
       )
