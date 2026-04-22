@@ -115,7 +115,7 @@ function humanhash () {
 
 function shakeysum () {
   for FILE in "$@"; do
-    [[ -f "$FILE" ]] && python3 -c "import sys; from mmguero import shakey_sum; print(f'{sys.argv[1]}\t{shakey_sum(sys.argv[1])}')" "$FILE"
+    [[ -f "$FILE" ]] && python3 -c "import sys; from mmguero import shakey_sum; print(f'{shakey_sum(sys.argv[1])}\t{sys.argv[1]}')" "$FILE"
   done
 }
 
@@ -140,7 +140,7 @@ function fhash() {
   sha256=$(sha256sum -- "$file" 2>/dev/null | awk '{print $1}')
   sha384=$(sha384sum -- "$file" 2>/dev/null | awk '{print $1}')
   sha512=$(sha512sum -- "$file" 2>/dev/null | awk '{print $1}')
-  shakey=$(shakeysum "$file" 2>/dev/null | awk '{print $2}')
+  shakey=$(shakeysum "$file" 2>/dev/null | awk '{print $1}')
   human=$(echo "$sha512" | humanhash)
 
   if command -v ssdeep >/dev/null 2>&1; then
