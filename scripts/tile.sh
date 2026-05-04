@@ -32,6 +32,17 @@ get_window_x() {
     xdotool getwindowgeometry $WINDOW_ID | grep Position | awk '{print $2}' | cut -d',' -f1
 }
 
+get_height() {
+    WM_CLASS=$(xprop -id $(xdotool getactivewindow) WM_CLASS 2>/dev/null)
+    if echo "$WM_CLASS" | grep -qi "sublime"; then
+        DECORATION=$(xprop -id $(xdotool getactivewindow) _NET_FRAME_EXTENTS 2>/dev/null \
+            | grep -oP '\d+' | awk 'NR==3||NR==4{s+=$1}END{print s}')
+        echo $((FULL_HEIGHT - ${DECORATION:-0}))
+    else
+        echo $FULL_HEIGHT
+    fi
+}
+
 get_current_monitor() {
     WINDOW_X=$(get_window_x)
     if [ "$WINDOW_X" -lt "$HALF_WIDTH" ]; then
@@ -42,11 +53,11 @@ get_current_monitor() {
 }
 
 tile_left() {
-    wmctrl -r :ACTIVE: -e 0,0,0,$HALF_WIDTH,$FULL_HEIGHT
+    wmctrl -r :ACTIVE: -e 0,0,0,$HALF_WIDTH,$(get_height)
 }
 
 tile_right() {
-    wmctrl -r :ACTIVE: -e 0,$HALF_WIDTH,0,$HALF_WIDTH,$FULL_HEIGHT
+    wmctrl -r :ACTIVE: -e 0,$HALF_WIDTH,0,$HALF_WIDTH,$(get_height)
 }
 
 tile_auto() {
@@ -79,22 +90,22 @@ tile_center() {
 
 tile_quarter() {
     case $1 in
-        1) wmctrl -r :ACTIVE: -e 0,0,0,$QUARTER_WIDTH,$FULL_HEIGHT ;;
-        2) wmctrl -r :ACTIVE: -e 0,$QUARTER_WIDTH,0,$QUARTER_WIDTH,$FULL_HEIGHT ;;
-        3) wmctrl -r :ACTIVE: -e 0,$HALF_WIDTH,0,$QUARTER_WIDTH,$FULL_HEIGHT ;;
-        4) wmctrl -r :ACTIVE: -e 0,$((HALF_WIDTH + QUARTER_WIDTH)),0,$QUARTER_WIDTH,$FULL_HEIGHT ;;
+        1) wmctrl -r :ACTIVE: -e 0,0,0,$QUARTER_WIDTH,$(get_height) ;;
+        2) wmctrl -r :ACTIVE: -e 0,$QUARTER_WIDTH,0,$QUARTER_WIDTH,$(get_height) ;;
+        3) wmctrl -r :ACTIVE: -e 0,$HALF_WIDTH,0,$QUARTER_WIDTH,$(get_height) ;;
+        4) wmctrl -r :ACTIVE: -e 0,$((HALF_WIDTH + QUARTER_WIDTH)),0,$QUARTER_WIDTH,$(get_height) ;;
         5)
             if [ "$(get_current_monitor)" = "left" ]; then
-                wmctrl -r :ACTIVE: -e 0,0,0,$QUARTER_WIDTH,$FULL_HEIGHT
+                wmctrl -r :ACTIVE: -e 0,0,0,$QUARTER_WIDTH,$(get_height)
             else
-                wmctrl -r :ACTIVE: -e 0,$HALF_WIDTH,0,$QUARTER_WIDTH,$FULL_HEIGHT
+                wmctrl -r :ACTIVE: -e 0,$HALF_WIDTH,0,$QUARTER_WIDTH,$(get_height)
             fi
             ;;
         6)
             if [ "$(get_current_monitor)" = "left" ]; then
-                wmctrl -r :ACTIVE: -e 0,$QUARTER_WIDTH,0,$QUARTER_WIDTH,$FULL_HEIGHT
+                wmctrl -r :ACTIVE: -e 0,$QUARTER_WIDTH,0,$QUARTER_WIDTH,$(get_height)
             else
-                wmctrl -r :ACTIVE: -e 0,$((HALF_WIDTH + QUARTER_WIDTH)),0,$QUARTER_WIDTH,$FULL_HEIGHT
+                wmctrl -r :ACTIVE: -e 0,$((HALF_WIDTH + QUARTER_WIDTH)),0,$QUARTER_WIDTH,$(get_height)
             fi
             ;;
         *) echo "Error: quarter requires argument 1-6"; usage ;;
