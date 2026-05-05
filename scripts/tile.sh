@@ -34,7 +34,7 @@ get_window_x() {
 
 get_height() {
     WM_CLASS=$(xprop -id $(xdotool getactivewindow) WM_CLASS 2>/dev/null)
-    if echo "$WM_CLASS" | grep -qi "sublime"; then
+    if echo "$WM_CLASS" | grep -Eqi 'sublime|google-chrome'; then
         DECORATION=$(xprop -id $(xdotool getactivewindow) _NET_FRAME_EXTENTS 2>/dev/null \
             | grep -oP '\d+' | awk 'NR==3||NR==4{s+=$1}END{print s}')
         echo $((FULL_HEIGHT - ${DECORATION:-0}))
