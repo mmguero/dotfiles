@@ -52,6 +52,18 @@ url = "https://download.fedoraproject.org/pub/fedora/linux/releases/41/Cloud/x86
 [images.fedora-42]
 url = "https://download.fedoraproject.org/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2"
 
+[images.fedora-43]
+url = "https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2"
+
+[images.fedora-44]
+url = "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2"
+
+[images.oracle-10]
+url = "https://yum.oracle.com/templates/OracleLinux/OL10/u1/aarch64/OL10U1_aarch64-kvm-cloud-b154.qcow2"
+
+[images.oracle-9]
+url = "https://yum.oracle.com/templates/OracleLinux/OL9/u7/aarch64/OL9U7_aarch64-kvm-cloud-b158.qcow2"
+
 [images.oracle-8]
 url = "https://yum.oracle.com/templates/OracleLinux/OL8/u10/x86_64/OL8U10_x86_64-kvm-b271.qcow2"
 
