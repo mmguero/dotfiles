@@ -554,6 +554,7 @@ function InstallEnvPackages {
         git+https://github.com/badele/gitcheck.git \
         git-up \
         humanhash3 \
+        libarchive-c \
         mmguero \
         more-itertools \
         ordered-set \
@@ -567,7 +568,7 @@ function InstallEnvPackages {
         python-magic \
         python-slugify \
         pythondialog \
-        pyunpack \
+        git+https://github.com/ponty/pyunpack \
         pyyaml \
         rich \
         ruamel.yaml \
