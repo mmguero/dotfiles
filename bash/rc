@@ -33,4 +33,7 @@ if [ -e ~/.bashrc.d ]; then
   done
 fi
 
+command -v mmguero >/dev/null 2>&1 && \
+  source <(mmguero -- --completion bash)
+
 export PATH
