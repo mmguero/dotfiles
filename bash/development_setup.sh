@@ -2819,6 +2819,7 @@ function InstallUserLocalBinaries {
             "https://github.com/nektos/act|^act_Linux_x86_64\.tar\.gz$|/tmp/act.tar.gz"
             "https://github.com/nuwainfo/ffl|^fflo\.com$|$LOCAL_BIN_PATH/fflo.com|644"
             "https://github.com/peco/peco|^peco_linux_amd64\.tar\.gz$|/tmp/peco.tar.gz"
+            "https://github.com/programmersd21/pik|^pik-linux-x86_64$|$LOCAL_BIN_PATH/pik|755"
             "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_amd64\.zip$|/tmp/httpx.zip"
             "https://github.com/whyvl/wireproxy|^wireproxy_linux_amd64\.tar\.gz$|/tmp/wireproxy.tar.gz"
             "https://github.com/reproducible-containers/diffoci|^diffoci-v.+\.linux-amd64$|$LOCAL_BIN_PATH/diffoci|755"
