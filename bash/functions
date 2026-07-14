@@ -425,7 +425,8 @@ function aux() {
 
 function psgrep() {
   if [ ! $MACOS ]; then
-    ps axuf | grep -v grep | grep "$@" -i --color=auto;
+    [[ -z "$1" ]] && { echo "usage: psgrep <pattern>" >&2; return 1; }
+    ps auxf | grep --color=auto -iE "[${1:0:1}]${1:1}"
   else
     /opt/homebrew/bin/psgrep "$@"
   fi
