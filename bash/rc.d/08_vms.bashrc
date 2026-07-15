@@ -16,9 +16,9 @@ alias vv='virter vm'
 ########################################################################
 if [[ $LINUX ]]; then
   function vagrantd() {
-    ENGINE=${CONTAINER_ENGINE:-podman}
+    local ENGINE=${CONTAINER_ENGINE:-podman}
     if [[ "$ENGINE" == "podman" ]]; then
-      MOUNT_HOME="${VAGRANT_HOME:-$HOME/.vagrant.d}"
+      local MOUNT_HOME="${VAGRANT_HOME:-$HOME/.vagrant.d}"
       mkdir -p "$MOUNT_HOME"/{boxes,data,tmp}
       $ENGINE run -it --rm \
         -e LIBVIRT_DEFAULT_URI \
@@ -117,6 +117,10 @@ if [[ $LINUX ]]; then
     vagrant box outdated --global | grep "is outdated" | cols 2 | xargs -r -l vagrant box update --box
   }
   function vbak() {
+    local BOX_NAME
+    local BOX_PROVIDER
+    local BOX_VERSION
+    local FN
     while read BOX_INFO; do
       BOX_NAME="$(echo "${BOX_INFO}" | cut -d " " -f 1)"
       BOX_PROVIDER="$(echo "${BOX_INFO}" | cut -d " " -f 2)"
@@ -130,12 +134,13 @@ if [[ $LINUX ]]; then
   }
 
   function vvrun() {
-    MEMGB="$(numfmt --to iec --format "%8f" $(echo ${QEMU_RAM:-4096}*1024*1024 | bc) | sed "s/\.0G$/GiB/")"
-    IMG="${QEMU_IMG:-debian-12}"
-    ID=$((120 + $RANDOM % 80))
-    [[ "${QEMU_ARCH:-amd64}" == "amd64" ]] && IMG_SUFFIX= || IMG_SUFFIX="-${QEMU_ARCH}"
+    local MEMGB="$(numfmt --to iec --format "%8f" $(echo ${QEMU_RAM:-4096}*1024*1024 | bc) | sed "s/\.0G$/GiB/")"
+    local IMG="${QEMU_IMG:-debian-12}"
+    local ID=$((120 + $RANDOM % 80))
+    local IMG_SUFFIX=
+    [[ "${QEMU_ARCH:-amd64}" == "amd4" ]] || IMG_SUFFIX="-${QEMU_ARCH}"
 
-    IMG_USER="${QEMU_USER:-}"
+    local IMG_USER="${QEMU_USER:-}"
     if [[ -z "${IMG_USER}" ]]; then
       case "${IMG}" in
         alma-* )         IMG_USER=almalinux ;;
@@ -163,7 +168,7 @@ if [[ $LINUX ]]; then
     virter vm ssh "${IMG}-${ID}"
     unset CONFIRMATION
     read -p "Remove VM ${IMG}-${ID} [y/N]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-N}
+    local CONFIRMATION=${CONFIRMATION:-N}
     if [[ $CONFIRMATION =~ ^[Yy] ]]; then
       virter vm rm "${IMG}-${ID}"
     fi
@@ -181,7 +186,11 @@ else
   alias vpls='vagrant plugin list'
 fi
 
-command -v vagrant >/dev/null 2>&1 && VAGRANT_PLUGINS="$(vagrant plugin list 2>/dev/null)" || VAGRANT_PLUGINS=
+if vagrant_bin="$(type -P vagrant)"; then
+  VAGRANT_PLUGINS="$("$vagrant_bin" plugin list 2>/dev/null)"
+else
+  VAGRANT_PLUGINS=
+fi
 if [[ $MACOS ]] && [[ "$VAGRANT_PLUGINS" == *"vmware"* ]]; then
   export VAGRANT_DEFAULT_PROVIDER=vmware_fusion
 elif [[ "$VAGRANT_PLUGINS" == *"vagrant-libvirt"* ]]; then
@@ -197,6 +206,7 @@ fi
 # boot an ISO in qemu
 function qemuiso() {
   if [[ "$1" ]]; then
+    local MACHINE
     if [[ $MACOS ]]; then
       MACHINE="type=q35,accel=hvf"
     elif [[ $LINUX ]] && dd if=/dev/kvm count=0 >/dev/null 2>&1; then
@@ -204,8 +214,8 @@ function qemuiso() {
     else
       MACHINE="type=q35"
     fi
-    VNC_PORT=$(unusedport)
-    VNC_ID=$((VNC_PORT-5900))
+    local VNC_PORT=$(unusedport)
+    local VNC_ID=$((VNC_PORT-5900))
     nohup qemu-system-x86_64 \
         -machine "$MACHINE" \
         -smp ${QEMU_CPU:-2} \
@@ -221,7 +231,7 @@ function qemuiso() {
     o vnc://localhost:$VNC_PORT >/dev/null 2>&1
   else
     echo "No image file specified" >&2
-    exit 1
+    return 1
   fi
 }
 

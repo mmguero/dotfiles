@@ -51,7 +51,7 @@ function spotify() {
 
 # audacity (oci.guero.org/audacity) via x11docker
 function audacityd() {
-  DOCS_FOLDER="$(realpath $(pwd))"
+  local DOCS_FOLDER="$(realpath "$PWD")"
   if [[ -n "$1" ]]; then
     if [[ -f "$1" ]]; then
       DOCS_FOLDER="$(dirname "$(realpath "$1")")"
@@ -68,7 +68,7 @@ function audacityd() {
 
 # losslesscut (oci.guero.org/lossless-cut) via x11docker
 function losslesscut() {
-  DOCS_FOLDER="$(realpath $(pwd))"
+  local DOCS_FOLDER="$(realpath "$PWD")"
   if [[ -n "$1" ]]; then
     if [[ -f "$1" ]]; then
       DOCS_FOLDER="$(dirname "$(realpath "$1")")"
@@ -84,17 +84,16 @@ function losslesscut() {
 }
 
 function fluentbit() {
-  DIR="$(pwd)"
+  local DIR="$(pwd)"
 
-  if [[ "$CONTAINER_ENGINE" == "podman" ]]; then
-    CONTAINER_PUID=0
-    CONTAINER_PGID=0
-  else
+  local CONTAINER_PUID=0
+  local CONTAINER_PGID=0
+  if [[ "$CONTAINER_ENGINE" != "podman" ]]; then
     CONTAINER_PUID=$(id -u)
     CONTAINER_PGID=$(id -g)
   fi
 
-  if $CONTAINER_ENGINE cis 2>/dev/null | grep -q fluent/fluent-bit >/dev/null 2>&1; then
+  if cis 2>/dev/null | grep -q fluent/fluent-bit; then
     $CONTAINER_ENGINE run -i -t --rm \
       -u $CONTAINER_PUID:$CONTAINER_PGID \
       -v "$DIR:$DIR:rw" \
@@ -110,24 +109,23 @@ function fluentbitp() { CONTAINER_ENGINE=podman fluentbit "$@"; }
 
 # ffmpeg (mwader/static-ffmpeg or linuxserver/ffmpeg) containerized
 function ffmpegc() {
-  DIR="$(pwd)"
+  local DIR="$(pwd)"
 
-  if [[ "$CONTAINER_ENGINE" == "podman" ]]; then
-    CONTAINER_PUID=0
-    CONTAINER_PGID=0
-  else
+  local CONTAINER_PUID=0
+  local CONTAINER_PGID=0
+  if [[ "$CONTAINER_ENGINE" != "podman" ]]; then
     CONTAINER_PUID=$(id -u)
     CONTAINER_PGID=$(id -g)
   fi
 
-  if $CONTAINER_ENGINE cis 2>/dev/null | grep -q mwader/static-ffmpeg >/dev/null 2>&1; then
+  if cis 2>/dev/null | grep -q mwader/static-ffmpeg >/dev/null 2>&1; then
     $CONTAINER_ENGINE run -i -t --rm \
       -u $CONTAINER_PUID:$CONTAINER_PGID \
       -v "$DIR:$DIR:rw" \
       -w "$DIR" \
       mwader/static-ffmpeg "$@"
 
-  elif $CONTAINER_ENGINE cis 2>/dev/null | grep -q linuxserver/ffmpeg >/dev/null 2>&1; then
+  elif cis 2>/dev/null | grep -q linuxserver/ffmpeg >/dev/null 2>&1; then
     $CONTAINER_ENGINE run -i -t --rm \
       -e PUID=$CONTAINER_PUID \
       -e PGID=$CONTAINER_PGID \
@@ -144,12 +142,11 @@ function ffmpegp() { CONTAINER_ENGINE=podman ffmpegc "$@"; }
 
 # yt-dlp (mmguero/yt-dlp) containerized
 function ytdlpc() {
-  DIR="$(pwd)"
+  local DIR="$(pwd)"
 
-  if [[ "$CONTAINER_ENGINE" == "podman" ]]; then
-    CONTAINER_PUID=0
-    CONTAINER_PGID=0
-  else
+  local CONTAINER_PUID=0
+  local CONTAINER_PGID=0
+  if [[ "$CONTAINER_ENGINE" != "podman" ]]; then
     CONTAINER_PUID=$(id -u)
     CONTAINER_PGID=$(id -g)
   fi
@@ -166,9 +163,9 @@ function ytdlpd() { CONTAINER_ENGINE=docker ytdlpc "$@"; }
 function ytdlpp() { CONTAINER_ENGINE=podman ytdlpc "$@"; }
 
 function ytmusicc() {
-  format="$1"
-  search="$2"
-  quality="${3:-2}"
+  local format="$1"
+  local search="$2"
+  local quality="${3:-2}"
   if [[ "$search" =~ ^http ]]; then
     ytdlpc -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality -q --max-downloads 1 "$search"
   else
@@ -187,9 +184,9 @@ function ytoggd() { CONTAINER_ENGINE=docker ytoggc "$@"; }
 function ytoggp() { CONTAINER_ENGINE=podman ytoggc "$@"; }
 
 function ytplaylistc() {
-  format="$1"
-  quality="$2"
-  playlist="$3"
+  local format="$1"
+  local quality="$2"
+  local playlist="$3"
   ytdlpc -f bestaudio --extract-audio --audio-format "$format" --audio-quality $quality "$playlist"
 }
 function ytplaylistd() { CONTAINER_ENGINE=docker ytplaylistc "$@"; }
@@ -229,7 +226,8 @@ function kstern () {
 }
 
 function kpods () {
-  NAMESPACE="${1:-$KUBESPACE}"
+  local NAMESPACE="${1:-$KUBESPACE}"
+  local NAMESPACE_ARGS=
   if [[ -n "$NAMESPACE" ]]; then
     NAMESPACE_ARGS=( --namespace "${NAMESPACE}" )
   else
@@ -279,9 +277,11 @@ function knodes () {
 }
 
 function kshell () {
-  SERVICE="${1}"
+  local SERVICE="${1}"
   if [[ -n "${SERVICE}" ]]; then
-    NAMESPACE="${2:-$KUBESPACE}"
+    local NAMESPACE="${2:-$KUBESPACE}"
+    local NAMESPACE_ARGS=
+    local AWK_ARGS=
     if [[ -n "$NAMESPACE" ]]; then
       NAMESPACE_ARGS=( --namespace "${NAMESPACE}" )
       AWK_ARGS=( '{print $1}' )
@@ -289,10 +289,10 @@ function kshell () {
       NAMESPACE_ARGS=( --all-namespaces )
       AWK_ARGS=( '{print $2}' )
     fi
-    SHELL="${3:-/bin/bash}"
-    POD="$(kctl get pods --no-headers "${NAMESPACE_ARGS[@]}" | grep -P "\b${SERVICE}\b" | awk "${AWK_ARGS[@]}" | sort | head -n 1)"
+    local POD_SHELL="${3:-/bin/bash}"
+    local POD="$(kctl get pods --no-headers "${NAMESPACE_ARGS[@]}" | grep -P "\b${SERVICE}\b" | awk "${AWK_ARGS[@]}" | sort | head -n 1)"
     if [[ -n "${POD}" ]]; then
-        kctl exec "${NAMESPACE_ARGS[@]}" --stdin --tty "${POD}" -- "${SHELL}"
+        kctl exec "${NAMESPACE_ARGS[@]}" --stdin --tty "${POD}" -- "${POD_SHELL}"
     else
         echo "Unable to identify pod for ${SERVICE}" >&2
     fi
@@ -302,9 +302,12 @@ function kshell () {
 }
 
 function klogs () {
-  SERVICE="${1:-}"
+  local SERVICE="${1:-}"
 
-  NAMESPACE="${2:-$KUBESPACE}"
+  local NAMESPACE="${2:-$KUBESPACE}"
+  local NAMESPACE_ARGS=
+  local AWK_ARGS=
+  local POD=
   if [[ -n "$NAMESPACE" ]]; then
     NAMESPACE_ARGS=( --namespace "${NAMESPACE}" )
     AWK_ARGS=( '{print $1}' )
@@ -314,8 +317,7 @@ function klogs () {
   fi
 
   [[ -n "${SERVICE}" ]] && \
-    POD="$(kctl get pods --no-headers "${NAMESPACE_ARGS[@]}" | grep -P "\b${SERVICE}\b" | awk "${AWK_ARGS[@]}" | sort | head -n 1)" || \
-    POD=
+    POD="$(kctl get pods --no-headers "${NAMESPACE_ARGS[@]}" | grep -P "\b${SERVICE}\b" | awk "${AWK_ARGS[@]}" | sort | head -n 1)"
 
   if command -v stern >/dev/null 2>&1; then
       kstern "${POD:-.*}" "${NAMESPACE_ARGS[@]}" --container '.*' --container-state all --max-log-requests 999
@@ -327,7 +329,9 @@ function klogs () {
 }
 
 function kresources () {
-    NAMESPACE="${1:-$KUBESPACE}"
+    local NAMESPACE="${1:-$KUBESPACE}"
+    local NAMESPACE_ARGS=
+    local RESOURCE=
     if [[ -n "$NAMESPACE" ]]; then
       NAMESPACE_ARGS=( --namespace "${NAMESPACE}" )
     else
@@ -375,15 +379,15 @@ function signal() {
 ########################################################################
 # cyberchef (mpepping/cyberchef) containerized
 function cyberchef() {
-  CHEF_PORT="${1:-8000}"
+  local CHEF_PORT="${1:-8000}"
   $CONTAINER_ENGINE run -d --rm -p $CHEF_PORT:8000 --name cyberchef --pull=never mpepping/cyberchef && \
   o http://localhost:$CHEF_PORT
 }
 
 function carbonyl() {
-  ENGINE="${CONTAINER_ENGINE:-docker}"
+  local ENGINE="${CONTAINER_ENGINE:-docker}"
 
-  DOWNLOAD_DIR="$(type xdg-user-dir >/dev/null 2>&1 && xdg-user-dir DOWNLOAD || echo "$HOME/Downloads")"
+  local DOWNLOAD_DIR="$(type xdg-user-dir >/dev/null 2>&1 && xdg-user-dir DOWNLOAD || echo "$HOME/Downloads")"
 
   mkdir -p "$DOWNLOAD_DIR"
 
@@ -412,12 +416,11 @@ function carbonyl() {
 ########################################################################
 
 function cssh() {
-  DIR="$(pwd)"
+  local DIR="$(pwd)"
 
-  if [[ "$CONTAINER_ENGINE" == "podman" ]]; then
-    CONTAINER_PUID=0
-    CONTAINER_PGID=0
-  else
+  local CONTAINER_PUID=0
+  local CONTAINER_PGID=0
+  if [[ "$CONTAINER_ENGINE" != "podman" ]]; then
     CONTAINER_PUID=$(id -u)
     CONTAINER_PGID=$(id -g)
   fi
@@ -441,19 +444,21 @@ function dssh() { CONTAINER_ENGINE=docker cssh "$@"; }
 function pssh() { CONTAINER_ENGINE=podman cssh "$@"; }
 
 function cclient() {
-  DIR="$(pwd)"
+  local DIR="$(pwd)"
 
-  if [[ "$CONTAINER_ENGINE" == "podman" ]]; then
-    CONTAINER_PUID=0
-    CONTAINER_PGID=0
-  else
+  local CONTAINER_PUID=0
+  local CONTAINER_PGID=0
+  if [[ "$CONTAINER_ENGINE" != "podman" ]]; then
     CONTAINER_PUID=$(id -u)
     CONTAINER_PGID=$(id -g)
   fi
 
+  local CLIENT_EXE=
   if [[ "$1" ]]; then
     CLIENT_EXE="$1"
     shift
+  else
+    return 1
   fi
 
   $CONTAINER_ENGINE run -i -t --rm \
@@ -519,9 +524,9 @@ function x11desktop() {
 }
 
 function ciso_ports_format() {
-  CONTAINER_NAME=
-  CONTAINER_ENGINE=$1
-  CONTAINER_ID=$2
+  local CONTAINER_NAME=
+  local CONTAINER_ENGINE=$1
+  local CONTAINER_ID=$2
   [[ -n "$CONTAINER_ID" ]] && \
     command -v jq >/dev/null 2>&1 && \
     CONTAINER_NAME=$($CONTAINER_ENGINE inspect $CONTAINER_ID | jq -r '.[0].Name')
@@ -663,6 +668,9 @@ function ppa() { CONTAINER_ENGINE=podman cpa "$@"; }
 
 # List images without details (just names)
 function cis() {
+  local FORMAT_STRING
+  local JQ_ADAPTER
+  local AWK_FILTER
   if command -v jq >/dev/null 2>&1; then
       case "$CONTAINER_ENGINE" in
         docker)
@@ -721,6 +729,8 @@ function pis() { CONTAINER_ENGINE=podman cis "$@"; }
 
 # List images with details
 function ci() {
+  local FORMAT_STRING
+  local JQ_ADAPTER
   if command -v jq >/dev/null 2>&1; then
     case "$CONTAINER_ENGINE" in
       docker)
@@ -821,7 +831,7 @@ function podup()  { CONTAINER_ENGINE=podman contup "$@"; }
 
 # run a command in the last container launched
 function cxl() {
-  CONTAINER=$($CONTAINER_ENGINE ps -l -q)
+  local CONTAINER=$($CONTAINER_ENGINE ps -l -q)
   $CONTAINER_ENGINE exec -i -t $CONTAINER "$@"
 }
 function dxl() { CONTAINER_ENGINE=docker cxl "$@"; }
@@ -838,7 +848,7 @@ function dnins() { CONTAINER_ENGINE=docker cnins "$@"; }
 function pnins() { CONTAINER_ENGINE=podman cnins "$@"; }
 
 # Stop all containers
-function cstop() { $CONTAINER_ENGINE stop $($CONTAINER_ENGINE ps -a -q); }
+function cstop() { $CONTAINER_ENGINE ps -a -q | xargs -r "$CONTAINER_ENGINE" stop; }
 function dstop() { CONTAINER_ENGINE=docker cstop "$@"; }
 function pstop() { CONTAINER_ENGINE=podman cstop "$@"; }
 

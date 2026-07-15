@@ -19,13 +19,13 @@ fi
 if [[ $WINDOWS10 ]]; then
   if command -v cygpath >/dev/null 2>&1; then
     if [[ -n $USERPROFILE ]]; then
-      [[ -d "$(cygpath -u $USERPROFILE)"/scoop/shims ]] && \
-        PATH="$(cygpath -u $USERPROFILE)"/scoop/shims:"$PATH"
-      [[ -d "$(cygpath -u $USERPROFILE)"/scoop/apps/python/current/Scripts ]] && \
-        PATH="$(cygpath -u $USERPROFILE)"/scoop/apps/python/current/Scripts:"$PATH"
+      [[ -d "$(cygpath -u "$USERPROFILE")"/scoop/shims ]] && \
+        PATH="$(cygpath -u "$USERPROFILE")"/scoop/shims:"$PATH"
+      [[ -d "$(cygpath -u "$USERPROFILE")"/scoop/apps/python/current/Scripts ]] && \
+        PATH="$(cygpath -u "$USERPROFILE")"/scoop/apps/python/current/Scripts:"$PATH"
     fi
-    [[ -d "$(cygpath -u $SYSTEMROOT)"/System32/OpenSSH ]] && \
-      PATH="$(cygpath -u $SYSTEMROOT)"/System32/OpenSSH:"$PATH"
+    [[ -d "$(cygpath -u "$SYSTEMROOT")"/System32/OpenSSH ]] && \
+      PATH="$(cygpath -u "$SYSTEMROOT")"/System32/OpenSSH:"$PATH"
   fi
 fi
 

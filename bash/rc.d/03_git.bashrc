@@ -11,9 +11,9 @@ function parse_git_remote_info () {
 }
 
 function parse_git_branch () {
-  GIT_BRANCH=$(current_git_branch)
+  local GIT_BRANCH=$(current_git_branch)
   if [ ! -z "$GIT_BRANCH" ]; then
-    GIT_REMOTE=$(parse_git_remote_info)
+    local GIT_REMOTE=$(parse_git_remote_info)
     if [ ! -z "$GIT_REMOTE" ]; then
       echo "[$GIT_BRANCH:$GIT_REMOTE] "
     else
@@ -58,7 +58,9 @@ function git_release_download_counts () {
 function git_deep_search () {
   if [ "$1" ]; then
     PATTERN="$1"
-    set -o pipefail && { find .git/objects/pack/ -name "*.idx" | while read i; do git show-index < "$i" | awk '{print $2}'; done; find .git/objects/ -type f | grep -v '/pack/' | awk -F'/' '{print $(NF-1)$NF}'; } | while read o; do git cat-file -p $o; done | grep -E "$PATTERN"
+    (
+      set -o pipefail && { find .git/objects/pack/ -name "*.idx" | while read i; do git show-index < "$i" | awk '{print $2}'; done; find .git/objects/ -type f | grep -v '/pack/' | awk -F'/' '{print $(NF-1)$NF}'; } | while read o; do git cat-file -p $o; done | grep -E "$PATTERN"
+    )
   else
     echo "No pattern specified">&2
   fi
@@ -151,10 +153,9 @@ function git_install_tool {
 
     # Try to locate binary
     local found_bin
-    found_bin="$(find "$tmp_dir" -type f -executable \( -name "$bin_name" -o -printf "%f\n" \) 2>/dev/null | head -n1)"
+    found_bin="$(find "$tmp_dir" -type f -name "$bin_name" -perm -111 -print -quit)"
     if [[ -z "$found_bin" ]]; then
-      # fallback: just grab first executable file
-      found_bin="$(find "$tmp_dir" -type f -perm -111 | head -n1)"
+      found_bin="$(find "$tmp_dir" -type f -perm -111 -print -quit)"
     fi
     if [[ -z "$found_bin" ]]; then
       echo "Error: could not detect binary in tarball" >&2
@@ -205,7 +206,7 @@ function git_workflow () {
   if [[ -n $GITHUB_TOKEN ]]; then
     REPO="$1"
     WORKFLOW="$2"
-    [[ $1 == ?(-)+([0-9]) ]] || WORKFLOW=$(git_workflow_id "$REPO" "$WORKFLOW" )
+    [[ $WORKFLOW == ?(-)+([0-9]) ]] || WORKFLOW=$(git_workflow_id "$REPO" "$WORKFLOW")
     curl -sSL  -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
       "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW"
   else

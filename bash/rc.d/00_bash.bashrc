@@ -13,7 +13,7 @@ shopt -s dotglob
 shopt -s cdspell
 shopt -s histverify
 shopt -s histappend
-shopt -u progcomp
+shopt -s progcomp
 
 # Configuration for the command line tool "hh" (history searcher to replace ctrl-r, brew install hh)
 export HH_CONFIG=hicolor,rawhistory,favorites   # get more colors
@@ -57,7 +57,6 @@ elif [[ -n $MSYSTEM ]] || grep -q Microsoft /proc/version 2>/dev/null; then
   alias open='explorer.exe'
   [[ -n $MSYSTEM ]] && export MSYS=winsymlinks:nativestrict
 else
-  shopt -s nocasematch
   export LINUX=0
   if [[ "$(xdg-mime query default inode/directory 2>/dev/null)" =~ "thunar" ]]; then
     alias open="XDG_CURRENT_DESKTOP='XFCE' xdg-open"

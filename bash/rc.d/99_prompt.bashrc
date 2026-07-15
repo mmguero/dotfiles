@@ -6,7 +6,10 @@ if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]] ; then
   command -v neofetch >/dev/null 2>&1 && neofetch || ( command -v screenfetch >/dev/null 2>&1 && screenfetch )
 fi
 
-PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+case ";$PROMPT_COMMAND;" in
+  *";history -a;"*) ;;
+  *) PROMPT_COMMAND="history -a${PROMPT_COMMAND:+;$PROMPT_COMMAND}" ;;
+esac
 
 if command -v starship >/dev/null 2>&1; then
 
@@ -45,10 +48,10 @@ else
 
   if [[ -f /.dockerenv ]] || ( mount | grep -q "overlay on / " ); then
     PS1="\[$COLOR_BLUE\].\[$COLOR_RESET\]\u \[$COLOR_GREEN\]\h \[$COLOR_DARK_BLUE\]\W\[$COLOR_RESET\]> "
-    unalias cat
+    unalias cat 2>/dev/null || true
 
   else
-    command -v ip >/dev/null 2>&1 && PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )(\d{1,3}.){4}' | sed "s/ //g") || PRIMARY_IP='127.0.0.1'
+    command -v ip >/dev/null 2>&1 && PRIMARY_IP=$(ip route get 255.255.255.255 2>/dev/null | grep -Po '(?<=src )([0-9]{1,3}\.){3}[0-9]{1,3}' | sed "s/ //g") || PRIMARY_IP='127.0.0.1'
     unset HASHER
     HASHERS=(sha512sum sha384sum sha256sum sha224sum sha1sum md5sum)
     for i in ${HASHERS[@]}; do command -v "$i" >/dev/null 2>&1 && HASHER="$i" && break; done
