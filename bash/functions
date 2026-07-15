@@ -20,7 +20,12 @@ function cols () {
 }
 
 function headtail () {
-  awk -v offset="$1" '{ if (NR <= offset) print; else { a[NR] = $0; delete a[NR-offset] } } END { { print "--------------------------------" } for (i=NR-offset+1; i<=NR; i++) print a[i] }' ;
+  awk -v offset="$1" '
+    { if (NR <= offset) print; else { a[NR] = $0; delete a[NR-offset] } }
+    END {
+      if (NR > 2 * offset) print "--------------------------------"
+      for (i = NR - offset + 1; i <= NR; i++) if (i in a) print a[i]
+    }'
 }
 
 function wait_file() {
@@ -36,19 +41,23 @@ function taildiff () {
   LEFT_FILE=$1
   RIGHT_FILE=$2
   RIGHT_LINES=$(wc -l "$RIGHT_FILE" | cut -d ' ' -f1)
-  diff -bwBy --suppress-common-lines <(head -n $RIGHT_LINES "$LEFT_FILE") <(head -n $RIGHT_LINES "$RIGHT_FILE")
+  diff -bwBy --suppress-common-lines <(tail -n $RIGHT_LINES "$LEFT_FILE") <(tail -n $RIGHT_LINES "$RIGHT_FILE")
+}
+
+function colordiff() {
+  command colordiff -yW"$(tput cols)" "$@"
 }
 
 function dirdiff () {
   if [ -d "$1" ] && [ -d "$2" ]; then
-    dir1="$1"
-    dir2="$2"
-    IFS=$'\n'
-    for file in $(grep -Ilsr -m 1 '.' "$dir1"); do
-      diff -q "$file" "${file/${dir1}/${dir2}}"
-    done
+    local dir1="${1%/}" dir2="${2%/}" file
+    while IFS= read -r -d '' file; do
+      diff -q -- "$file" "${dir2}${file#"$dir1"}"
+    done < <(find "$dir1" \
+               \( -name .git \) -prune -o \
+               -type f -size -100M -print0)
   else
-    echo "Must specify two directories">&2
+    echo "Must specify two directories" >&2
   fi
 }
 
@@ -62,7 +71,7 @@ function fs() {
   else
     local arg=-sh;
   fi
-  if [[ -n "$@" ]]; then
+  if (( $# )); then
     du $arg -- "$@";
   else
     du $arg .[^.]* ./*;
@@ -132,16 +141,46 @@ function fhash() {
     return 1
   fi
 
-  local md5 sha1 sha224 sha256 sha384 sha512 ssdeep tlsh human shakey
+  local monitor_was_on=0
+  [[ $- == *m* ]] && monitor_was_on=1
+  set +m
 
-  md5=$(md5sum -- "$file" 2>/dev/null | awk '{print $1}')
-  sha1=$(sha1sum -- "$file" 2>/dev/null | awk '{print $1}')
-  sha224=$(sha224sum -- "$file" 2>/dev/null | awk '{print $1}')
-  sha256=$(sha256sum -- "$file" 2>/dev/null | awk '{print $1}')
-  sha384=$(sha384sum -- "$file" 2>/dev/null | awk '{print $1}')
-  sha512=$(sha512sum -- "$file" 2>/dev/null | awk '{print $1}')
-  shakey=$(shakeysum "$file" 2>/dev/null | awk '{print $1}')
+  local tmpdir
+  tmpdir="$(mktemp -d)" || {
+    (( monitor_was_on )) && set -m
+    return 1
+  }
+
+  local -a algos=(md5 sha1 sha224 sha256 sha384 sha512)
+  local -a fifos=() pids=()
+  local algo
+
+  {
+    for algo in "${algos[@]}"; do
+      mkfifo "$tmpdir/$algo.fifo"
+      "${algo}sum" < "$tmpdir/$algo.fifo" | awk '{print $1}' > "$tmpdir/$algo" &
+      pids+=("$!")
+      fifos+=("$tmpdir/$algo.fifo")
+    done
+  } 2>/dev/null
+
+  tee "${fifos[@]}" < "$file" > /dev/null
+  wait "${pids[@]}" 2>/dev/null
+
+  local md5 sha1 sha224 sha256 sha384 sha512 ssdeep tlsh human shakey
+  md5=$(<"$tmpdir/md5")
+  sha1=$(<"$tmpdir/sha1")
+  sha224=$(<"$tmpdir/sha224")
+  sha256=$(<"$tmpdir/sha256")
+  sha384=$(<"$tmpdir/sha384")
+  sha512=$(<"$tmpdir/sha512")
+
+  rm -rf "$tmpdir" >/dev/null 2>&1
+
+  (( monitor_was_on )) && set -m
+
   human=$(echo "$sha512" | humanhash)
+  shakey=$(shakeysum "$file" 2>/dev/null | awk '{print $1}')
 
   if command -v ssdeep >/dev/null 2>&1; then
     ssdeep=$(ssdeep -b -- "$file" 2>/dev/null | tail -n 1 | cut -d, -f1)
@@ -226,7 +265,7 @@ function oscsv2json () {
 ########################################################################
 # math
 ########################################################################
-function calc () { python -c "from math import *; n = $1; print n; print '$'+hex(trunc(n))[2:]; print '&'+oct(trunc(n))[1:]; print '%'+bin(trunc(n))[2:];"; }
+function calc () { python3 -c "from math import *; n = $1; print(n); print('$' + format(trunc(n), 'x')); print('&' + format(trunc(n), 'o')); print('%' + format(trunc(n), 'b'))"; }
 
 function add () {
   awk '{s+=$1} END {print s}'
@@ -268,7 +307,7 @@ function sec2dhms() {
 ########################################################################
 function cd() { if [[ "$1" =~ ^\.\.+$ ]];then local a dir;a=${#1};while [ $a -ne 1 ];do dir=${dir}"../";((a--));done;builtin cd $dir;else builtin cd "$@";fi ;}
 
-function fcd() { [ -f $1  ] && { cd $(dirname $1);  } || { cd $1 ; } }
+function fcd() { [[ -f "$1"  ]] && { cd "$(dirname "$1")";  } || { cd "$1" ; } }
 
 function up { cd $(eval printf '../'%.0s {1..$1}) && pwd; }
 
@@ -292,33 +331,36 @@ function renmod() {
 
 function upto() {
   local EXPRESSION="$1"
-  if [ -z "$EXPRESSION" ]; then
+
+  if [[ -z "$EXPRESSION" ]]; then
     echo "A folder expression must be provided." >&2
     return 1
   fi
-  if [ "$EXPRESSION" = "/" ]; then
-    cd "/"
-    return 0
-  fi
-  local CURRENT_FOLDER="$(pwd)"
-  local MATCHED_DIR=""
-  local MATCHING=true
 
-  while [ "$MATCHING" = true ]; do
-    if [[ "$CURRENT_FOLDER" =~ "$EXPRESSION" ]]; then
-      MATCHED_DIR="$CURRENT_FOLDER"
-      CURRENT_FOLDER=$(dirname "$CURRENT_FOLDER")
-    else
-      MATCHING=false
-    fi
-  done
-  if [ -n "$MATCHED_DIR" ]; then
-    cd "$MATCHED_DIR"
+  if [[ "$EXPRESSION" == "/" ]]; then
+    cd / || return
+    pwd >&2
     return 0
-  else
-    echo "No Match." >&2
-    return 1
   fi
+
+  local CURRENT_FOLDER
+  CURRENT_FOLDER="$(dirname "$PWD")"
+
+  while [[ "$CURRENT_FOLDER" != "/" ]]; do
+    local CURRENT_BASENAME
+    CURRENT_BASENAME="$(basename "$CURRENT_FOLDER")"
+
+    if [[ "$CURRENT_BASENAME" =~ $EXPRESSION ]]; then
+      cd "$CURRENT_FOLDER" || return
+      pwd >&2
+      return 0
+    fi
+
+    CURRENT_FOLDER="$(dirname "$CURRENT_FOLDER")"
+  done
+
+  echo "No Match." >&2
+  return 1
 }
 
 # complete upto
@@ -347,13 +389,38 @@ function h() { if [ -z "$1" ]; then history; else history | grep -i "$@"; fi; }
 function fname() { find . -iname "*$@*"; }
 
 function findupes() {
-  find . -not -empty -type f -printf "%s\n" 2>/dev/null | \
-    sort -rn | \
-    uniq -d | \
-    xargs -I{} -n1 find -type f -size {}c -print0 | \
-    xargs -0 md5sum | \
-    sort | \
-    uniq -w32 --all-repeated=separate
+  if command -v jdupes >/dev/null 2>&1; then
+    jdupes --quiet --recurse .
+  elif command -v fdupes >/dev/null 2>&1; then
+    fdupes --recurse --quiet .
+  else
+    find . -type f ! -empty -printf '%s\t%p\0' 2>/dev/null |
+      perl -0ne '
+        chomp;
+        my ($size, $path) = split /\t/, $_, 2;
+        push @{ $files{$size} }, $path if defined $path;
+
+        END {
+          for my $size (keys %files) {
+            next unless @{ $files{$size} } > 1;
+            print "$_\0" for @{ $files{$size} };
+          }
+        }
+      ' |
+      xargs -0 -r md5sum -z |
+      perl -0ne '
+        chomp;
+        next unless /^([0-9a-fA-F]{32}) [ *](.*)\z/s;
+        push @{ $files{$1} }, $2;
+
+        END {
+          for my $hash (sort keys %files) {
+            next unless @{ $files{$hash} } > 1;
+            print join("\n", @{ $files{$hash} }), "\n\n";
+          }
+        }
+      '
+  fi
 }
 
 function sfind() {
@@ -371,26 +438,7 @@ function sfind() {
 }
 
 function rg-repl() {
-    local search="$1"
-    local replace="$2"
-
-    # Escape for ripgrep: escape regex metacharacters, but NOT slashes
-    local rg_pat
-    rg_pat="$(printf '%s' "$search" \
-        | sed 's/[.[\*^$(){}+?|]/\\&/g')"
-
-    # Escape for sed: but since we won't use '/' as delimiter, we skip escaping '/'
-    local sed_pat
-    sed_pat="$(printf '%s' "$search" \
-        | sed 's/[.[\*^$(){}+?|]/\\&/g')"
-
-    # Escape '&' in the replacement (sed uses & to refer to the whole match)
-    local sed_rep
-    sed_rep="$(printf '%s' "$replace" | sed 's/&/\\&/g')"
-
-    rg -l "$rg_pat" \
-        | sort -u \
-        | xargs -r -I{} sed -i "s|${sed_pat}|${sed_rep}|g" "{}"
+    S="$1" R="$2" rg -0 -lF "$1" | xargs -0 -r perl -pi -e 's/\Q$ENV{S}\E/$ENV{R}/g'
 }
 
 function rg-replmd() {
@@ -458,7 +506,7 @@ function mempercent () {
 }
 
 function swapusage () {
-  for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file; done | sort -k 2 -n -r  | head -n 20
+  for file in /proc/*/status ; do awk '/VmSwap|Name/{printf "%s %s", $2, $3}END{ print ""}' $file 2>/dev/null; done | sort -k 2 -n -r  | head -n 20
 }
 
 function htopid () {
@@ -481,12 +529,16 @@ function pidstart () {
 # news/weather
 ########################################################################
 function weather() {
-  if [ "$1" ]; then
+  if [[ "$1" ]]; then
     CITY="$1"
   else
     CITY="83401"
   fi
-  curl "wttr.in/$CITY"
+  if [[ "$2" ]]; then
+    curl "wttr.in/$CITY?format=$2"
+  else
+    curl "wttr.in/$CITY"
+  fi
 }
 
 ########################################################################
@@ -601,8 +653,22 @@ function sshi () {
 ########################################################################
 # network
 ########################################################################
+function extip() {
+  if command -v dig >/dev/null 2>&1; then
+    dig +short myip.opendns.com @resolver1.opendns.com
+  elif command -v curl >/dev/null 2>&1; then
+    curl -sSLH "Cache-Control: no-cache" "https://ifconfig.co/?$(date +%s)"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO- --no-cache "https://ifconfig.co/?$(date +%s)"
+  else
+    echo "extip: need dig, curl, or wget" >&2
+    return 1
+  fi
+}
+
 function lport () {
   if [ "$1" ]; then
+    # TODO: replace with ss?
     netstat -anp 2>/dev/null|grep "$1"|grep LISTEN|awk '{print $4}'|grep -P -o "\d+"|grep -v "^0$"
   else
     echo "No process specified">&2
@@ -816,11 +882,12 @@ function digip() {
 }
 
 function unusedport() {
+  local LOWER_PORT UPPER_PORT
   read LOWER_PORT UPPER_PORT < /proc/sys/net/ipv4/ip_local_port_range
-  [[ -n "$1" ]] && UPPER_PORT="$1"
-  [[ -n "$2" ]] && LOWER_PORT="$2"
-  comm -23 <(seq $LOWER_PORT $UPPER_PORT | sort) \
-    <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) \
+  [[ -n "$1" ]] && LOWER_PORT="$1"
+  [[ -n "$2" ]] && UPPER_PORT="$2"
+  comm -23 <(seq "$LOWER_PORT" "$UPPER_PORT" | sort) \
+    <(ss -Htan | awk '{print $4}' | grep -oE '[0-9]+$' | sort -u) \
     | shuf \
     | head -n 1
 }
@@ -880,7 +947,7 @@ function urlencode() {
     for (( i = 0; i < length; i++ )); do
         local c="${1:i:1}"
         case $c in
-            [a-zA-Z0-9.~_-]) printf "$c" ;;
+            [a-zA-Z0-9.~_-]) printf '%s' "$c" ;;
             *) printf '%%%02X' "'$c"
         esac
     done
@@ -958,7 +1025,7 @@ function viddys() {
     shift
 
     local TMP_SH
-    TMP_SH=$(mktemp --suffix=.sh)
+    TMP_SH=$(mktemp -t viddys)
 
     printf '%s\n' "$*" > "$TMP_SH"
 
@@ -1005,6 +1072,14 @@ function shred_file {
     type shred >/dev/null 2>&1 && shred -f -u "$TARGET" || rm -f "$TARGET"
   fi
   [[ -n $TARGET ]] && [[ ! -f "$TARGET" ]] && return 0 || return 1
+}
+
+function mine() {
+  if (($# == 0)); then
+    echo "Usage: mine <path>..." >&2
+    return 1
+  fi
+  sudo chown -R "$USER:$USER" "$@"
 }
 
 # shred a file with user-provided confirmation
@@ -1207,48 +1282,90 @@ function codec() {
   ffprobe -hide_banner -v error -print_format json -show_format -show_streams "$1" | jq -r '.streams[] | select(.codec_type=="video") | .codec_name'
 }
 
+# _ffbatch <output-suffix> <ffmpeg args...> -- <files...>
+#   In the ffmpeg args, "{}" is replaced by the input file.
+#   In the suffix, "EXT" is replaced by the input file's original extension.
+function _ffbatch() {
+  local suffix="$1"; shift
+  local -a ffargs=()
+  while (( $# )) && [[ "$1" != "--" ]]; do ffargs+=("$1"); shift; done
+  [[ "$1" == "--" ]] && shift
+  (( $# )) || { echo "no input files" >&2; return 1; }
+
+  local nproc="${FFBATCH_JOBS:-2}"
+  printf '%s\0' "$@" | SUFFIX="$suffix" xargs -0 -r -P "$nproc" -I{} bash -c '
+    INFILE="$1"; shift
+    BASE="${INFILE%.*}"; EXT="${INFILE##*.}"
+    OUT="$BASE${SUFFIX//EXT/$EXT}"
+    ARGS=(); for a in "$@"; do ARGS+=("${a//\{\}/$INFILE}"); done
+    exec ffmpeg -hide_banner -nostdin -loglevel 0 -n "${ARGS[@]}" "$OUT"
+  ' _ {} "${ffargs[@]}"
+}
+
 function toogg() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -vn -c:a libvorbis -qscale:a 7 \"\$INFILE_BASE.ogg\""
+  _ffbatch ".ogg" -i {} -map 0 -vn -c:a libvorbis -qscale:a 7 -- "$@"
 }
 
 function tox264mkvaac() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p -c:a aac -ac 2 -ab 224k -ar 48000 -c:s copy \"\$INFILE_BASE.x264.mkv\""
+  _ffbatch ".x264.mkv" -i {} -map 0 \
+    -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p \
+    -c:a aac -ac 2 -ab 224k -ar 48000 -c:s copy -- "$@"
 }
 
 function tox264mkvacopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
+  _ffbatch ".x264.mkv" -i {} -map 0 \
+    -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p \
+    -c:a copy -c:s copy -- "$@"
 }
 
 function tox264mkv720acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -vf \"scale=-2:720,format=yuv420p\" -c:v libx264 -preset veryslow -crf 22 -c:a copy -c:s copy ./new/\"\$INFILE_BASE.x264.mkv\""
+  _ffbatch ".x264.mkv" -i {} -map 0 -vf "scale=-2:720,format=yuv420p" \
+    -c:v libx264 -preset veryslow -crf 22 -c:a copy -c:s copy -- "$@"
 }
 
 function tox264mkv1080acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -vf \"scale=-2:1080,format=yuv420p\" -c:v libx264 -preset veryslow -crf 22 -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
+  _ffbatch ".x264.mkv" -i {} -map 0 -vf "scale=-2:1080,format=yuv420p" \
+    -c:v libx264 -preset veryslow -crf 22 -c:a copy -c:s copy -- "$@"
 }
 
 function tox264mkvacopy30fps() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf \"format=yuv420p,fps=fps=30\" -c:a copy -c:s copy \"\$INFILE_BASE.x264.mkv\""
+  _ffbatch ".x264.mkv" -i {} -map 0 \
+    -c:v libx264 -preset veryslow -crf 22 -vf "format=yuv420p,fps=fps=30" \
+    -c:a copy -c:s copy -- "$@"
 }
 
 function tox264mp4aac() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p -c:a aac -ac 2 -ab 224k -ar 48000 -c:s copy -movflags +faststart \"\$INFILE_BASE.x264.mp4\""
+  _ffbatch ".x264.mp4" -i {} -map 0 \
+    -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p \
+    -c:a aac -ac 2 -ab 224k -ar 48000 -c:s copy -movflags +faststart -- "$@"
 }
 
 function tox264mp4acopy() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p -c:a copy -c:s copy -movflags +faststart \"\$INFILE_BASE.x264.mp4\""
+  _ffbatch ".x264.mp4" -i {} -map 0 \
+    -c:v libx264 -preset veryslow -crf 22 -vf format=yuv420p \
+    -c:a copy -c:s copy -movflags +faststart -- "$@"
 }
 
 function downmixtoaacmkv() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -i \"\$INFILE\" -map 0 -c:v copy -af 'pan=stereo|FL=0.8*FC + 0.6*FL + 0.6*BL + 0.5*LFE|FR=0.8*FC + 0.6*FR + 0.6*BR + 0.5*LFE' -c:a aac -ab 224k -ar 48000 -c:s copy \"\$INFILE_BASE.downmix.mkv\""
+  _ffbatch ".downmix.mkv" -i {} -map 0 -c:v copy \
+    -af "pan=stereo|FL=0.8*FC + 0.6*FL + 0.6*BL + 0.5*LFE|FR=0.8*FC + 0.6*FR + 0.6*BR + 0.5*LFE" \
+    -c:a aac -ab 224k -ar 48000 -c:s copy -- "$@"
 }
 
 function hwscale720() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high -rc:v vbr -cq:v 0 -qmin:v 23 -qmax:v 29 -c:a copy -c:s copy \"\$INFILE_BASE.720p.\$INFILE_EXT\""
+  FFBATCH_JOBS="${FFBATCH_JOBS:-2}" _ffbatch ".720p.EXT" \
+    -hwaccel cuda -hwaccel_output_format cuda -i {} -map 0 \
+    -vf "scale_cuda=w=-1:h=720:format=yuv420p:interp_algo=lanczos,hwdownload" \
+    -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high \
+    -rc:v vbr -cq:v 0 -qmin:v 23 -qmax:v 29 -c:a copy -c:s copy -- "$@"
 }
 
 function hwscale1080() {
-  printf "%s\n" "$@" | xargs -r -P 4 -I XXX -r /bin/bash -c "INFILE=\"XXX\" && INFILE_BASE=\"\${INFILE%.*}\" && INFILE_EXT=\"\${INFILE##*.}\" && ffmpeg -hide_banner -nostdin -loglevel 0 -n -hwaccel cuda -hwaccel_output_format cuda -i \"\$INFILE\" -map 0 -vf "scale_cuda=w=-1:h=1080:format=yuv420p:interp_algo=lanczos,hwdownload" -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high -rc:v vbr -cq:v 0 -qmin:v 22 -qmax:v 26 -c:a copy -c:s copy \"\$INFILE_BASE.1080p.\$INFILE_EXT\""
+  FFBATCH_JOBS="${FFBATCH_JOBS:-2}" _ffbatch ".1080p.EXT" \
+    -hwaccel cuda -hwaccel_output_format cuda -i {} -map 0 \
+    -vf "scale_cuda=w=-1:h=1080:format=yuv420p:interp_algo=lanczos,hwdownload" \
+    -c:v h264_nvenc -preset:v p4 -tune:v hq -profile:v high \
+    -rc:v vbr -cq:v 0 -qmin:v 22 -qmax:v 26 -c:a copy -c:s copy -- "$@"
 }
 
 function brownnoise() {

@@ -1745,6 +1745,7 @@ function InstallCommonPackages {
         htop
         inotify-tools
         jc
+        jdupes
         jo
         jq
         less
