@@ -159,7 +159,7 @@ if [[ $LINUX ]]; then
       --arch "${QEMU_ARCH:-amd64}" \
       --vcpus ${QEMU_CPU:-2} \
       --memory ${MEMGB} \
-      --bootcapacity ${QEMU_DISK:-40G} \
+      --boot-capacity ${QEMU_DISK:-40G} \
       --mount "host=$(pwd),vm=/host" \
       --user "${IMG_USER}" \
       --wait-ssh \

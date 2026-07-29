@@ -551,6 +551,7 @@ function InstallEnvPackages {
         dominate \
         dtrx \
         entrypoint2 \
+        github-download-counts \
         git+https://github.com/badele/gitcheck.git \
         git-up \
         humanhash3 \
@@ -566,6 +567,7 @@ function InstallEnvPackages {
         python-dateutil \
         python-dotenv \
         python-magic \
+        python-rapidjson \
         python-slugify \
         pythondialog \
         git+https://github.com/ponty/pyunpack \
