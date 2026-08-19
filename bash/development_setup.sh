@@ -554,6 +554,7 @@ function InstallEnvPackages {
         github-download-counts \
         git+https://github.com/badele/gitcheck.git \
         git-up \
+        fire \
         humanhash3 \
         libarchive-c \
         mmguero \
