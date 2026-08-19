@@ -216,6 +216,24 @@ function ext () {
   echo "${1##*.}"
 }
 
+jfmt() {
+  local file tmp
+
+  for file in "$@"; do
+    tmp=$(mktemp) || return 1
+
+    if jq . "$file" > "$tmp"; then
+      cat "$tmp" > "$file"
+    else
+      echo "jfmt: invalid JSON: $file" >&2
+      rm -f "$tmp"
+      return 1
+    fi
+
+    rm -f "$tmp" >/dev/null 2>&1
+  done
+}
+
 # quick-and-dirty exported CSV from OpenSearch Dashboard's discover to JSON
 function oscsv2json () {
   for FILE in "$@"; do
@@ -438,30 +456,12 @@ function sfind() {
 }
 
 function rg-repl() {
-    S="$1" R="$2" rg -0 -lF "$1" | xargs -0 -r perl -pi -e 's/\Q$ENV{S}\E/$ENV{R}/g'
-}
-
-function rg-replmd() {
     local search="$1"
-    local replace="$2"
+    local replacement="$2"
 
-    # Escape for ripgrep: escape regex metacharacters, but NOT slashes
-    local rg_pat
-    rg_pat="$(printf '%s' "$search" \
-        | sed 's/[.[\*^$(){}+?|]/\\&/g')"
-
-    # Escape for sed: but since we won't use '/' as delimiter, we skip escaping '/'
-    local sed_pat
-    sed_pat="$(printf '%s' "$search" \
-        | sed 's/[.[\*^$(){}+?|]/\\&/g')"
-
-    # Escape '&' in the replacement (sed uses & to refer to the whole match)
-    local sed_rep
-    sed_rep="$(printf '%s' "$replace" | sed 's/&/\\&/g')"
-
-    rg --iglob='*.md' -l "$rg_pat" \
-        | sort -u \
-        | xargs -r -I{} sed -i "s|${sed_pat}|${sed_rep}|g" "{}"
+    rg -0 -l -F -- "$search" |
+        S="$search" R="$replacement" xargs -0 -r \
+            perl -pi -e 's/\Q$ENV{S}\E/$ENV{R}/g'
 }
 
 ########################################################################
