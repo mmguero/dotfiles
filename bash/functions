@@ -1025,7 +1025,7 @@ function viddys() {
     shift
 
     local TMP_SH
-    TMP_SH=$(mktemp -t viddys)
+    TMP_SH=$(mktemp -t viddys.XXXXXXXXXX)
 
     printf '%s\n' "$*" > "$TMP_SH"
 
