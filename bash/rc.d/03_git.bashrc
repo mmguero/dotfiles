@@ -440,3 +440,120 @@ function github_runner_ubuntu_space_free () {
     sudo env DEBIAN_FRONTEND=noninteractive apt-get -q -y --purge autoremove >/dev/null 2>&1 || true
   fi
 }
+
+function github_issue_comments () {
+  if [[ -n "$1" ]]; then
+    local ISSUE_REF="$1"
+    local REPO="${ISSUE_REF%%#*}"
+    local NUM="${ISSUE_REF##*#}"
+    if [[ -z "$REPO" || -z "$NUM" || "$REPO" == "$ISSUE_REF" ]]; then
+      echo "Usage: github_issue_comments owner/repo#123">&2
+      return 1
+    fi
+    GITHUB_API_CURL_ARGS=()
+    GITHUB_API_CURL_ARGS+=( -fsSL )
+    GITHUB_API_CURL_ARGS+=( -H )
+    GITHUB_API_CURL_ARGS+=( "Accept: application/vnd.github.v3+json" )
+    [[ -n "$GITHUB_TOKEN" ]] && \
+      GITHUB_API_CURL_ARGS+=( -H ) && \
+      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
+
+    curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$REPO/issues/$NUM/comments?per_page=500" \
+      | jq -r '
+          if length == 0 then "(no comments)" else
+            .[] | "── \(.user.login)  ·  \(.created_at) ──", "", (.body // ""), ""
+          end
+        '
+  else
+    echo "No issue specified, e.g. github_issue_comments cisagov/Malcolm#123">&2
+  fi
+}
+
+function github_issue () {
+  if [[ -n "$1" ]]; then
+    local ISSUE_REF="$1"
+    local REPO="${ISSUE_REF%%#*}"
+    local NUM="${ISSUE_REF##*#}"
+    if [[ -z "$REPO" || -z "$NUM" || "$REPO" == "$ISSUE_REF" ]]; then
+      echo "Usage: github_issue owner/repo#123 [-c]">&2
+      return 1
+    fi
+    GITHUB_API_CURL_ARGS=()
+    GITHUB_API_CURL_ARGS+=( -fsSL )
+    GITHUB_API_CURL_ARGS+=( -H )
+    GITHUB_API_CURL_ARGS+=( "Accept: application/vnd.github.v3+json" )
+    [[ -n "$GITHUB_TOKEN" ]] && \
+      GITHUB_API_CURL_ARGS+=( -H ) && \
+      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
+
+    curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$REPO/issues/$NUM" \
+      | jq -r '
+          "#\(.number)  \(.title)",
+          "\(.state | ascii_upcase)  ·  \(.user.login)  ·  \(.created_at)",
+          (if (.labels | length) > 0 then "Labels: " + ([.labels[].name] | join(", ")) else empty end),
+          (if .pull_request then "[this is a pull request]" else empty end),
+          "",
+          (.body // "(no description)"),
+          "",
+          .html_url
+        '
+
+    if [[ "$2" == "-c" ]]; then
+      echo ""
+      echo "── comments ──"
+      echo ""
+      github_issue_comments "$ISSUE_REF"
+    fi
+  else
+    echo "No issue specified, e.g. github_issue cisagov/Malcolm#123">&2
+  fi
+}
+
+function github_milestone_number () {
+  if [[ -n "$1" ]] && [[ -n "$2" ]]; then
+    local REPO="$1"
+    local MILESTONE="$2"
+    GITHUB_API_CURL_ARGS=()
+    GITHUB_API_CURL_ARGS+=( -fsSL )
+    GITHUB_API_CURL_ARGS+=( -H )
+    GITHUB_API_CURL_ARGS+=( "Accept: application/vnd.github.v3+json" )
+    [[ -n "$GITHUB_TOKEN" ]] && \
+      GITHUB_API_CURL_ARGS+=( -H ) && \
+      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
+
+    curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$REPO/milestones?state=all&per_page=500" \
+      | jq -r --arg m "$MILESTONE" '.[] | select(.title == $m) | .number'
+  else
+    echo "Usage: github_milestone_number owner/repo milestone-title">&2
+  fi
+}
+
+function github_milestone_issues () {
+  if [[ -n "$1" ]] && [[ -n "$2" ]]; then
+    local REPO="$1"
+    local MILESTONE="$2"
+    local NUM
+    NUM="$(github_milestone_number "$REPO" "$MILESTONE")"
+    if [[ -z "$NUM" ]]; then
+      echo "No milestone named '$MILESTONE' found in $REPO">&2
+      return 1
+    fi
+
+    GITHUB_API_CURL_ARGS=()
+    GITHUB_API_CURL_ARGS+=( -fsSL )
+    GITHUB_API_CURL_ARGS+=( -H )
+    GITHUB_API_CURL_ARGS+=( "Accept: application/vnd.github.v3+json" )
+    [[ -n "$GITHUB_TOKEN" ]] && \
+      GITHUB_API_CURL_ARGS+=( -H ) && \
+      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
+
+    curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$REPO/issues?milestone=$NUM&state=all&per_page=500" \
+      | jq -r '
+          sort_by(.pull_request != null, .number) | .[] |
+          "\(if .pull_request then "PR " else "#  " end)\(.number)\t\(.state)\t\(.title)"
+        ' \
+      | column -t -s $'\t'
+  else
+    echo "Usage: github_milestone_issues owner/repo milestone-title">&2
+  fi
+}
