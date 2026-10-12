@@ -396,6 +396,9 @@ function count() {
   test -e "$1" && echo "$#" || echo 0;
 }
 
+########################################################################
+# automatic archive extraction
+########################################################################
 function _unp_generic() {
   local ARCHIVE="$1" DEST="$2" SEVENZ
   SEVENZ="$(command -v 7zz || command -v 7z || command -v 7za)"
