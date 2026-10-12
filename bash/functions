@@ -465,8 +465,6 @@ function unp() {
   local ARCHIVE DEST_DIR RC=0 MODE ERR
   (( $# )) || { echo "usage: unp ARCHIVE..." >&2; return 2; }
 
-  set -x
-
   if command -v mmguero >/dev/null 2>&1; then
     MODE=mmguero
   elif command -v dtrx >/dev/null 2>&1; then
@@ -513,7 +511,6 @@ function unp() {
     _unp_native "$ARCHIVE" "$DEST_DIR" || RC=1
   done
 
-  set +x
   return $RC
 }
 
