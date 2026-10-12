@@ -73,7 +73,6 @@ alias x='xargs -r -L1'
 alias entropy='cat /proc/sys/kernel/random/entropy_avail'
 alias crocs='croc --yes'
 alias rgfile="cut -d: -f1 | sort -u"
-alias unp=dtrx
 alias ncdu='ncdu -x -r --exclude-kernfs'
 
 #json/msgpack/xml/etc

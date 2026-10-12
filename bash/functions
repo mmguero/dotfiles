@@ -396,6 +396,124 @@ function count() {
   test -e "$1" && echo "$#" || echo 0;
 }
 
+function _unp_generic() {
+  local ARCHIVE="$1" DEST="$2" SEVENZ
+  SEVENZ="$(command -v 7zz || command -v 7z || command -v 7za)"
+
+  if command -v bsdtar >/dev/null 2>&1 && bsdtar -tf "$ARCHIVE" >/dev/null 2>&1; then
+    bsdtar -xf "$ARCHIVE" -C "$DEST"
+  elif [[ -n "$SEVENZ" ]] && "$SEVENZ" l "$ARCHIVE" >/dev/null 2>&1; then
+    "$SEVENZ" x -bd -y -o"$DEST" "$ARCHIVE" >/dev/null
+  elif command -v unzip >/dev/null 2>&1 && unzip -l "$ARCHIVE" >/dev/null 2>&1; then
+    unzip -q "$ARCHIVE" -d "$DEST"
+  else
+    echo "unp: don't know how to extract $ARCHIVE" >&2
+    false
+  fi
+}
+
+function _unp_native() {
+  local ARCHIVE="$1" DEST="$2" NAME LC SEVENZ
+  NAME="$(basename "$ARCHIVE")"
+  LC="${NAME,,}"
+  mkdir -p "$DEST" || return 1
+
+  case "$LC" in
+    *.tar|*.tar.gz|*.tgz|*.tar.bz2|*.tbz|*.tbz2|*.tar.xz|*.txz|*.tar.zst|*.tzst|*.tar.lz|*.tar.lzma)
+      tar -xf "$ARCHIVE" -C "$DEST" ;;
+    *.zip|*.jar|*.whl|*.apk)
+      unzip -q "$ARCHIVE" -d "$DEST" ;;
+    *.7z)
+      SEVENZ="$(command -v 7zz || command -v 7z || command -v 7za)"
+      [[ -n "$SEVENZ" ]] || { echo "unp: no 7-zip binary found" >&2; false; } &&
+        "$SEVENZ" x -bd -o"$DEST" "$ARCHIVE" >/dev/null ;;
+    *.rar)
+      unrar x -idq "$ARCHIVE" "$DEST"/ ;;
+    *.cpio)
+      ( builtin cd -- "$DEST" && cpio -idm --quiet --no-absolute-filenames ) < "$ARCHIVE" ;;
+    *.deb)
+      if command -v dpkg-deb >/dev/null 2>&1; then
+        dpkg-deb -x "$ARCHIVE" "$DEST"
+      else
+        _unp_generic "$ARCHIVE" "$DEST"
+      fi ;;
+    *.cab|*.onepkg)
+      if command -v cabextract >/dev/null 2>&1; then
+        cabextract -q -d "$DEST" "$ARCHIVE"
+      else
+        _unp_generic "$ARCHIVE" "$DEST"
+      fi ;;
+    *.xar|*.pkg)
+      if command -v xar >/dev/null 2>&1; then
+        xar -xf "$ARCHIVE" -C "$DEST"
+      else
+        _unp_generic "$ARCHIVE" "$DEST"
+      fi ;;
+    *.gz)   gzip  -dc "$ARCHIVE" > "$DEST/${NAME%.*}" ;;
+    *.bz2)  bzip2 -dc "$ARCHIVE" > "$DEST/${NAME%.*}" ;;
+    *.xz)   xz    -dc "$ARCHIVE" > "$DEST/${NAME%.*}" ;;
+    *.zst)  zstd  -dqc "$ARCHIVE" > "$DEST/${NAME%.*}" ;;
+    *)
+      _unp_generic "$ARCHIVE" "$DEST" ;;
+  esac || { rmdir "$DEST" 2>/dev/null; return 1; }
+}
+
+function unp() {
+  local ARCHIVE DEST_DIR RC=0 MODE ERR
+  (( $# )) || { echo "usage: unp ARCHIVE..." >&2; return 2; }
+
+  set -x
+
+  if command -v mmguero >/dev/null 2>&1; then
+    MODE=mmguero
+  elif command -v dtrx >/dev/null 2>&1; then
+    MODE=dtrx
+  else
+    MODE=native
+  fi
+
+  for ARCHIVE in "$@"; do
+    if [[ $MODE == dtrx ]]; then
+      dtrx --one-entry=here "$ARCHIVE" && continue
+      echo "unp: dtrx failed on $ARCHIVE, trying native tools" >&2
+    fi
+
+    DEST_DIR=./"$(base "$ARCHIVE")"
+    if [[ "$DEST_DIR" == ./ ]]; then
+      echo "unp: can't derive a directory name from $ARCHIVE" >&2
+      RC=1
+      continue
+    fi
+    [[ -e "$DEST_DIR" ]] && DEST_DIR+=.$(date +"%Y%m%d%H%M%S")
+
+    if [[ $MODE == mmguero ]]; then
+      if { ERR="$(
+          SAFE_EXTRACT_MAX_ENTRIES=${SAFE_EXTRACT_MAX_ENTRIES:-10000} \
+          SAFE_EXTRACT_MAX_DEPTH=${SAFE_EXTRACT_MAX_DEPTH:-20} \
+          SAFE_EXTRACT_MAX_BYTES=${SAFE_EXTRACT_MAX_BYTES:-100000000000} \
+            mmguero safe-extract "$ARCHIVE" "$DEST_DIR"/ 2>&1 1>&3 3>&-
+        )"; } 3>&1; then
+        [[ -n "$ERR" ]] && printf '%s\n' "$ERR" >&2
+        continue
+      fi
+
+      if [[ "$ERR" != *"Unrecognized archive format"* ]]; then
+        printf '%s\n' "$ERR" >&2
+        RC=1
+        continue
+      fi
+
+      echo "unp: mmguero doesn't recognize $ARCHIVE, trying native tools" >&2
+      command rm -rf -- "$DEST_DIR"
+    fi
+
+    _unp_native "$ARCHIVE" "$DEST_DIR" || RC=1
+  done
+
+  set +x
+  return $RC
+}
+
 ########################################################################
 # history
 ########################################################################

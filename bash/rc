@@ -33,7 +33,9 @@ if [ -e ~/.bashrc.d ]; then
   done
 fi
 
-command -v mmguero >/dev/null 2>&1 && \
-  source <(mmguero -- --completion bash)
+if _mmg_comp="$(mmguero -- --completion bash 2>/dev/null)"; then
+  source <(printf '%s\n' "$_mmg_comp")
+fi
+unset _mmg_comp
 
 export PATH
