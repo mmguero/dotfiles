@@ -470,42 +470,81 @@ function github_issue_comments () {
 }
 
 function github_issue () {
-  if [[ -n "$1" ]]; then
-    local ISSUE_REF="$1"
-    local REPO="${ISSUE_REF%%#*}"
-    local NUM="${ISSUE_REF##*#}"
-    if [[ -z "$REPO" || -z "$NUM" || "$REPO" == "$ISSUE_REF" ]]; then
-      echo "Usage: github_issue owner/repo#123 [-c]">&2
-      return 1
-    fi
-    GITHUB_API_CURL_ARGS=()
-    GITHUB_API_CURL_ARGS+=( -fsSL )
-    GITHUB_API_CURL_ARGS+=( -H )
-    GITHUB_API_CURL_ARGS+=( "Accept: application/vnd.github.v3+json" )
-    [[ -n "$GITHUB_TOKEN" ]] && \
-      GITHUB_API_CURL_ARGS+=( -H ) && \
-      GITHUB_API_CURL_ARGS+=( "Authorization: token $GITHUB_TOKEN" )
+  if [[ -z "$1" ]]; then
+    echo "No issue specified, e.g. github_issue cisagov/Malcolm#123 [-c] [-p]">&2
+    return 1
+  fi
 
-    curl "${GITHUB_API_CURL_ARGS[@]}" "https://api.github.com/repos/$REPO/issues/$NUM" \
-      | jq -r '
-          "#\(.number)  \(.title)",
-          "\(.state | ascii_upcase)  ·  \(.user.login)  ·  \(.created_at)",
-          (if (.labels | length) > 0 then "Labels: " + ([.labels[].name] | join(", ")) else empty end),
-          (if .pull_request then "[this is a pull request]" else empty end),
-          "",
-          (.body // "(no description)"),
-          "",
-          .html_url
-        '
+  local ISSUE_REF="$1"
+  shift
+  local REPO="${ISSUE_REF%%#*}"
+  local NUM="${ISSUE_REF##*#}"
+  if [[ -z "$REPO" || -z "$NUM" || "$REPO" == "$ISSUE_REF" ]]; then
+    echo "Usage: github_issue owner/repo#123 [-c] [-p]">&2
+    return 1
+  fi
 
-    if [[ "$2" == "-c" ]]; then
+  local SHOW_COMMENTS= SHOW_PATCH= OPT
+  for OPT in "$@"; do
+    case "$OPT" in
+      -c) SHOW_COMMENTS=1 ;;
+      -p) SHOW_PATCH=1 ;;
+      -cp|-pc) SHOW_COMMENTS=1; SHOW_PATCH=1 ;;
+      *)
+        echo "Unknown option: $OPT" >&2
+        echo "Usage: github_issue owner/repo#123 [-c] [-p]">&2
+        return 1
+        ;;
+    esac
+  done
+
+  local -a AUTH_ARGS=()
+  [[ -n "$GITHUB_TOKEN" ]] && AUTH_ARGS=( -H "Authorization: token $GITHUB_TOKEN" )
+
+  local ISSUE_JSON
+  ISSUE_JSON="$(curl -fsSL -H "Accept: application/vnd.github.v3+json" "${AUTH_ARGS[@]}" \
+    "https://api.github.com/repos/$REPO/issues/$NUM")" || return 1
+
+  jq -r '
+      "#\(.number)  \(.title)",
+      "\(.state | ascii_upcase)  ·  \(.user.login)  ·  \(.created_at)",
+      (if (.labels | length) > 0 then "Labels: " + ([.labels[].name] | join(", ")) else empty end),
+      (if .pull_request then "[this is a pull request]" else empty end),
+      "",
+      (.body // "(no description)"),
+      "",
+      .html_url
+    ' <<< "$ISSUE_JSON"
+
+  if [[ -n "$SHOW_PATCH" ]]; then
+    if jq -e '.pull_request' <<< "$ISSUE_JSON" >/dev/null; then
+      local PATCH
+      PATCH="$(curl -fsSL -H "Accept: application/vnd.github.v3.patch" "${AUTH_ARGS[@]}" \
+        "https://api.github.com/repos/$REPO/pulls/$NUM")" || return 1
+
+      # make the fence longer than any backtick run inside the patch
+      local LONGEST FENCE_LEN FENCE
+      LONGEST=$(grep -o '`\+' <<< "$PATCH" | awk '{ if (length > m) m = length } END { print m+0 }')
+      FENCE_LEN=$(( LONGEST >= 3 ? LONGEST + 1 : 3 ))
+      FENCE="$(printf '%*s' "$FENCE_LEN" '' | tr ' ' '`')"
+
       echo ""
-      echo "── comments ──"
+      echo "── patch ──"
       echo ""
-      github_issue_comments "$ISSUE_REF"
+      echo "${FENCE}diff"
+      printf '%s\n' "$PATCH"
+      echo "$FENCE"
+    else
+      echo "" >&2
+      echo "(-p ignored: #$NUM is not a pull request)" >&2
     fi
-  else
-    echo "No issue specified, e.g. github_issue cisagov/Malcolm#123">&2
+  fi
+
+  if [[ -n "$SHOW_COMMENTS" ]]; then
+    echo ""
+    echo "── comments ──"
+    echo ""
+    github_issue_comments "$ISSUE_REF"
   fi
 }
 
