@@ -881,3 +881,52 @@ function dive () {
     echo "wagoodman/dive requires docker (/var/run/docker.sock)" >&2
   fi
 }
+
+
+cpot() {
+    local container=${OPEN_TERMINAL_CONTAINER:-open-terminal}
+    local home_dir=${OPEN_TERMINAL_HOME:-/home/user}
+    local source stamp work_dir status
+    local -a sources=()
+
+    if (( $# == 0 )); then
+        printf 'Usage: cpot FILE...\n' >&2
+        printf 'Environment: OPEN_TERMINAL_CONTAINER and OPEN_TERMINAL_HOME\n' >&2
+        return 2
+    fi
+
+    if [[ -z $container || -z $home_dir ]]; then
+        printf 'error: container name and home directory must not be empty\n' >&2
+        return 2
+    fi
+
+    if ! command -v docker >/dev/null 2>&1; then
+        printf 'error: docker was not found in PATH\n' >&2
+        return 127
+    fi
+
+    for source in "$@"; do
+        if [[ ! -e $source && ! -L $source ]]; then
+            printf 'error: source does not exist: %s\n' "$source" >&2
+            return 1
+        fi
+        sources+=("$(realpath -e -- "$source")") || return 1
+    done
+
+    stamp=$(date +%Y%m%d-%H%M%S)
+    work_dir="$home_dir/work-$stamp-$$"
+
+    if ! docker exec "$container" mkdir -p -- "$work_dir"; then
+        return 1
+    fi
+
+    for source in "${sources[@]}"; do
+        if ! docker cp "$source" "$container:$work_dir/" >&2; then
+            status=$?
+            docker exec "$container" rm -rf -- "$work_dir" >/dev/null 2>&1 || true
+            return "$status"
+        fi
+    done
+
+    printf '%s\n' "$work_dir"
+}
