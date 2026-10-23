@@ -519,7 +519,7 @@ function github_issue () {
   if [[ -n "$SHOW_PATCH" ]]; then
     if jq -e '.pull_request' <<< "$ISSUE_JSON" >/dev/null; then
       local PATCH
-      PATCH="$(curl -fsSL -H "Accept: application/vnd.github.v3.patch" "${AUTH_ARGS[@]}" \
+      PATCH="$(curl -fsSL -H "Accept: application/vnd.github.v3.diff" "${AUTH_ARGS[@]}" \
         "https://api.github.com/repos/$REPO/pulls/$NUM")" || return 1
 
       # make the fence longer than any backtick run inside the patch
