@@ -596,3 +596,103 @@ function github_milestone_issues () {
     echo "Usage: github_milestone_issues owner/repo milestone-title">&2
   fi
 }
+
+function github_advisory () {
+  if [[ -z "$1" ]]; then
+    echo "No advisory specified, e.g. github_advisory GHSA-qv8w-m37v-6c7j [-c]">&2
+    echo "       github_advisory cisagov/Malcolm#GHSA-qv8w-m37v-6c7j [-c]">&2
+    echo "       github_advisory https://github.com/cisagov/Malcolm/security/advisories/GHSA-qv8w-m37v-6c7j [-c]">&2
+    return 1
+  fi
+
+  local ADV_REF="$1"
+  shift
+  local REPO= GHSA_ID=
+
+  if [[ "$ADV_REF" =~ ^https?:// ]]; then
+    REPO="$(echo "$ADV_REF" | sed -E 's#https?://github\.com/([^/]+/[^/]+)/security/advisories.*#\1#')"
+    GHSA_ID="$(echo "$ADV_REF" | grep -oE 'GHSA-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}')"
+  elif [[ "$ADV_REF" == *#* ]]; then
+    REPO="${ADV_REF%%#*}"
+    GHSA_ID="${ADV_REF##*#}"
+  else
+    GHSA_ID="$ADV_REF"
+  fi
+
+  if [[ -z "$GHSA_ID" ]]; then
+    echo "Could not parse a GHSA id out of '$ADV_REF'">&2
+    return 1
+  fi
+
+  local SHOW_COMMENTS= OPT
+  for OPT in "$@"; do
+    case "$OPT" in
+      -c) SHOW_COMMENTS=1 ;;
+      *)
+        echo "Unknown option: $OPT">&2
+        echo "Usage: github_advisory GHSA-id|owner/repo#GHSA-id|URL [-c]">&2
+        return 1
+        ;;
+    esac
+  done
+
+  local -a AUTH_ARGS=()
+  [[ -n "$GITHUB_TOKEN" ]] && AUTH_ARGS=( -H "Authorization: token $GITHUB_TOKEN" )
+
+  # Prefer the repo-scoped endpoint when we know the repo — it's required for
+  # private/unpublished advisories and it's the only one with a comment thread.
+  # Fall back to the global advisories endpoint (public advisories only, no repo needed).
+  local ADVISORY_JSON=
+  if [[ -n "$REPO" ]]; then
+    ADVISORY_JSON="$(curl -fsSL -H "Accept: application/vnd.github.v3+json" "${AUTH_ARGS[@]}" \
+      "https://api.github.com/repos/$REPO/security-advisories/$GHSA_ID" 2>/dev/null)"
+  fi
+  if [[ -z "$ADVISORY_JSON" ]]; then
+    ADVISORY_JSON="$(curl -fsSL -H "Accept: application/vnd.github.v3+json" "${AUTH_ARGS[@]}" \
+      "https://api.github.com/advisories/$GHSA_ID" 2>/dev/null)"
+  fi
+
+  if [[ -z "$ADVISORY_JSON" ]]; then
+    echo "Could not retrieve advisory $GHSA_ID${REPO:+ for $REPO}">&2
+    return 1
+  fi
+
+  jq -r '
+      "\(.ghsa_id // "unknown")  ·  \((.severity // "unknown") | ascii_upcase)  ·  \(.cve_id // "no CVE")",
+      "\((.state // "") | ascii_upcase)  ·  published \(.published_at // "unpublished")  ·  updated \(.updated_at // "")",
+      (if .withdrawn_at then "WITHDRAWN: \(.withdrawn_at)" else empty end),
+      (if (.summary // "") != "" then ("", .summary) else empty end),
+      "",
+      (.description // "(no description)"),
+      (if (.cvss.score // null) != null then ("", "CVSS: \(.cvss.score) (\(.cvss.vector_string // "n/a"))") else empty end),
+      (if ((.cwes // []) | length) > 0 then "CWEs: " + ([.cwes[].cwe_id] | join(", ")) else empty end),
+      (if ((.vulnerabilities // []) | length) > 0 then ("", "Affected packages:") else empty end),
+      (.vulnerabilities[]? | "  - \(.package.ecosystem // "")/\(.package.name // "") \(.vulnerable_version_range // "")" + (if .first_patched_version.identifier then " (patched in \(.first_patched_version.identifier))" else "" end)),
+      (if ((.credits // []) | length) > 0 then ("", "Credits: " + ([.credits[]?.user.login] | join(", "))) else empty end),
+      (if ((.references // []) | length) > 0 then ("", "References:", (.references[] | "  - \(.)")) else empty end),
+      "",
+      (.html_url // .url // "")
+    ' <<< "$ADVISORY_JSON"
+
+  if [[ -n "$SHOW_COMMENTS" ]]; then
+    echo ""
+    echo "── comments ──"
+    echo ""
+    if [[ -n "$REPO" ]]; then
+      local COMMENTS_JSON
+      COMMENTS_JSON="$(curl -fsSL -H "Accept: application/vnd.github.v3+json" "${AUTH_ARGS[@]}" \
+        "https://api.github.com/repos/$REPO/security-advisories/$GHSA_ID/comments?per_page=500" 2>/dev/null)"
+      if [[ -n "$COMMENTS_JSON" ]] && jq -e 'type == "array"' <<< "$COMMENTS_JSON" >/dev/null 2>&1; then
+        jq -r '
+            if length == 0 then "(no comments)" else
+              .[] | "── \(.user.login)  ·  \(.created_at) ──", "", (.body // ""), ""
+            end
+          ' <<< "$COMMENTS_JSON"
+      else
+        echo "(no comments found, or this advisory has no accessible comment thread)"
+      fi
+    else
+      echo "(no repo context for $GHSA_ID, can't check for a comment thread)"
+    fi
+  fi
+}
