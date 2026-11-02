@@ -239,7 +239,7 @@ function qemuiso() {
 function fm() {
   fakemachine \
       -c ${QEMU_CPU:-2} \
-      -m ${QEMU_RAM:-4096} \
+      -m ${QEMU_RAM:-4096}Mb \
       -s ${QEMU_DISK:-50G} \
       "$@"
 }
