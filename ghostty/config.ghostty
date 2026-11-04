@@ -10,6 +10,8 @@ font-family-bold = "Hack Nerd Font Mono Bold"
 font-family-italic = "Hack Nerd Font Italic"
 font-family-bold-italic = "Hack Nerd Font Mono Bold Italic"
 
+theme = Nord
+
 # added PR: Implement loading custom css in the GTK app https://github.com/ghostty-org/ghostty/pull/4200
 gtk-custom-css = tab-style.css
 
@@ -25,7 +27,7 @@ gtk-wide-tabs = false
 gtk-tabs-location = bottom
 
 # this makes titlebar not too fat
-# gtk-titlebar = false
+gtk-titlebar = false
 
 # Approximate the kitty scrollback_lines=8000 setting.
 # Note: This is in bytes, not lines.
