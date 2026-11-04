@@ -39,16 +39,16 @@ scrollback-limit = 10000000
 ########################################
 
 # Go to specified tab
-keybind = ctrl+shift+1=goto_tab:1
-keybind = ctrl+shift+2=goto_tab:2
-keybind = ctrl+shift+3=goto_tab:3
-keybind = ctrl+shift+4=goto_tab:4
-keybind = ctrl+shift+5=goto_tab:5
-keybind = ctrl+shift+6=goto_tab:6
-keybind = ctrl+shift+7=goto_tab:7
-keybind = ctrl+shift+8=goto_tab:8
-keybind = ctrl+shift+9=goto_tab:9
-keybind = ctrl+shift+0=goto_tab:10
+keybind = ctrl+alt+1=goto_tab:1
+keybind = ctrl+alt+2=goto_tab:2
+keybind = ctrl+alt+3=goto_tab:3
+keybind = ctrl+alt+4=goto_tab:4
+keybind = ctrl+alt+5=goto_tab:5
+keybind = ctrl+alt+6=goto_tab:6
+keybind = ctrl+alt+7=goto_tab:7
+keybind = ctrl+alt+8=goto_tab:8
+keybind = ctrl+alt+9=goto_tab:9
+keybind = ctrl+alt+0=goto_tab:10
 
 # Double ctrl+a sends literal Ctrl-A to the running app if needed
 keybind = ctrl+a>ctrl+a=text:\x01
