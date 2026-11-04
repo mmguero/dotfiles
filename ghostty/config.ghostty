@@ -1,0 +1,55 @@
+########################################
+# Font and basic terminal behavior
+########################################
+font-family = ""
+font-family-bold = ""
+font-family-italic = ""
+font-family-bold-italic = ""
+font-family = "Hack Nerd Font Mono"
+font-family-bold = "Hack Nerd Font Mono Bold"
+font-family-italic = "Hack Nerd Font Italic"
+font-family-bold-italic = "Hack Nerd Font Mono Bold Italic"
+
+# added PR: Implement loading custom css in the GTK app https://github.com/ghostty-org/ghostty/pull/4200
+gtk-custom-css = tab-style.css
+
+# https://ghostty.org/docs/config/reference#font-feature
+# font-feature = -liga
+# font-feature = -ss20
+# font-feature = -calt
+
+# disable dlig so that we see `--` instead of something like `—`
+font-feature = -dlig'
+
+gtk-wide-tabs = false
+gtk-tabs-location = bottom
+
+# this makes titlebar not too fat
+# gtk-titlebar = false
+
+# Approximate the kitty scrollback_lines=8000 setting.
+# Note: This is in bytes, not lines.
+# default is 10MB
+scrollback-limit = 10000000
+
+########################################
+# Keybindings
+########################################
+
+# Go to specified tab
+keybind = ctrl+shift+1=goto_tab:1
+keybind = ctrl+shift+2=goto_tab:2
+keybind = ctrl+shift+3=goto_tab:3
+keybind = ctrl+shift+4=goto_tab:4
+keybind = ctrl+shift+5=goto_tab:5
+keybind = ctrl+shift+6=goto_tab:6
+keybind = ctrl+shift+7=goto_tab:7
+keybind = ctrl+shift+8=goto_tab:8
+keybind = ctrl+shift+9=goto_tab:9
+keybind = ctrl+shift+0=goto_tab:10
+
+# Double ctrl+a sends literal Ctrl-A to the running app if needed
+keybind = ctrl+a>ctrl+a=text:\x01
+
+# Toggle fullscreen (kitty map f11)
+keybind = f11=toggle_fullscreen

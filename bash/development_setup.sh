@@ -3038,6 +3038,9 @@ function GueroSymlinks {
       [[ -d "$GUERO_GITHUB_PATH"/linux/containers ]] && rm -vf "$LOCAL_CONFIG_PATH"/containers && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/containers "$LOCAL_CONFIG_PATH"/containers
 
+      [[ -d "$GUERO_GITHUB_PATH"/ghostty ]] && rm -vf "$LOCAL_CONFIG_PATH"/ghostty && \
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/ghostty "$LOCAL_CONFIG_PATH"/ghostty
+
       [[ -d "$GUERO_GITHUB_PATH"/linux/virter ]] && rm -vf "$LOCAL_DATA_PATH"/virter && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/virter "$LOCAL_DATA_PATH"/virter
 
