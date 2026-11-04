@@ -298,47 +298,76 @@ function _EnvSetup {
 }
 
 ################################################################################
-# _DownloadViaFetch
+# _DownloadViaFetch "https://github.com/owner/repo|asset-regex|output-file[|mode]"
+#
+# Returns nonzero on failure so callers can report what didn't install.
 function _DownloadViaFetch {
-  DOWNLOAD_SPEC="$1"
-  REPO="$(echo "$DOWNLOAD_SPEC" | cut -d'|' -f1)"
-  [[ -z "$GITHUB_OAUTH_TOKEN" ]] && [[ -n "$GITHUB_TOKEN" ]] && export GITHUB_OAUTH_TOKEN="$GITHUB_TOKEN"
-  ASSET_REGEX="$(echo "$DOWNLOAD_SPEC" | cut -d'|' -f2)"
-  OUTPUT_FILE="$(echo "$DOWNLOAD_SPEC" | cut -d'|' -f3)"
-  OUTPUT_FILE_PERMS="$(echo "$DOWNLOAD_SPEC" | cut -d'|' -f4)"
+  local REPO ASSET_REGEX OUTPUT_FILE OUTPUT_FILE_PERMS
+  IFS='|' read -r REPO ASSET_REGEX OUTPUT_FILE OUTPUT_FILE_PERMS <<<"$1"
+  [[ -z "${GITHUB_OAUTH_TOKEN:-}" ]] && [[ -n "${GITHUB_TOKEN:-}" ]] && export GITHUB_OAUTH_TOKEN="$GITHUB_TOKEN"
+
+  local FETCH_BIN_EXT=""
+  [[ -n "${MSYSTEM:-}" ]] && FETCH_BIN_EXT=".exe"
+
   echo "" >&2
   echo "Downloading asset for $REPO..." >&2
-  FETCH_DIR="$(mktemp -d)"
-  [[ -n $MSYSTEM ]] && FETCH_BIN_EXT=".exe" || FETCH_BIN_EXT=
-  "$LOCAL_BIN_PATH"/"fetch${FETCH_BIN_EXT}" --progress --log-level warn \
-    --repo="$REPO" \
-    --tag=">=0.0.0" \
-    --release-asset="$ASSET_REGEX" \
-    "$FETCH_DIR"
-  mv "$FETCH_DIR"/* "$OUTPUT_FILE"
-  rm -rf "$FETCH_DIR"
-  if [[ -f "$OUTPUT_FILE" ]]; then
-    chmod "${OUTPUT_FILE_PERMS:-644}" "$OUTPUT_FILE"
-    touch -m "$OUTPUT_FILE"
-    if [[ "$OUTPUT_FILE" == *.tar.gz ]] || [[ "$OUTPUT_FILE" == *.tgz ]]; then
-      UNPACK_DIR="$(mktemp -d)"
-      tar xzf "$OUTPUT_FILE" -C "$UNPACK_DIR"
-    elif [[ "$OUTPUT_FILE" == *.tar.xz ]] || [[ "$OUTPUT_FILE" == *.xz ]]; then
-      UNPACK_DIR="$(mktemp -d)"
-      tar xJf "$OUTPUT_FILE" -C "$UNPACK_DIR" --strip-components 1
-    elif [[ "$OUTPUT_FILE" == *.zip ]]; then
-      UNPACK_DIR="$(mktemp -d)"
-      unzip -q "$OUTPUT_FILE" -d "$UNPACK_DIR"
-    fi
-    if [[ -d "$UNPACK_DIR" ]]; then
-      find "$UNPACK_DIR" -type f -exec touch -m "{}" \;
-      find "$UNPACK_DIR" -type f -exec file --mime-type "{}" \; | \
-        grep -P ":\s+application/.*executable" | \
-        cut -d: -f 1 | xargs -I XXX -r mv "XXX" "$LOCAL_BIN_PATH"/
-      rm -rf "$UNPACK_DIR" "$OUTPUT_FILE"
-    fi
+
+  local FETCH_DIR
+  FETCH_DIR="$(mktemp -d)" || return 1
+  if ! "$LOCAL_BIN_PATH/fetch$FETCH_BIN_EXT" --progress --log-level warn \
+         --repo="$REPO" \
+         --tag=">=0.0.0" \
+         --release-asset="$ASSET_REGEX" \
+         "$FETCH_DIR"; then
+    echo "fetch failed for $REPO" >&2
+    rm -rf "$FETCH_DIR"
+    return 1
   fi
+
+  # fetch downloads every asset matching the regex; exactly one is expected
+  local -a FETCHED=("$FETCH_DIR"/*)
+  if [[ ! -e "${FETCHED[0]}" ]]; then
+    echo "No asset matching $ASSET_REGEX for $REPO" >&2
+    rm -rf "$FETCH_DIR"
+    return 1
+  elif (( ${#FETCHED[@]} > 1 )); then
+    echo "${#FETCHED[@]} assets matched $ASSET_REGEX for $REPO, refusing to guess" >&2
+    rm -rf "$FETCH_DIR"
+    return 1
+  fi
+  mv -f "${FETCHED[0]}" "$OUTPUT_FILE"
+  rm -rf "$FETCH_DIR"
+  chmod "${OUTPUT_FILE_PERMS:-644}" "$OUTPUT_FILE"
+  touch -m "$OUTPUT_FILE"
+
+  local UNPACK_DIR="" RC=0
+  case "$OUTPUT_FILE" in
+    *.tar.gz|*.tgz) UNPACK_DIR="$(mktemp -d)" && tar xzf "$OUTPUT_FILE" -C "$UNPACK_DIR" || RC=1 ;;
+    *.tar.xz|*.txz) UNPACK_DIR="$(mktemp -d)" && tar xJf "$OUTPUT_FILE" -C "$UNPACK_DIR" || RC=1 ;;
+    *.zip)          UNPACK_DIR="$(mktemp -d)" && unzip -q "$OUTPUT_FILE" -d "$UNPACK_DIR" || RC=1 ;;
+  esac
+
+  if [[ -n "$UNPACK_DIR" ]]; then
+    # Newer file(1) calls PIE binaries x-pie-executable, older versions call them
+    # x-sharedlib, so accept both and skip real shared libraries by name.
+    local F MIME MOVED=0
+    while IFS= read -r -d '' F; do
+      MIME="$(file -b --mime-type "$F")"
+      if [[ "$MIME" =~ ^application/x-(pie-)?(executable|sharedlib)$ ]] && [[ "${F##*/}" != *.so* ]]; then
+        touch -m "$F"
+        chmod 755 "$F"
+        mv -f "$F" "$LOCAL_BIN_PATH"/ && MOVED=$((MOVED + 1))
+      fi
+    done < <(find "$UNPACK_DIR" -type f -print0)
+    if (( RC == 0 && MOVED == 0 )); then
+      echo "No executables found in ${OUTPUT_FILE##*/}" >&2
+      RC=1
+    fi
+    rm -rf "$UNPACK_DIR" "$OUTPUT_FILE"
+  fi
+
   echo >&2
+  return $RC
 }
 
 ################################################################################
@@ -1996,6 +2025,7 @@ function InstallCommonPackagesMedia {
       DEBIAN_PACKAGE_LIST=(
         audacious
         audacity
+        chafa
         ffmpeg
         kazam
         imagemagick
@@ -2003,6 +2033,7 @@ function InstallCommonPackagesMedia {
         pavucontrol
         pqiv
         recordmydesktop
+        timg
       )
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
@@ -2665,209 +2696,39 @@ function InstallUserLocalFonts {
 
 ################################################################################
 function InstallUserLocalBinaries {
+  local CONFIRMATION
+  read -r -p "Install user-local binaries [Y/n]? " CONFIRMATION
+  [[ ${CONFIRMATION:-Y} =~ ^[Yy] ]] || return 0
+
   if [[ -n $LINUX ]]; then
-    unset CONFIRMATION
-    read -p "Install user-local binaries [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      mkdir -p "$LOCAL_BIN_PATH" "$LOCAL_DATA_PATH"/bash-completion/completions
-
-      unset CONFIRMATION
-      read -p "Download all user-local binaries [Y/n]? " CONFIRMATION
-      CONFIRMATION=${CONFIRMATION:-Y}
-      if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-        BINARY_UPDATE_ALL=true
-      else
-        BINARY_UPDATE_ALL=false
-      fi
-
-      # github releases via fetch
-      if [[ -x "$LOCAL_BIN_PATH"/fetch ]]; then
-        if [[ "$LINUX_ARCH" =~ ^arm ]]; then
-          if [[ "$LINUX_CPU" == "aarch64" ]]; then
-            ASSETS=(
-              "https://github.com/ajeetdsouza/zoxide|^zoxide-.+-aarch64-unknown-linux-musl\.tar\.gz|/tmp/zoxide.tar.gz"
-              "https://github.com/antonmedv/fx|^fx_linux_arm64$|$LOCAL_BIN_PATH/fx|755"
-              "https://github.com/aptible/supercronic|^supercronic-linux-arm64$|$LOCAL_BIN_PATH/supercronic|755"
-              "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm64$|$LOCAL_BIN_PATH/boringproxy|755"
-              "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
-              "https://github.com/darkhz/bluetuith|^bluetuith_.*_Linux_arm64.tar.gz$|/tmp/bluetuith.tar.gz"
-              "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_arm64\.tar\.gz$|/tmp/rclone-tui.tar.gz"
-              "https://github.com/derailed/k9s|^k9s_Linux_arm64\.tar\.gz$|/tmp/k9s.tar.gz"
-              "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
-              "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-arm64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
-              "https://github.com/eza-community/eza|^eza_aarch64-unknown-linux-gnu\.tar\.gz$|/tmp/eza.tar.gz"
-              "https://github.com/FiloSottile/age|^age-v.+-linux-arm64\.tar\.gz$|/tmp/age.tar.gz"
-              "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_arm64\.tar\.gz$|/tmp/ghorg.tar.gz"
-              "https://github.com/gcla/termshark|^termshark_.+_linux_arm64\.tar\.gz$|/tmp/termshark.tar.gz"
-              "https://github.com/josephburnett/jd|^jd-amd64-linux$|$LOCAL_BIN_PATH/jd|755"
-              "https://github.com/kubernetes/minikube|^minikube-linux-arm64$|$LOCAL_BIN_PATH/minikube|755"
-              "https://github.com/mikefarah/yq|^yq_linux_arm64$|$LOCAL_BIN_PATH/yq|755"
-              "https://github.com/neilotoole/sq|^sq.+linux-arm64\.tar\.gz$|/tmp/sq.tar.gz"
-              "https://github.com/nektos/act|^act_Linux_arm64\.tar\.gz$|/tmp/act.tar.gz"
-              "https://github.com/nuwainfo/ffl|^fflo\.com$|$LOCAL_BIN_PATH/fflo.com|644"
-              "https://github.com/peco/peco|^peco_.+_linux_arm64\.tar\.gz$|/tmp/peco.tar.gz"
-              "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_arm64\.zip$|/tmp/httpx.zip"
-              "https://github.com/whyvl/wireproxy|^wireproxy_linux_arm64\.tar\.gz$|/tmp/wireproxy.tar.gz"
-              "https://github.com/reproducible-containers/diffoci|^diffoci-v.+\.linux-arm64$|$LOCAL_BIN_PATH/diffoci|755"
-              "https://github.com/rclone/rclone|^rclone-v.+-linux-arm64\.zip$|/tmp/rclone.zip"
-              "https://github.com/sachaos/viddy|^viddy-.+-linux-arm64\.tar\.gz$|/tmp/viddy.tar.gz"
-              "https://github.com/schollz/croc|^croc_.+_Linux-ARM64\.tar\.gz$|/tmp/croc.tar.gz"
-              "https://github.com/schollz/hostyoself|^hostyoself_.+_Linux-ARM64\.tar\.gz$|/tmp/hostyoself.tar.gz"
-              "https://github.com/sharkdp/bat|^bat-v.+-aarch64-unknown-linux-gnu\.tar\.gz$|/tmp/bat.tar.gz"
-              "https://github.com/sharkdp/fd|^fd-v.+-aarch64-unknown-linux-gnu\.tar\.gz$|/tmp/fd.tar.gz"
-              "https://github.com/smallstep/cli|^step_linux_.+_arm64\.tar\.gz$|/tmp/step.tar.gz"
-              "https://github.com/starship/starship|^starship-aarch64-unknown-linux-musl\.tar\.gz$|/tmp/starship.tar.gz"
-              "https://github.com/stern/stern|^stern_.+_linux_arm64\.tar\.gz$|/tmp/stern.tar.gz"
-              "https://github.com/tomnomnom/gron|^gron-linux-arm64-.+\.tgz$|/tmp/gron.tgz"
-              "https://github.com/wader/fq|^fq_.+_linux_arm64\.tar\.gz$|/tmp/fq.tar.gz"
-              "https://github.com/watchexec/watchexec|^watchexec-.+-aarch64-unknown-linux-musl\.tar\.xz$|/tmp/watchexec.tar.xz"
-              "https://github.com/yannh/kubeconform|^kubeconform-linux-arm64\.tar\.gz$|/tmp/kubeconform.tar.gz"
-            )
-          elif [[ "$LINUX_CPU" == "armv6l" ]]; then
-            ASSETS=(
-              "https://github.com/ajeetdsouza/zoxide|^zoxide-.+-arm-unknown-linux-musleabihf\.tar\.gz|/tmp/zoxide.tar.gz"
-              "https://github.com/aptible/supercronic|^supercronic-linux-arm$|$LOCAL_BIN_PATH/supercronic|755"
-              "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm$|$LOCAL_BIN_PATH/boringproxy|755"
-              "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
-              "https://github.com/darkhz/bluetuith|^bluetuith_.*_Linux_armv6.tar.gz$|/tmp/bluetuith.tar.gz"
-              "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_armv6\.tar\.gz$|/tmp/rclone-tui.tar.gz"
-              "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-armv6$|$LOCAL_BIN_PATH/docker-credential-pass|755"
-              "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-armv6$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
-              "https://github.com/eza-community/eza|^eza_arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/eza.tar.gz"
-              "https://github.com/FiloSottile/age|^age-v.+-linux-arm\.tar\.gz$|/tmp/age.tar.gz"
-              "https://github.com/gcla/termshark|^termshark_.+_linux_armv6\.tar\.gz$|/tmp/termshark.tar.gz"
-              "https://github.com/kubernetes/minikube|^minikube-linux-armv6$|$LOCAL_BIN_PATH/minikube|755"
-              "https://github.com/mikefarah/yq|^yq_linux_arm$|$LOCAL_BIN_PATH/yq|755"
-              "https://github.com/nektos/act|^act_Linux_armv6\.tar\.gz$|/tmp/act.tar.gz"
-              "https://github.com/peco/peco|^peco_.+_linux_armv6\.tar\.gz$|/tmp/peco.tar.gz"
-              "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_armv6\.zip$|/tmp/httpx.zip"
-              "https://github.com/whyvl/wireproxy|^wireproxy_linux_arm\.tar\.gz$|/tmp/wireproxy.tar.gz"
-              "https://github.com/rclone/rclone|^rclone-v.+-linux-arm\.zip$|/tmp/rclone.zip"
-              "https://github.com/schollz/croc|^croc_.+_Linux-ARM\.tar\.gz$|/tmp/croc.tar.gz"
-              "https://github.com/schollz/hostyoself|^hostyoself_.+_Linux-ARM\.tar\.gz$|/tmp/hostyoself.tar.gz"
-              "https://github.com/sharkdp/bat|^bat-v.+-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/bat.tar.gz"
-              "https://github.com/sharkdp/fd|^fd-v.+-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/fd.tar.gz"
-              "https://github.com/smallstep/cli|^step_linux_.+_armv6\.tar\.gz$|/tmp/step.tar.gz"
-              "https://github.com/starship/starship|^starship-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/starship.tar.gz"
-              "https://github.com/watchexec/watchexec|^watchexec-.+-armv7-unknown-linux-gnueabihf\.tar\.xz$|/tmp/watchexec.tar.xz"
-              "https://github.com/yannh/kubeconform|^kubeconform-linux-armv6\.tar\.gz$|/tmp/kubeconform.tar.gz"
-            )
-          else
-            ASSETS=(
-              "https://github.com/ajeetdsouza/zoxide|^zoxide-.+-armv7-unknown-linux-musleabihf\.tar\.gz|/tmp/zoxide.tar.gz"
-              "https://github.com/aptible/supercronic|^supercronic-linux-arm$|$LOCAL_BIN_PATH/supercronic|755"
-              "https://github.com/boringproxy/boringproxy|^boringproxy-linux-arm$|$LOCAL_BIN_PATH/boringproxy|755"
-              "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/ripgrep.tar.gz"
-              "https://github.com/darkhz/bluetuith|^bluetuith_.*_Linux_armv7.tar.gz$|/tmp/bluetuith.tar.gz"
-              "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_armv7\.tar\.gz$|/tmp/rclone-tui.tar.gz"
-              "https://github.com/derailed/k9s|^k9s_Linux_armv7\.tar\.gz$|/tmp/k9s.tar.gz"
-              "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-armv7$|$LOCAL_BIN_PATH/docker-credential-pass|755"
-              "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-armv7$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
-              "https://github.com/eza-community/eza|^eza_arm-unknown-linux-gnueabihf\.tar\.gz$|/tmp/eza.tar.gz"
-              "https://github.com/FiloSottile/age|^age-v.+-linux-arm\.tar\.gz$|/tmp/age.tar.gz"
-              "https://github.com/gcla/termshark|^termshark_.+_linux_armv6\.tar\.gz$|/tmp/termshark.tar.gz"
-              "https://github.com/kubernetes/minikube|^minikube-linux-arm$|$LOCAL_BIN_PATH/minikube|755"
-              "https://github.com/mikefarah/yq|^yq_linux_arm$|$LOCAL_BIN_PATH/yq|755"
-              "https://github.com/nektos/act|^act_Linux_armv7\.tar\.gz$|/tmp/act.tar.gz"
-              "https://github.com/peco/peco|^peco_.+_linux_armv6\.tar\.gz$|/tmp/peco.tar.gz"
-              "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_armv6\.zip$|/tmp/httpx.zip"
-              "https://github.com/whyvl/wireproxy|^wireproxy_linux_arm\.tar\.gz$|/tmp/wireproxy.tar.gz"
-              "https://github.com/reproducible-containers/diffoci|^diffoci-v.+\.linux-arm-v7$|$LOCAL_BIN_PATH/diffoci|755"
-              "https://github.com/rclone/rclone|^rclone-v.+-linux-arm-v7\.zip$|/tmp/rclone.zip"
-              "https://github.com/schollz/croc|^croc_.+_Linux-ARM\.tar\.gz$|/tmp/croc.tar.gz"
-              "https://github.com/schollz/hostyoself|^hostyoself_.+_Linux-ARM\.tar\.gz$|/tmp/hostyoself.tar.gz"
-              "https://github.com/sharkdp/bat|^bat-v.+-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/bat.tar.gz"
-              "https://github.com/sharkdp/fd|^fd-v.+-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/fd.tar.gz"
-              "https://github.com/smallstep/cli|^step_linux_.+_armv7\.tar\.gz$|/tmp/step.tar.gz"
-              "https://github.com/starship/starship|^starship-arm-unknown-linux-musleabihf\.tar\.gz$|/tmp/starship.tar.gz"
-              "https://github.com/stern/stern|^stern_.+_linux_arm\.tar\.gz$|/tmp/stern.tar.gz"
-              "https://github.com/watchexec/watchexec|^watchexec-.+-armv7-unknown-linux-gnueabihf\.tar\.xz$|/tmp/watchexec.tar.xz"
-              "https://github.com/yannh/kubeconform|^kubeconform-linux-armv6\.tar\.gz$|/tmp/kubeconform.tar.gz"
-            )
-          fi
-        else
-          ASSETS=(
-            "https://github.com/ajeetdsouza/zoxide|^zoxide-.+-x86_64-unknown-linux-musl\.tar\.gz|/tmp/zoxide.tar.gz"
-            "https://github.com/alphasoc/flightsim|^flightsim_.+_linux_amd64\.tar\.gz$|/tmp/flightsim.tar.gz"
-            "https://github.com/antonmedv/fx|^fx_linux_amd64$|$LOCAL_BIN_PATH/fx|755"
-            "https://github.com/aptible/supercronic|^supercronic-linux-amd64$|$LOCAL_BIN_PATH/supercronic|755"
-            "https://github.com/boringproxy/boringproxy|^boringproxy-linux-x86_64$|$LOCAL_BIN_PATH/boringproxy|755"
-            "https://github.com/BurntSushi/ripgrep|^ripgrep-.+-x86_64-unknown-linux-musl\.tar\.gz$|/tmp/ripgrep.tar.gz"
-            "https://github.com/darkhz/bluetuith|^bluetuith_.*_Linux_x86_64.tar.gz$|/tmp/bluetuith.tar.gz"
-            "https://github.com/darkhz/rclone-tui|^rclone-tui_.+_Linux_x86_64\.tar\.gz$|/tmp/rclone-tui.tar.gz"
-            "https://github.com/derailed/k9s|^k9s_Linux_amd64\.tar\.gz$|/tmp/k9s.tar.gz"
-            "https://github.com/docker/docker-credential-helpers|^docker-credential-pass-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-pass|755"
-            "https://github.com/docker/docker-credential-helpers|^docker-credential-secretservice-v.+\.linux-amd64$|$LOCAL_BIN_PATH/docker-credential-secretservice|755"
-            "https://github.com/eza-community/eza|^eza_x86_64-unknown-linux-musl\.tar\.gz$|/tmp/eza.tar.gz"
-            "https://github.com/FiloSottile/age|^age-v.+-linux-amd64\.tar\.gz$|/tmp/age.tar.gz"
-            "https://github.com/gabrie30/ghorg|^ghorg_.+_Linux_x86_64\.tar\.gz$|/tmp/ghorg.tar.gz"
-            "https://github.com/gcla/termshark|^termshark_.+_linux_x64\.tar\.gz$|/tmp/termshark.tar.gz"
-            "https://github.com/jez/as-tree|^as-tree-.+-linux\.zip$|/tmp/as-tree.zip"
-            "https://github.com/josephburnett/jd|^jd-amd64-linux$|$LOCAL_BIN_PATH/jd|755"
-            "https://github.com/kubernetes/minikube|^minikube-linux-amd64$|$LOCAL_BIN_PATH/minikube|755"
-            "https://github.com/mikefarah/yq|^yq_linux_amd64$|$LOCAL_BIN_PATH/yq|755"
-            "https://github.com/neilotoole/sq|^sq.+linux-amd64\.tar\.gz$|/tmp/sq.tar.gz"
-            "https://github.com/nektos/act|^act_Linux_x86_64\.tar\.gz$|/tmp/act.tar.gz"
-            "https://github.com/nuwainfo/ffl|^fflo\.com$|$LOCAL_BIN_PATH/fflo.com|644"
-            "https://github.com/peco/peco|^peco_.+_linux_amd64\.tar\.gz$|/tmp/peco.tar.gz"
-            "https://github.com/programmersd21/pik|^pik-linux-x86_64$|$LOCAL_BIN_PATH/pik|755"
-            "https://github.com/projectdiscovery/httpx|^httpx_.+_linux_amd64\.zip$|/tmp/httpx.zip"
-            "https://github.com/whyvl/wireproxy|^wireproxy_linux_amd64\.tar\.gz$|/tmp/wireproxy.tar.gz"
-            "https://github.com/reproducible-containers/diffoci|^diffoci-v.+\.linux-amd64$|$LOCAL_BIN_PATH/diffoci|755"
-            "https://github.com/rclone/rclone|^rclone-v.+-linux-amd64\.zip$|/tmp/rclone.zip"
-            "https://github.com/sachaos/viddy|^viddy-.+-linux-x86_64\.tar\.gz$|/tmp/viddy.tar.gz"
-            "https://github.com/schollz/croc|^croc_.+_Linux-64bit\.tar\.gz$|/tmp/croc.tar.gz"
-            "https://github.com/schollz/hostyoself|^hostyoself_.+_Linux-64bit\.tar\.gz$|/tmp/hostyoself.tar.gz"
-            "https://github.com/sharkdp/bat|^bat-v.+-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/bat.tar.gz"
-            "https://github.com/sharkdp/fd|^fd-v.+-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/fd.tar.gz"
-            "https://github.com/smallstep/cli|^step_linux_.+_amd64\.tar\.gz$|/tmp/step.tar.gz"
-            "https://github.com/starship/starship|^starship-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/starship.tar.gz"
-            "https://github.com/stern/stern|^stern_.+_linux_amd64\.tar\.gz$|/tmp/stern.tar.gz"
-            "https://github.com/timvisee/ffsend|^ffsend-v.+-linux-x64-static$|$LOCAL_BIN_PATH/ffsend|755"
-            "https://github.com/tomnomnom/gron|^gron-linux-amd64-.+\.tgz$|/tmp/gron.tgz"
-            "https://github.com/wader/fq|^fq_.+_linux_amd64\.tar\.gz$|/tmp/fq.tar.gz"
-            "https://github.com/watchexec/watchexec|^watchexec-.+-x86_64-unknown-linux-musl\.tar\.xz$|/tmp/watchexec.tar.xz"
-            "https://github.com/Wilfred/difftastic|^difft-x86_64-unknown-linux-gnu\.tar\.gz$|/tmp/difft.tar.gz"
-            "https://github.com/yannh/kubeconform|^kubeconform-linux-amd64\.tar\.gz$|/tmp/kubeconform.tar.gz"
-          )
-        fi
-
-        for i in ${ASSETS[@]}; do
-          [[ "$BINARY_UPDATE_ALL" == "true" ]] && BINARY_UPDATE=true || BINARY_UPDATE=false
-          if [[ "$BINARY_UPDATE" == "false" ]]; then
-            unset CONFIRMATION
-            read -p "Download $(echo "$i" | cut -d'|' -f1) [y/N]? " CONFIRMATION
-            CONFIRMATION=${CONFIRMATION:-N}
-            [[ $CONFIRMATION =~ ^[Yy] ]] && BINARY_UPDATE=true
-          fi
-          [[ "$BINARY_UPDATE" == "true" ]] && _DownloadViaFetch "$i"
-        done
-        echo "" >&2
-      fi
-    fi
+    export -f _DownloadViaFetch
+    LOCAL_BIN_PATH="$LOCAL_BIN_PATH" \
+      LOCAL_DATA_PATH="$LOCAL_DATA_PATH" \
+      LINUX_CPU="$LINUX_CPU" \
+      "${SCRIPT_PATH}"/install-user-local-binaries.sh "$@"
 
   elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
-
-    unset CONFIRMATION
-    read -p "Install user-local binaries [Y/n]? " CONFIRMATION
-    CONFIRMATION=${CONFIRMATION:-Y}
-    if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-      # nothing for now (scoop pretty much did this already)
-      ( command -v cygpath >/dev/null 2>&1 && \
-          [[ -n $USERPROFILE ]] && \
-          [[ -d "$(cygpath -u "$USERPROFILE")"/Downloads ]] && \
-          pushd "$(cygpath -u "$USERPROFILE")"/Downloads >/dev/null 2>&1 ) || pushd . >/dev/null 2>&1
-
-        curl -L -J -O "$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | grep -Pio "https://.+?VeraCrypt_Setup_x64.+?\.msi" | sed "s/&#43;/+/" | head -n 1)"
-        OPENSHELL_RELEASE="$(_GitLatestRelease Open-Shell/Open-Shell-Menu | sed 's/^v//')"
-        curl -L -J -O "https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v${OPENSHELL_RELEASE}/OpenShellSetup_$(echo "${OPENSHELL_RELEASE}" | sed 's/\./_/g').exe"
-        echo "Some installers downloaded to \"$(pwd)\"" >&2
-        popd >/dev/null 2>&1
+    # scoop handles most of this; these are the stragglers it doesn't carry
+    local DL_DIR="$PWD"
+    if command -v cygpath >/dev/null 2>&1 && [[ -n $USERPROFILE ]] && \
+       [[ -d "$(cygpath -u "$USERPROFILE")"/Downloads ]]; then
+      DL_DIR="$(cygpath -u "$USERPROFILE")"/Downloads
     fi
-
-  fi # Linux vs. MSYS
+    (
+      cd "$DL_DIR" || exit 1
+      local VERACRYPT_URL OPENSHELL_RELEASE
+      VERACRYPT_URL="$(curl -sSL https://www.veracrypt.fr/en/Downloads.html | \
+                       grep -Pio 'https://.+?VeraCrypt_Setup_x64.+?\.msi' | \
+                       sed 's/&#43;/+/g' | head -n 1)"
+      [[ -n $VERACRYPT_URL ]] && curl -L -J -O "$VERACRYPT_URL"
+      OPENSHELL_RELEASE="$(_GitLatestRelease Open-Shell/Open-Shell-Menu | sed 's/^v//')"
+      [[ -n $OPENSHELL_RELEASE ]] && \
+        curl -L -J -O "https://github.com/Open-Shell/Open-Shell-Menu/releases/download/v${OPENSHELL_RELEASE}/OpenShellSetup_${OPENSHELL_RELEASE//./_}.exe"
+      echo "Some installers downloaded to \"$DL_DIR\"" >&2
+    )
+  fi
 }
+
 
 ################################################################################
 function SetupGroupsAndSudo {
