@@ -78,13 +78,7 @@ function o() {
 ###############################################################################
 
 if [[ $LINUX ]]; then
-
   [[ -r "/etc/bash_completion" ]] && . "/etc/bash_completion"
-
-  if [[ $TILIX_ID ]] || [[ $VTE_VERSION ]]; then
-    [[ -r "/etc/profile.d/vte.sh" ]] && . "/etc/profile.d/vte.sh" || . /etc/profile.d/vte-*.sh
-  fi
-
 fi
 
 if [[ $MACOS ]]; then

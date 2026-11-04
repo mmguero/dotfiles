@@ -1950,7 +1950,6 @@ function InstallCommonPackagesGUI {
         thunar
         thunar-archive-plugin
         thunar-volman
-        tilix
         ttf-mscorefonts-installer
         wmctrl
         x11-utils
@@ -1966,6 +1965,8 @@ function InstallCommonPackagesGUI {
       for i in ${DEBIAN_PACKAGE_LIST[@]}; do
         DEBIAN_FRONTEND=noninteractive $SUDO_CMD apt-get install -y "$i" 2>&1 | grep -Piv "(Reading package lists|Building dependency tree|Reading state information|already the newest|\d+ upgraded, \d+ newly installed, \d+ to remove and \d+ not upgraded)"
       done
+
+      $SUDO_CMD /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"
     fi
 
   fi # Mac vs Linux
@@ -2535,18 +2536,6 @@ XDG_PICTURES_DIR="$HOME/media/video"
 XDG_VIDEOS_DIR="$HOME/media/images"
 EOX
       fi
-
-      if dpkg -s tilix >/dev/null 2>&1; then
-        unset CONFIRMATION
-        read -p "Configure Tilix [Y/n]? " CONFIRMATION
-        CONFIRMATION=${CONFIRMATION:-Y}
-        if [[ $CONFIRMATION =~ ^[Yy] ]]; then
-          TILIX_CONFIG_B64="Wy9dCndhcm4tdnRlLWNvbmZpZy1pc3N1ZT1mYWxzZQpzaWRlYmFyLW9uLXJpZ2h0PXRydWUKCltrZXliaW5kaW5nc10Kd2luLXZpZXctc2lkZWJhcj0nTWVudScKCltwcm9maWxlcy8yYjdjNDA4MC0wZGRkLTQ2YzUtOGYyMy01NjNmZDNiYTc4OWRdCmZvcmVncm91bmQtY29sb3I9JyNGOEY4RjInCnZpc2libGUtbmFtZT0nRGVmYXVsdCcKcGFsZXR0ZT1bJyMyNzI4MjInLCAnI0Y5MjY3MicsICcjQTZFMjJFJywgJyNGNEJGNzUnLCAnIzY2RDlFRicsICcjQUU4MUZGJywgJyNBMUVGRTQnLCAnI0Y4RjhGMicsICcjNzU3MTVFJywgJyNGOTI2NzInLCAnI0E2RTIyRScsICcjRjRCRjc1JywgJyM2NkQ5RUYnLCAnI0FFODFGRicsICcjQTFFRkU0JywgJyNGOUY4RjUnXQpiYWRnZS1jb2xvci1zZXQ9ZmFsc2UKdXNlLXN5c3RlbS1mb250PWZhbHNlCmN1cnNvci1jb2xvcnMtc2V0PWZhbHNlCmhpZ2hsaWdodC1jb2xvcnMtc2V0PWZhbHNlCnVzZS10aGVtZS1jb2xvcnM9ZmFsc2UKYm9sZC1jb2xvci1zZXQ9ZmFsc2UKZm9udD0nSGFjayAxMicKdGVybWluYWwtYmVsbD0nbm9uZScKYmFja2dyb3VuZC1jb2xvcj0nIzI3MjgyMicK"
-          echo "$TILIX_CONFIG_B64" | base64 -d | sed "s/Hack/$TILIX_FONT/g" > /tmp/tilixsetup.dconf
-          dconf load /com/gexperts/Tilix/ < /tmp/tilixsetup.dconf
-          rm -f /tmp/tilixsetup.dconf
-        fi
-      fi
     fi
 
   elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
@@ -2660,7 +2649,6 @@ function InstallUserLocalFonts {
       if dpkg -s fonts-hack-ttf >/dev/null 2>&1 ; then
         $SUDO_CMD apt-get -y --purge remove fonts-hack-ttf
       fi
-      TILIX_FONT="Hack Nerd Font Regular"
     fi
 
   elif [[ -n $MSYSTEM ]] && [[ -n $HAS_SCOOP ]]; then
