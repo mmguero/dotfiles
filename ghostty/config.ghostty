@@ -9,6 +9,7 @@ font-family = "Hack Nerd Font Mono"
 font-family-bold = "Hack Nerd Font Mono Bold"
 font-family-italic = "Hack Nerd Font Italic"
 font-family-bold-italic = "Hack Nerd Font Mono Bold Italic"
+font-size = 14
 
 theme = Dracula+
 
