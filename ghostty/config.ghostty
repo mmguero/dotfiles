@@ -10,7 +10,9 @@ font-family-bold = "Hack Nerd Font Mono Bold"
 font-family-italic = "Hack Nerd Font Italic"
 font-family-bold-italic = "Hack Nerd Font Mono Bold Italic"
 
-theme = Nord
+theme = Dracula+
+
+unfocused-split-opacity = 0.8
 
 # added PR: Implement loading custom css in the GTK app https://github.com/ghostty-org/ghostty/pull/4200
 gtk-custom-css = tab-style.css

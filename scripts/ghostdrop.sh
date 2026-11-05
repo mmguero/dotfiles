@@ -6,6 +6,8 @@
 #     not on X11, or
 #     tdrop fails        -> the system's default terminal in a normal window
 
+export GSK_RENDERER=ngl
+
 SESSION="dropdown"
 WIDTH="100%"
 HEIGHT="45%"
