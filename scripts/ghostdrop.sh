@@ -6,8 +6,6 @@
 #     not on X11, or
 #     tdrop fails        -> the system's default terminal in a normal window
 
-export GSK_RENDERER=ngl
-
 SESSION="dropdown"
 WIDTH="100%"
 HEIGHT="45%"
@@ -90,7 +88,7 @@ tdrop_args+=(-w "$w" -h "$h")
 
 if have tmux; then
     # -A attaches if the session exists, otherwise creates it
-    tdrop "${tdrop_args[@]}" ghostty -e tmux new-session -A -s "$SESSION" || open_default_terminal
-else
-    tdrop "${tdrop_args[@]}" ghostty || open_default_terminal
+        tdrop "${tdrop_args[@]}" ghostty --window-decoration=none -e tmux new-session -A -s "$SESSION" || open_default_terminal
+    else
+        tdrop "${tdrop_args[@]}" ghostty --window-decoration=none || open_default_terminal
 fi

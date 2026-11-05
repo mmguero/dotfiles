@@ -327,6 +327,23 @@ move_window() {
     local y=$2
     local w=$3
     local h=$4
+    local window_id
+    local l=0 r=0 t=0 b=0
+
+    window_id=$(xdotool getactivewindow)
+
+    # GTK client-side-decorated windows (Firefox, Ghostty, etc.) include an
+    # invisible shadow margin inside their geometry when a compositor runs.
+    # _GTK_FRAME_EXTENTS is: left, right, top, bottom
+    read -r l r t b < <(
+        xprop -id "$window_id" _GTK_FRAME_EXTENTS 2>/dev/null |
+            awk -F'= ' 'NF == 2 { gsub(/,/, "", $2); print $2 }'
+    )
+
+    x=$((x - ${l:-0}))
+    y=$((y - ${t:-0}))
+    w=$((w + ${l:-0} + ${r:-0}))
+    h=$((h + ${t:-0} + ${b:-0}))
 
     # Maximized windows can cause some WMs to ignore geometry requests.
     wmctrl -r :ACTIVE: -b remove,maximized_vert,maximized_horz
