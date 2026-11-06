@@ -37,6 +37,8 @@ gtk-titlebar = false
 # default is 10MB
 scrollback-limit = 10000000
 
+shell-integration-features = ssh-env,ssh-terminfo
+
 ########################################
 # Keybindings
 ########################################
