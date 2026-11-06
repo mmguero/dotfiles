@@ -1,23 +1,26 @@
 # see https://starship.rs/config/
 # https://gist.github.com/mmguero/730775739384895e84874320c1f9af66
 
-palette = "tlacuache"
+palette = "nord"
 
 format = """
-[\ue0b6](fg:machine_info_bg)\
+([\ue0b6](fg:machine_info_bg)\
 $username\
 $hostname\
 $localip\
 $os\
-[\ue0b0](fg:machine_info_bg bg:directory_bg)\
+[\ue0b4](fg:machine_info_bg))\
+([\ue0b6](fg:directory_bg)\
 $directory\
-[\ue0b0](fg:directory_bg bg:git_bg)\
+[\ue0b4](fg:directory_bg))\
+([\ue0b6](fg:git_bg)\
 $git_branch\
 $git_commit\
 $git_state\
 $git_metrics\
 $git_status\
-[\ue0b0](fg:git_bg bg:tool_bg)\
+[\ue0b4](fg:git_bg))\
+([\ue0b6](fg:tool_bg)\
 $shlvl\
 $singularity\
 $kubernetes\
@@ -25,11 +28,14 @@ $vcsh\
 $fossil_branch\
 $fossil_metrics\
 $hg_branch\
+$hg_state\
 $pijul_channel\
 $package\
+$bun\
 $c\
 $cmake\
 $cobol\
+$cpp\
 $daml\
 $dart\
 $deno\
@@ -38,6 +44,7 @@ $elixir\
 $elm\
 $erlang\
 $fennel\
+$fortran\
 $gleam\
 $golang\
 $guix_shell\
@@ -49,9 +56,12 @@ $julia\
 $kotlin\
 $gradle\
 $lua\
+$maven\
+$mojo\
 $nim\
 $nodejs\
 $ocaml\
+$odin\
 $opa\
 $perl\
 $php\
@@ -71,10 +81,12 @@ $terraform\
 $typst\
 $vlang\
 $vagrant\
+$xmake\
 $zig\
 $buf\
 $nix_shell\
 $conda\
+$pixi\
 $meson\
 $spack\
 $memory_usage\
@@ -94,21 +106,20 @@ $battery\
 $status\
 $netns\
 $shell\
-[\ue0b0](fg:tool_bg bg:container_bg)\
+[\ue0b4](fg:tool_bg))\
+([\ue0b6](fg:container_bg)\
 $container\
 $docker_context\
-[\ue0b0](fg:container_bg bg:status_bg)\
+[\ue0b4](fg:container_bg))\
+([\ue0b6](fg:status_bg)\
 $cmd_duration\
 $time\
 $character\
-[\ue0b2](fg:status_bg bg:status_bg)\
-[\ue0b0 ](fg:status_bg)\
+[ ](bg:status_bg)\
+[\ue0b4 ](fg:status_bg))\
 """
 
 add_newline = false
-
-[line_break]
-disabled = false
 
 [character]
 format = "$symbol"
@@ -117,12 +128,12 @@ error_symbol = "[](fg:error_fg bg:status_bg)"
 
 [cmd_duration]
 min_time = 2000
-format = "[$duration](bold duration_fg bg:status_bg)"
+format = "[ $duration](bold fg:duration_fg bg:status_bg)"
 
 [time]
 disabled = false
 time_format = "%R"
-style = "bg:status_bg"
+style = "fg:status_fg bg:status_bg"
 format = '[ $time ]($style)'
 
 [os]
@@ -133,337 +144,485 @@ format = '[$symbol]($style)'
 [username]
 show_always = false
 style_user = "fg:machine_info_fg bg:machine_info_bg"
-style_root = "fg:error_fg bg:machine_info_bg"
+style_root = "bold fg:machine_info_fg bg:error_fg"
 format = '[ $user ]($style)'
 disabled = false
 
 [hostname]
 ssh_only = true
-style = "bg:machine_info_bg"
-format = "[$ssh_symbol$hostname ](fg:machine_info_fg bg:machine_info_bg)"
+style = "fg:machine_info_fg bg:machine_info_bg"
+format = "[$ssh_symbol$hostname ]($style)"
 disabled = false
 
 [localip]
 ssh_only = true
-style = "bg:machine_info_bg"
-format = "[🖳 $localipv4 ](fg:machine_info_fg bg:machine_info_bg)"
+style = "fg:machine_info_fg bg:machine_info_bg"
+format = "[\uf108 $localipv4 ]($style)"
 disabled = false
 
 [git_branch]
 always_show_remote = true
 format = "[ $symbol($remote_name:)$branch ]($style)"
-style = "bg:git_bg"
+style = "fg:git_fg bg:git_bg"
+
+[git_commit]
+style = "fg:git_fg bg:git_bg"
+format = '[ $hash$tag ]($style)'
+
+[git_state]
+style = "fg:git_conflicted_fg bg:git_bg"
+format = '[ $state( $progress_current/$progress_total) ]($style)'
+
+[git_metrics]
+added_style = "fg:git_staged_fg bg:git_bg"
+deleted_style = "fg:git_deleted_fg bg:git_bg"
+format = '([ +$added]($added_style))([ -$deleted]($deleted_style))'
 
 [git_status]
-style = "bg:git_bg"
+style = "fg:git_fg bg:git_bg"
 format = '([$all_status$ahead_behind ]($style))'
-ahead = " [ ⇡${count}](git_ahead_fg bg:git_bg)"
-behind = "[ ⇣${count}](git_behind_fg bg:git_bg)"
+ahead = "[ ⇡${count}](fg:git_ahead_fg bg:git_bg)"
+behind = "[ ⇣${count}](fg:git_behind_fg bg:git_bg)"
 conflicted = "[ ⚑${count}](fg:git_conflicted_fg bg:git_bg)"
 deleted = "[ 🗑${count}](fg:git_deleted_fg bg:git_bg)"
-diverged = " ⇡${ahead_count} ⇣${behind_count}"
-modified = "[ ✎${count}](git_modified_fg bg:git_bg)"
-renamed = "[ »${count}](git_renamed_fg bg:git_bg)"
-staged = '[ +${count}](git_staged_fg bg:git_bg)'
-stashed = "[ 🖴](git_stashed_fg bg:git_bg)"
-untracked = "[ ≟](git_untracked_fg bg:git_bg)"
-up_to_date = "[ ](git_uptodate_fg bg:git_bg)"
+diverged = "[ ⇡${ahead_count}](fg:git_ahead_fg bg:git_bg)[ ⇣${behind_count}](fg:git_behind_fg bg:git_bg)"
+modified = "[ ✎${count}](fg:git_modified_fg bg:git_bg)"
+renamed = "[ »${count}](fg:git_renamed_fg bg:git_bg)"
+staged = '[ +${count}](fg:git_staged_fg bg:git_bg)'
+stashed = "[ \uea98](fg:git_stashed_fg bg:git_bg)"
+untracked = "[ ≟](fg:git_untracked_fg bg:git_bg)"
+up_to_date = "[ ](fg:git_uptodate_fg bg:git_bg)"
 
 [directory]
-style = "bg:directory_bg"
-read_only_style = "bg:directory_bg"
+style = "fg:directory_fg bg:directory_bg"
+read_only_style = "fg:directory_fg bg:directory_bg"
 format = "[ $path]($style)[$read_only]($read_only_style)"
 truncation_length = 3
 truncation_symbol = "…/"
 truncate_to_repo = true
 home_symbol = "🏠 "
 read_only = " 🔒"
+# whole-word matches so "photos" isn't eaten by "photo", "development" by "devel", etc.
+substitutions = [
+  { from = '(?:\bAudio|\baudio)\b', to = "🕪", regex = true },
+  { from = '(?:\bBackup|\bbackup|\bbak)\b', to = "\uf0c7", regex = true },
+  { from = '(?:\bBooks|\bbooks)\b', to = " ", regex = true },
+  { from = '\.config\b', to = " ", regex = true },
+  { from = '\.local\b', to = " ", regex = true },
+  { from = '\bDesktop\b', to = " ", regex = true },
+  { from = '\bdevel\b', to = "", regex = true },
+  { from = '\bDocuments\b', to = "\uf0f6", regex = true },
+  { from = '(?:\bDownloads|\bdownload)\b', to = " ", regex = true },
+  { from = '(?:\bGitHub|\bGithub|\bgithub)\b', to = " ", regex = true },
+  { from = '(?:\bPictures|\bpictures|\bImages|\bPhotos|\bimages|\bphotos|\bPhoto|\bphoto)\b', to = " ", regex = true },
+  { from = '(?:\bMalcolm|\bmalcolm)\b', to = "🤄 ", regex = true },
+  { from = '(?:\bMedia|\bmedia)\b', to = " ", regex = true },
+  { from = '(?:\bMusic|\bmusic)\b', to = " ", regex = true },
+  { from = '\bPublic\b', to = " ", regex = true },
+  { from = '\bpCloudDrive\b', to = "☁", regex = true },
+  { from = '(?:\bVideos|\bvideos|\bVideo|\bvideo)\b', to = "🎞", regex = true },
+  { from = '(?:\btemp|\btmp)\b', to = " ", regex = true },
+]
 
-# disabled modules (generally because I don't want the via ... whatever cluttering things)
+# everything below shows just the module's symbol on a matching background,
+# without the default "via ... version" text
+
 [aws]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = true
 
-[bun]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
-disabled = false
+[azure]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[battery]
+format = '[ $symbol$percentage ]($style)'
+
+[[battery.display]]
+threshold = 10
+style = "fg:error_fg bg:tool_bg"
 
 [buf]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
+disabled = false
+
+[bun]
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [c]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [cmake]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [cobol]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [conda]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [container]
-style = "bg:container_bg"
+style = "fg:container_fg bg:container_bg"
 format = "[ $symbol ]($style)"
+disabled = false
+
+[cpp]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
 
 [crystal]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [daml]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [dart]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [deno]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
-[dotnet]
-style = "bg:tool_bg"
-format = "[ $symbol( $tfm )]($style)"
-disabled = false
+[direnv]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$loaded/$allowed ]($style)'
 
 [docker_context]
-style = "bg:container_bg"
-format = "[ $symbol ]($style)"
+style = "fg:container_fg bg:container_bg"
+format = "[ $symbol]($style)"
 disabled = false
 only_with_files = true
 
+[dotnet]
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol( $tfm )]($style)"
+disabled = false
+
 [elixir]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [elm]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [erlang]
-style = "bg:tool_bg"
+style = "fg:tool_fg bg:tool_bg"
 format = '[ $symbol ]($style)'
 disabled = false
+
+[fennel]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[fortran]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[fossil_branch]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$branch ]($style)'
+
+[fossil_metrics]
+added_style = "fg:git_staged_fg bg:tool_bg"
+deleted_style = "fg:git_deleted_fg bg:tool_bg"
+format = '([ +$added]($added_style))([ -$deleted]($deleted_style))'
+
+[gcloud]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[gleam]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 
 [golang]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
+
+[gradle]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[guix_shell]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 
 [haskell]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
+[haxe]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
 [helm]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
 
 [hg_branch]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
+disabled = false
+
+[hg_state]
+style = "fg:git_conflicted_fg bg:tool_bg"
+format = '[ $state ]($style)'
 disabled = false
 
 [java]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
+[jobs]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$number ]($style)'
+
 [julia]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [kotlin]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
+
+[kubernetes]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$context( \($namespace\)) ]($style)'
 
 [lua]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
+[maven]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
 [memory_usage]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [meson]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
+[mise]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[mojo]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[nats]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$name ]($style)'
+
+[netns]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$name ]($style)'
+
 [nim]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [nix_shell]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [nodejs]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [ocaml]
-style = "bg:tool_bg"
+style = "fg:tool_fg bg:tool_bg"
 format = '[ $symbol(\($switch_indicator$switch_name\) )]($style)'
 disabled = false
 
+[odin]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[opa]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[openstack]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
 [package]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
-disabled = true
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
+disabled = false
 
 [perl]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
 
 [php]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
+[pijul_channel]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$channel ]($style)'
+
+[pixi]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
 [pulumi]
-style = "bg:tool_bg"
+style = "fg:tool_fg bg:tool_bg"
 format = '[ $symbol$stack]($style)'
 disabled = false
 
 [purescript]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
 
 [python]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
+[quarto]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
 [raku]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
 
 [red]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
 
 [rlang]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [ruby]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
-disabled = true
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
+disabled = false
 
 [rust]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
 
 [scala]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
+
+[shell]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $indicator ]($style)'
+
+[shlvl]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$shlvl ]($style)'
+
+[singularity]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$env ]($style)'
+
+[solidity]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 
 [spack]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
+
+[status]
+style = "fg:error_fg bg:tool_bg"
+format = '[ $symbol$status ]($style)'
+
+[sudo]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 
 [swift]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
+
+[terraform]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
+
+[typst]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 
 [vagrant]
-style = "bg:tool_bg"
-format = "[ $symbol ]($style)"
+style = "fg:tool_fg bg:tool_bg"
+format = "[ $symbol]($style)"
 disabled = false
+
+[vcsh]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol$repo ]($style)'
 
 [vlang]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
+
+[xmake]
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 
 [zig]
-style = "bg:tool_bg"
-format = '[ $symbol ]($style)'
+style = "fg:tool_fg bg:tool_bg"
+format = '[ $symbol]($style)'
 disabled = false
 
-[directory.substitutions]
-"Audio" = "🕪"
-"audio" = "🕪"
-"backup" = "🖪"
-"Backup" = "🖪"
-"bak" = "🖪"
-"Books" = " "
-"books" = " "
-".config" = " "
-".local" = " "
-"Desktop" = " "
-"devel" = ""
-"Documents" = "🖺"
-"download" = " "
-"Downloads" = " "
-"github" = " "
-"Github" = " "
-"GitHub" = " "
-"images" = " "
-"Images" = " "
-"Malcolm" = "🤄"
-"malcolm" = "🤄"
-"media" = " "
-"Media" = " "
-"Music" = " "
-"music" = " "
-"photo" = " "
-"Photo" = " "
-"photos" = " "
-"Photos" = " "
-"Pictures" = " "
-"pictures" = " "
-"Public" = " "
-"pCloudDrive" = "☁"
-"video" = "🎞"
-"videos" = "🎞"
-"Video" = "🎞"
-"Videos" = "🎞"
-"tmp" = " "
-"temp" = " "
-
 [palettes.tlacuache]
-burgundy = "#800020"
 container_bg = "#06969A"
 directory_bg = "#8458B3"
 duration_fg = "#E4D00A"
@@ -484,4 +643,35 @@ machine_info_fg = "#16161d"
 status_bg = "#33658A"
 success_fg = "#beed76"
 tool_bg = "#86BBD8"
-light_gray = "#bebebe"
+directory_fg = "#D8DEE9"
+git_fg = "#D8DEE9"
+tool_fg = "#D8DEE9"
+container_fg = "#D8DEE9"
+status_fg = "#D8DEE9"
+
+[palettes.nord]
+machine_info_bg = "#81A1C1"   # nord9
+machine_info_fg = "#2E3440"
+directory_bg = "#B48EAD"      # nord15
+directory_fg = "#2E3440"
+git_bg = "#434C5E"            # nord2
+git_fg = "#ECEFF4"
+tool_bg = "#88C0D0"           # nord8
+tool_fg = "#2E3440"
+container_bg = "#A3BE8C"      # nord14
+container_fg = "#2E3440"
+status_bg = "#4C566A"         # nord3
+status_fg = "#ECEFF4"
+success_fg = "#A3BE8C"
+error_fg = "#BF616A"
+duration_fg = "#EBCB8B"
+git_ahead_fg = "#A3BE8C"
+git_behind_fg = "#88C0D0"
+git_conflicted_fg = "#BF616A"
+git_deleted_fg = "#BF616A"
+git_modified_fg = "#D08770"
+git_renamed_fg = "#88C0D0"
+git_staged_fg = "#A3BE8C"
+git_stashed_fg = "#B48EAD"
+git_untracked_fg = "#EBCB8B"
+git_uptodate_fg = "#A3BE8C"
