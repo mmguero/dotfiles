@@ -135,7 +135,7 @@ if [[ $LINUX ]]; then
 
   function vvrun() {
     local MEMGB="$(numfmt --to iec --format "%8f" $(echo ${QEMU_RAM:-4096}*1024*1024 | bc) | sed "s/\.0G$/GiB/")"
-    local IMG="${QEMU_IMG:-debian-12}"
+    local IMG="${QEMU_IMG:-debian-13}"
     local ID=$((120 + $RANDOM % 80))
     local IMG_SUFFIX=
     [[ "${QEMU_ARCH:-amd64}" == "amd4" ]] || IMG_SUFFIX="-${QEMU_ARCH}"
