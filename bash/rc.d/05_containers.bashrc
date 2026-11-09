@@ -914,9 +914,14 @@ cpot() {
     done
 
     stamp=$(date +%Y%m%d-%H%M%S)
-    work_dir="$home_dir/work-$stamp-$$"
+    while :; do
+        word=$(shuf -n 1 /usr/share/dict/words)
+        [[ $word =~ ^[[:alpha:]]+$ ]] || continue
+        work_dir="$home_dir/work-$stamp-$word"
+        break
+    done
 
-    if ! docker exec "$container" mkdir -p -- "$work_dir"; then
+    if ! docker exec "$container" mkdir -- "$work_dir"; then
         return 1
     fi
 
