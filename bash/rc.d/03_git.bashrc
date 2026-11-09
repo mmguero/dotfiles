@@ -657,6 +657,13 @@ function github_advisory () {
     return 1
   fi
 
+  # GitHub's advisory objects carry credit info in two different shapes.
+  #   .credits          -> flat {login, type} objects, and GitHub only
+  #                         populates this array for credits the named person
+  #                         has *accepted* via the credit-invite flow.
+  #   .credits_detailed -> {user: {login, ...}, type, state} objects, where
+  #                         state is "accepted" | "pending" | "declined", and
+  #                         this array is populated regardless of acceptance.
   jq -r '
       "\(.ghsa_id // "unknown")  ·  \((.severity // "unknown") | ascii_upcase)  ·  \(.cve_id // "no CVE")",
       "\((.state // "") | ascii_upcase)  ·  published \(.published_at // "unpublished")  ·  updated \(.updated_at // "")",
@@ -668,7 +675,19 @@ function github_advisory () {
       (if ((.cwes // []) | length) > 0 then "CWEs: " + ([.cwes[].cwe_id] | join(", ")) else empty end),
       (if ((.vulnerabilities // []) | length) > 0 then ("", "Affected packages:") else empty end),
       (.vulnerabilities[]? | "  - \(.package.ecosystem // "")/\(.package.name // "") \(.vulnerable_version_range // "")" + (if .first_patched_version.identifier then " (patched in \(.first_patched_version.identifier))" else "" end)),
-      (if ((.credits // []) | length) > 0 then ("", "Credits: " + ([.credits[]?.user.login] | join(", "))) else empty end),
+      (
+        (.credits_detailed // []) as $cd |
+        (.credits // []) as $c |
+        if ($cd | length) > 0 then
+          ("", "Credits:"),
+          ($cd[] | "  - \(.user.login // "unknown") (https://github.com/\(.user.login // "unknown")) [role: \(.type // "unknown"), state: \(.state // "unknown")]")
+        elif ($c | length) > 0 then
+          ("", "Credits:"),
+          ($c[] | "  - \(.login // "unknown") (https://github.com/\(.login // "unknown")) [role: \(.type // "unknown")]")
+        else
+          ("", "Credits: (none recorded via GitHub API)")
+        end
+      ),
       (if ((.references // []) | length) > 0 then ("", "References:", (.references[] | "  - \(.)")) else empty end),
       "",
       (.html_url // .url // "")
