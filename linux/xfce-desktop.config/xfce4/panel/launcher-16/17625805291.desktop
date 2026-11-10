@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.1
+Type=Application
+Name=GIMP
+GenericName=Image Editor
+Comment=Create images and edit photographs
+Icon=photogimp
+Exec=/home/tlacuache/.local/bin/gimp
+Actions=
+MimeType=image/bmp;image/g3fax;image/gif;image/x-fits;image/x-pcx;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-psd;image/x-sgi;image/x-tga;image/x-xbitmap;image/x-xwindowdump;image/x-xcf;image/x-compressed-xcf;image/x-gimp-gbr;image/x-gimp-pat;image/x-gimp-gih;image/tiff;image/jpeg;image/x-psp;application/postscript;image/png;image/x-icon;image/x-xpixmap;image/x-exr;image/x-webp;image/heif;image/heic;image/svg+xml;application/pdf;image/x-wmf;image/jp2;image/x-xcursor;
+Categories=2DGraphics;GTK;Graphics;RasterGraphics;
+Keywords=GIMP;PhotoGIMP;graphic;design;illustration;painting;
+StartupNotify=true
+X-XFCE-Source=file:///home/tlacuache/.local/share/applications/org.gimp.GIMP.desktop

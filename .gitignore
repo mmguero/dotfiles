@@ -5,3 +5,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# xfce stuff
+linux/xfce-desktop.config/xfce4/xfconf/xfce-perchannel-xml/displays.xml
+linux/xfce-desktop.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
+linux/xfce-desktop.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-notifyd.xml
+linux/xfce-desktop.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml
+linux/xfce-desktop.config/xfce4/xfce4-screenshooter
+linux/xfce-desktop.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-screenshooter.xml
