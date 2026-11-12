@@ -33,7 +33,9 @@ if [ -e ~/.bashrc.d ]; then
   done
 fi
 
-if _mmg_comp="$(mmguero -- --completion bash 2>/dev/null)"; then
+if _mmg_comp="$(mmguero -- --completion bash 2>/dev/null)" && \
+   [[ "$_mmg_comp" == *"complete "* ]] && \
+   bash -n <(printf '%s\n' "$_mmg_comp") 2>/dev/null; then
   source <(printf '%s\n' "$_mmg_comp")
 fi
 unset _mmg_comp
