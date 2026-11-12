@@ -609,7 +609,7 @@ function InstallEnvPackages {
         stream-zip \
         textual \
         tqdm \
-        typer[all] \
+        typer \
         yubikey-manager
 
       if [[ -n $LINUX ]] && [[ -z $WSL ]]; then
@@ -2670,7 +2670,7 @@ function InstallUserLocalFonts {
       mkdir -p "$LOCAL_DATA_PATH"/fonts "$LOCAL_CONFIG_PATH"/fontconfig/conf.d
 
       pushd "$LOCAL_DATA_PATH"/fonts >/dev/null 2>&1
-      for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Incosolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
+      for NERDFONT in DejaVuSansMono FiraCode FiraMono Hack Inconsolata LiberationMono SourceCodePro Ubuntu UbuntuMono; do
         curl -L -o ./$NERDFONT.zip "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/$NERDFONT.zip"
         unzip -o ./$NERDFONT.zip
       done
@@ -2845,15 +2845,30 @@ function SetupNICPrivs {
         /usr/sbin/stenotype
         /usr/sbin/trafgen
       )
-      for i in ${EXE_LESS_CAP[@]}; do
-        [[ -e "$i" ]] && \
-        $SUDO_CMD chown root:netdev "$i" && \
-          $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip' "$i"
-      done
-      for i in ${EXE_MORE_CAP[@]}; do
-        [[ -e "$i" ]] && \
-        $SUDO_CMD chown root:netdev "$i" && \
-          $SUDO_CMD setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip CAP_IPC_LOCK+eip CAP_SYS_ADMIN+eip' "$i"
+
+      # setcap refuses symlinks, so resolve each path to the file it points at first,
+      #   and only handle each real file once (two names can point at one binary).
+      #   EXE_MORE_CAP goes first so a shared binary ends up with the larger set.
+      local -A CAPS_DONE=()
+      local CAPS EXE REAL
+      local -a EXES
+      for CAPS in 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip CAP_IPC_LOCK+eip CAP_SYS_ADMIN+eip' \
+                  'CAP_NET_RAW+eip CAP_NET_ADMIN+eip CAP_NET_BIND_SERVICE+eip'; do
+        if [[ "$CAPS" == *CAP_SYS_ADMIN* ]]; then
+          EXES=("${EXE_MORE_CAP[@]}")
+        else
+          EXES=("${EXE_LESS_CAP[@]}")
+        fi
+        for EXE in "${EXES[@]}"; do
+          [[ -e "$EXE" ]] || continue
+          REAL="$(readlink -f "$EXE")"
+          [[ -f "$REAL" ]] || continue
+          [[ -n "${CAPS_DONE[$REAL]:-}" ]] && continue
+          CAPS_DONE[$REAL]=1
+          $SUDO_CMD chown root:netdev "$REAL" && \
+            $SUDO_CMD setcap "$CAPS" "$REAL" || \
+            echo "setcap failed for $EXE ($REAL)" >&2
+        done
       done
     fi # setcap confirmation
   fi
@@ -3138,7 +3153,7 @@ function GueroDockerWrappers {
       https://raw.githubusercontent.com/mmguero/docker/master/fetch/fetch-docker.sh
       https://raw.githubusercontent.com/mmguero/docker/master/roop/roop-docker.sh
       https://raw.githubusercontent.com/mmguero/docker/master/gimp/gimp-docker.sh
-      https://github.com/idaholab/network-architecture-verification-and-validation/blob/develop/docker/navv-docker.sh
+      https://raw.githubusercontent.com/idaholab/network-architecture-verification-and-validation/develop/docker/navv-docker.sh
       https://raw.githubusercontent.com/mmguero/monkeyplug/main/docker/monkeyplug-docker.sh
       https://raw.githubusercontent.com/mmguero/montag/main/docker/montag-docker.sh
       https://raw.githubusercontent.com/mmguero/zeek-docker/main/zeek-docker.sh
