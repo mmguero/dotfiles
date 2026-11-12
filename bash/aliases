@@ -96,7 +96,7 @@ alias black='python3 -m black --line-length 120 --skip-string-normalization'
 alias delblanks='sed -i "/^\s*$/d"'
 alias cl='curl -L -J -O'
 alias ct='\cat'
-alias cat='bat --paging=never --style=plain,header --tabs 0'
+alias cat='bat --paging=never --style=plain,header --tabs 0 --wrap=never'
 alias at='as-tree'
 
 #media
