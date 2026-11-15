@@ -88,7 +88,7 @@ tdrop_args+=(-w "$w" -h "$h")
 
 if have tmux; then
     # -A attaches if the session exists, otherwise creates it
-        tdrop "${tdrop_args[@]}" ghostty --window-decoration=none -e tmux new-session -A -s "$SESSION" || open_default_terminal
+        tdrop "${tdrop_args[@]}" ghostty --window-decoration=none -e tmux -L dropdown new-session -A -s "$SESSION" || open_default_terminal
     else
         tdrop "${tdrop_args[@]}" ghostty --window-decoration=none || open_default_terminal
 fi
