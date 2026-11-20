@@ -49,46 +49,65 @@ if [[ "${XDG_SESSION_TYPE:-}" == "wayland" || -z "${DISPLAY:-}" ]] \
     open_default_terminal
 fi
 
-tdrop_args=(-a)
-w="$WIDTH"
-h="$HEIGHT"
+# Mouse position picks the monitor
+X=0; Y=0
+eval "$(xdotool getmouselocation --shell 2>/dev/null)"
 
-if xrandr --query >/dev/null 2>&1; then
-    # RandR works, so monitor-aware percentages are safe
-    tdrop_args+=(-m)
-else
-    # No RandR. Ask Xinerama for its heads and use the one under the mouse.
-    X=0; Y=0
-    eval "$(xdotool getmouselocation --shell 2>/dev/null)"
+# Prints "width height x y" for the head under the mouse (or the first head).
+# Expects "WxH+X+Y"-style records on stdin as "w h x y" per line.
+pick_head() {
+    awk -v mx="$X" -v my="$Y" '
+        NF == 4 {
+            w = $1; h = $2; x = $3; y = $4
+            if (!found) { fw = w; fh = h; fx = x; fy = y; found = 1 }
+            if (mx >= x && mx < x + w && my >= y && my < y + h) {
+                print w, h, x, y; hit = 1; exit
+            }
+        }
+        END { if (!hit && found) print fw, fh, fx, fy }'
+}
+
+sw=""
+# Xinerama first. With RandR present, the server answers from its current
+# layout without probing outputs, so this never stalls the X server.
+if have xdpyinfo; then
     read -r sw sh ox oy < <(
-        xdpyinfo -ext XINERAMA 2>/dev/null | awk -v mx="$X" -v my="$Y" '
+        xdpyinfo -ext XINERAMA 2>/dev/null | awk '
             /head #[0-9]+:/ {
                 split($3, wh, "x"); split($5, xy, ",")
-                w = wh[1]; h = wh[2]; x = xy[1]; y = xy[2]
-                if (!found) { fw = w; fh = h; fx = x; fy = y; found = 1 }
-                if (mx >= x && mx < x + w && my >= y && my < y + h) {
-                    print w, h, x, y; hit = 1; exit
-                }
-            }
-            END { if (!hit && found) print fw, fh, fx, fy }'
+                print wh[1], wh[2], xy[1], xy[2]
+            }' | pick_head
     )
-
-    # No Xinerama info either: use the whole root window
-    if [[ -z "$sw" ]]; then
-        read -r sw sh < <(xwininfo -root | awk '/Width:/{w=$2} /Height:/{h=$2} END{print w, h}')
-        ox=0; oy=0
-    fi
-
-    [[ "$w" == *% ]] && w=$(( sw * ${w%\%} / 100 ))
-    [[ "$h" == *% ]] && h=$(( sh * ${h%\%} / 100 ))
-    tdrop_args+=(-x "$ox" -y "$oy")
 fi
 
-tdrop_args+=(-w "$w" -h "$h")
+# No Xinerama heads: ask RandR for its monitors. --current keeps xrandr on
+# the cached state, though the server may still probe for the monitor list.
+if [[ -z "$sw" ]] && have xrandr; then
+    read -r sw sh ox oy < <(
+        xrandr --current --listactivemonitors 2>/dev/null | awk '
+            match($0, /[0-9]+\/[0-9]+x[0-9]+\/[0-9]+\+-?[0-9]+\+-?[0-9]+/) {
+                split(substr($0, RSTART, RLENGTH), p, "[/x+]")
+                print p[1], p[3], p[5], p[6]
+            }' | pick_head
+    )
+fi
+
+# Neither one answered: use the whole root window
+if [[ -z "$sw" ]]; then
+    read -r sw sh < <(xwininfo -root | awk '/Width:/{w=$2} /Height:/{h=$2} END{print w, h}')
+    ox=0; oy=0
+fi
+
+w="$WIDTH"
+h="$HEIGHT"
+[[ "$w" == *% ]] && w=$(( sw * ${w%\%} / 100 ))
+[[ "$h" == *% ]] && h=$(( sh * ${h%\%} / 100 ))
+
+tdrop_args=(-a -x "$ox" -y "$oy" -w "$w" -h "$h")
 
 if have tmux; then
     # -A attaches if the session exists, otherwise creates it
-        tdrop "${tdrop_args[@]}" ghostty --window-decoration=none -e tmux -L dropdown new-session -A -s "$SESSION" || open_default_terminal
-    else
-        tdrop "${tdrop_args[@]}" ghostty --window-decoration=none || open_default_terminal
+    tdrop "${tdrop_args[@]}" ghostty --window-decoration=none -e tmux -L dropdown new-session -A -s "$SESSION" || open_default_terminal
+else
+    tdrop "${tdrop_args[@]}" ghostty --window-decoration=none || open_default_terminal
 fi
