@@ -3068,6 +3068,9 @@ function GueroSymlinks {
       [[ -r "$GUERO_GITHUB_PATH"/git/gitignore_global ]] && rm -vf "$HOME"/.gitignore_global && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/git/gitignore_global "$HOME"/.gitignore_global
 
+      [[ -r "$GUERO_GITHUB_PATH"/git/hooks ]] && rm -vf "$LOCAL_CONFIG_PATH"/git/hooks && \
+        ln $LNFLAGS "$GUERO_GITHUB_PATH"/git/hooks "$LOCAL_CONFIG_PATH"/git/hooks
+
       [[ -n $LINUX ]] && [[ -r "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf ]] && rm -vf "$HOME"/.tmux.conf && \
         ln $LNFLAGS "$GUERO_GITHUB_PATH"/linux/tmux/tmux.conf "$HOME"/.tmux.conf
 
